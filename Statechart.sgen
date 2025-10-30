@@ -1,0 +1,15 @@
+GeneratorModel for create::python {
+
+	const PROJECT : string = "Bot1"
+
+	const FOLDER : string = "src-gen"
+
+	statechart model {
+
+		feature Outlet {
+			targetProject = PROJECT
+			targetFolder = FOLDER
+			libraryTargetFolder = "src"
+		}
+	}
+}
