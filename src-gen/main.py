@@ -594,52 +594,19 @@ class SCTConnect():
     """
     def _print_internal_variables(self):
         print("\\n------ Internal Variables ------")
-        # Access private variables through name mangling
         print(f"dist_free: {self.sm._Model__dist_free:.3f}")
         print(f"is_manual: {self.sm._Model__is_manual}")
         print(f"autonomous_active: {self.sm._Model__autonomous_active}")
-        print(f"cmd_speed: {self.sm._Model__cmd_speed:.3f}")
-        print(f"cmd_rot: {self.sm._Model__cmd_rot:.3f}")
-        print(f"cell_start_x: {self.sm._Model__cell_start_x:.3f}")
-        print(f"cell_start_y: {self.sm._Model__cell_start_y:.3f}")
-        print(f"all_cells_visited: {self.sm._Model__all_cells_visited}")
-        print(f"exploring_done: {self.sm._Model__exploring_done}")
         print(f"left_free: {self.sm._Model__left_free}")
         print(f"front_free: {self.sm._Model__front_free}")
         print(f"right_free: {self.sm._Model__right_free}")
         print(f"back_free: {self.sm._Model__back_free}")
-        print(f"target_row: {self.sm._Model__target_row}")
-        print(f"target_col: {self.sm._Model__target_col}")
+        print(f"exploring_done: {self.sm._Model__exploring_done}")
         
-        # Wall-following debug info
-        print("\\n--- Wall Following Debug ---")
-        left_dist = self.sm.laser_distance.dleft_min
-        right_dist = self.sm.laser_distance.dright_min
-        
-        # Get actual statechart variables
-        distance_error = self.sm._Model__distance_error
-        kp = self.sm._Model__kp
-        too_close = self.sm._Model__too_close
-        too_close_threshold = self.sm._Model__too_close_threshold
-        
-        print(f"Left wall dist:  {left_dist:.3f}m")
-        print(f"Right wall dist: {right_dist:.3f}m")
-        print(f"Distance error (L-R): {distance_error:+.3f}m")
-        print(f"Proportional gain (kP): {kp:.2f}")
-        print(f"Correction applied: {-kp * distance_error:+.3f} rad/s")
-        
-        # Show wall proximity status
-        print(f"\\nToo close threshold: {too_close_threshold:.3f}m")
-        if too_close:
-            print(f"⚠️  TOO CLOSE TO WALL - Forward motion stopped!")
-            if left_dist < too_close_threshold:
-                print(f"   Left wall: {left_dist:.3f}m < {too_close_threshold:.3f}m")
-            if right_dist < too_close_threshold:
-                print(f"   Right wall: {right_dist:.3f}m < {too_close_threshold:.3f}m")
-        else:
-            print(f"✓ Safe distance from walls")
-        
-        print(f"\\nFinal output - v: {self.sm._Model__v:.3f} m/s, w: {self.sm._Model__w:.3f} rad/s")
+        print("\\n--- Navigation ---")
+        print(f"cmd_speed: {self.sm._Model__cmd_speed:.3f} m/s")
+        print(f"cmd_rot: {self.sm._Model__cmd_rot:.3f} rad/s")
+        print(f"Final output - v: {self.sm._Model__v:.3f} m/s, w: {self.sm._Model__w:.3f} rad/s")
         self.sm.grid.visited = True
 
 """
