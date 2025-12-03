@@ -637,7 +637,6 @@ class Model:
 		self.grid.update = True
 		self.grid.receive = False
 		self.__been_at_start_once = True if (self.grid.row != self.__start_row or self.grid.column != self.__start_col) else self.__been_at_start_once
-		self.__exploring_done = True if (self.grid.row == self.__start_row and self.grid.column == self.__start_col and self.__been_at_start_once) else self.__exploring_done
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto(self):
 		""".
