@@ -365,7 +365,7 @@ class Model:
 		self.__w = 0.0
 		self.__distance_error = 0.0
 		self.__kp = 0.5
-		self.__too_close_threshold = 0.25
+		self.__too_close_threshold = 0.1
 		self.__too_close = False
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
