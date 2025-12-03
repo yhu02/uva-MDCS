@@ -675,6 +675,14 @@ class Model:
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = -(self.user_var.base_rotation)
 		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around(self):
+		"""Entry action for state 'TurnAround'..
+		"""
+		#Entry action for state 'TurnAround'.
+		self.__turn_start_yaw = self.imu.yaw
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = self.user_var.base_rotation
+		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight(self):
 		""".
 		"""
@@ -742,6 +750,13 @@ class Model:
 		#Exit action for state 'TurnRight'.
 		self.__cmd_rot = 0.0
 		self.grid.orientation = 0 if self.grid.orientation == 3 else (self.grid.orientation + 1)
+		
+	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around(self):
+		"""Exit action for state 'TurnAround'..
+		"""
+		#Exit action for state 'TurnAround'.
+		self.__cmd_rot = 0.0
+		self.grid.orientation = (self.grid.orientation + 2) if (self.grid.orientation < 2) else (self.grid.orientation - 2)
 		
 	def __enter_sequence_turtle_bot_turtle_bot_default(self):
 		"""'default' enter sequence for state TurtleBot.
@@ -866,6 +881,7 @@ class Model:
 		"""'default' enter sequence for state TurnAround.
 		"""
 		#'default' enter sequence for state TurnAround
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around()
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
@@ -1076,6 +1092,7 @@ class Model:
 		#Default exit sequence for state TurnAround
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
 		self.__state_conf_vector_position = 1
+		self.__exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around()
 		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight(self):
 		"""Default exit sequence for state GoStraight.
@@ -1545,8 +1562,16 @@ class Model:
 		#The reactions of state TurnAround.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
-			#Always execute local reactions.
-			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+			if transitioned_after < 1:
+				if self.imu.yaw > (self.__turn_start_yaw + 3.0) or self.imu.yaw < (self.__turn_start_yaw - 3.0):
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	

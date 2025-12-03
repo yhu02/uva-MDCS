@@ -51,7 +51,7 @@
               <vertices xsi:type="sgraph:State" xmi:id="_lKxGkM4nEfCibLM5nbHmTw" specification="entry / &#xD;&#xA;grid.update = false" name="DecideDirection" incomingTransitions="_ruOnkM6rEfCDQcoECy4uhw _sPgIoM6rEfCDQcoECy4uhw">
                 <outgoingTransitions xmi:id="_lGOR4M40EfCTW5L3smoo6A" specification="" target="_fgzhgM40EfCTW5L3smoo6A"/>
               </vertices>
-              <vertices xsi:type="sgraph:State" xmi:id="_nYW_gM4nEfCibLM5nbHmTw" specification="entry /&#xD;&#xA;    // Save starting position for this move&#xD;&#xA;    cellStartX = odom.x;&#xD;&#xA;    cellStartY = odom.y;&#xD;&#xA;&#xD;&#xA;    // Drive forward at base speed&#xD;&#xA;    cmdRot   = 0.0;&#xD;&#xA;    cmdSpeed = userVar.baseSpeed&#xD;&#xA;    &#xD;&#xA;   exit / cmdSpeed = 0.0;&#xD;&#xA;cmdRot   = 0.0;&#xD;&#xA;grid.row = (grid.orientation == 0) ? grid.row - 1 : (grid.orientation == 2 ? grid.row + 1 : grid.row);&#xD;&#xA;&#xD;&#xA;grid.column = (grid.orientation == 1) ? grid.column + 1 : (grid.orientation == 3 ? grid.column - 1 : grid.column)" name="MoveToNextCell" incomingTransitions="_8nbqsM46EfCZO51tC_aMQw _k_VQoM49EfCGn-gnJkkTqQ _IFrvUM4-EfCGn-gnJkkTqQ">
+              <vertices xsi:type="sgraph:State" xmi:id="_nYW_gM4nEfCibLM5nbHmTw" specification="entry /&#xD;&#xA;    // Save starting position for this move&#xD;&#xA;    cellStartX = odom.x;&#xD;&#xA;    cellStartY = odom.y;&#xD;&#xA;&#xD;&#xA;    // Drive forward at base speed&#xD;&#xA;    cmdRot   = 0.0;&#xD;&#xA;    cmdSpeed = userVar.baseSpeed&#xD;&#xA;    &#xD;&#xA;   exit / cmdSpeed = 0.0;&#xD;&#xA;cmdRot   = 0.0;&#xD;&#xA;grid.row = (grid.orientation == 0) ? grid.row - 1 : (grid.orientation == 2 ? grid.row + 1 : grid.row);&#xD;&#xA;&#xD;&#xA;grid.column = (grid.orientation == 1) ? grid.column + 1 : (grid.orientation == 3 ? grid.column - 1 : grid.column)" name="MoveToNextCell" incomingTransitions="_8nbqsM46EfCZO51tC_aMQw _k_VQoM49EfCGn-gnJkkTqQ _IFrvUM4-EfCGn-gnJkkTqQ _J9ywANB5EfCuzpZHd8EwyA">
                 <outgoingTransitions xmi:id="_0_JRANBmEfCvXJMPQ895cA" specification="[laserDistance.dFrontMin &lt; distFree * 0.8]" target="_g1S7IM4nEfCibLM5nbHmTw"/>
                 <outgoingTransitions xmi:id="_ORz6YM4-EfCGn-gnJkkTqQ" specification="[&#xD;&#xA;    (grid.orientation == 0 &amp;&amp;&#xD;&#xA;     (odom.y >= cellStartY + grid.gridSize * 0.9 ||&#xD;&#xA;      odom.y &lt;= cellStartY - grid.gridSize * 0.9))&#xD;&#xA; ||&#xD;&#xA;    (grid.orientation == 2 &amp;&amp;&#xD;&#xA;     (odom.y >= cellStartY + grid.gridSize * 0.9 ||&#xD;&#xA;      odom.y &lt;= cellStartY - grid.gridSize * 0.9))&#xD;&#xA; ||&#xD;&#xA;    (grid.orientation == 1 &amp;&amp;&#xD;&#xA;     (odom.x >= cellStartX + grid.gridSize * 0.9 ||&#xD;&#xA;      odom.x &lt;= cellStartX - grid.gridSize * 0.9))&#xD;&#xA; ||&#xD;&#xA;    (grid.orientation == 3 &amp;&amp;&#xD;&#xA;     (odom.x >= cellStartX + grid.gridSize * 0.9 ||&#xD;&#xA;      odom.x &lt;= cellStartX - grid.gridSize * 0.9))&#xD;&#xA;]&#xD;&#xA;" target="_g1S7IM4nEfCibLM5nbHmTw"/>
               </vertices>
@@ -64,7 +64,9 @@
               <vertices xsi:type="sgraph:State" xmi:id="_GjKm_M4uEfCTW5L3smoo6A" specification="    entry /&#xD;&#xA;        turnStartYaw = imu.yaw;&#xD;&#xA;        cmdSpeed = 0.0;&#xD;&#xA;        cmdRot   = -userVar.baseRotation // negative = turning right&#xD;&#xA;        exit / cmdRot = 0.0; grid.orientation = grid.orientation == 3 ? 0 : grid.orientation + 1" name="TurnRight" incomingTransitions="_YnK-8M4uEfCTW5L3smoo6A">
                 <outgoingTransitions xmi:id="_k_VQoM49EfCGn-gnJkkTqQ" specification="always [imu.yaw &lt; turnStartYaw - 1.57]" target="_nYW_gM4nEfCibLM5nbHmTw"/>
               </vertices>
-              <vertices xsi:type="sgraph:State" xmi:id="_G_5mTc4uEfCTW5L3smoo6A" name="TurnAround" incomingTransitions="_t5eQMM40EfCTW5L3smoo6A"/>
+              <vertices xsi:type="sgraph:State" xmi:id="_G_5mTc4uEfCTW5L3smoo6A" specification="entry /&#xD;&#xA;    turnStartYaw = imu.yaw;&#xD;&#xA;    cmdSpeed = 0.0;&#xD;&#xA;    cmdRot = userVar.baseRotation&#xD;&#xA; exit / &#xD;&#xA;    cmdRot = 0.0; &#xD;&#xA;    grid.orientation = (grid.orientation &lt; 2) ? grid.orientation + 2 : grid.orientation - 2" name="TurnAround" incomingTransitions="_t5eQMM40EfCTW5L3smoo6A">
+                <outgoingTransitions xmi:id="_J9ywANB5EfCuzpZHd8EwyA" specification="[imu.yaw > turnStartYaw + 3.0 || imu.yaw &lt; turnStartYaw - 3.0]" target="_nYW_gM4nEfCibLM5nbHmTw"/>
+              </vertices>
               <vertices xsi:type="sgraph:State" xmi:id="_Ha3D_M4uEfCTW5L3smoo6A" specification="entry /&#xD;&#xA;    cmdSpeed = userVar.baseSpeed;&#xD;&#xA;    cmdRot   = 0.0&#xD;&#xA;" name="GoStraight" incomingTransitions="_VAHYsM4uEfCTW5L3smoo6A">
                 <outgoingTransitions xmi:id="_IFrvUM4-EfCGn-gnJkkTqQ" specification="" target="_nYW_gM4nEfCibLM5nbHmTw"/>
               </vertices>
@@ -1050,6 +1052,17 @@
       <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_0_UQItBmEfCvXJMPQ895cA" points="[260, -78, 2548, 218]$[260, -276, 2548, 20]$[-2244, -276, 44, 20]"/>
       <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_0_YhkNBmEfCvXJMPQ895cA" id="(0.1251798561151079,0.14606741573033707)"/>
       <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_0_YhkdBmEfCvXJMPQ895cA" id="(0.9299363057324841,0.3068181818181818)"/>
+    </edges>
+    <edges xmi:id="_J92aYNB5EfCuzpZHd8EwyA" type="Transition" element="_J9ywANB5EfCuzpZHd8EwyA" source="_nIR-sc42EfCm_etZwHSrTg" target="_nIR-ec42EfCm_etZwHSrTg">
+      <children xsi:type="notation:DecorationNode" xmi:id="_J93BcNB5EfCuzpZHd8EwyA" type="TransitionExpression">
+        <styles xsi:type="notation:ShapeStyle" xmi:id="_J93BcdB5EfCuzpZHd8EwyA"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_J93BctB5EfCuzpZHd8EwyA" x="68" y="28"/>
+      </children>
+      <styles xsi:type="notation:ConnectorStyle" xmi:id="_J92aYdB5EfCuzpZHd8EwyA" routing="Rectilinear" lineColor="4210752"/>
+      <styles xsi:type="notation:FontStyle" xmi:id="_J92aY9B5EfCuzpZHd8EwyA" fontName="Verdana"/>
+      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_J92aYtB5EfCuzpZHd8EwyA" points="[9, -3, -391, 0]$[394, 2, -6, 5]"/>
+      <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_J942oNB5EfCuzpZHd8EwyA" id="(0.831858407079646,0.48936170212765956)"/>
+      <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_J942odB5EfCuzpZHd8EwyA" id="(0.09064748201438849,0.9625468164794008)"/>
     </edges>
   </notation:Diagram>
 </xmi:XMI>
