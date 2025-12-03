@@ -327,6 +327,9 @@ class Model:
 		self.__kp = None
 		self.__too_close_threshold = None
 		self.__too_close = None
+		self.__front_slow_threshold = None
+		self.__emergency_stop_threshold = None
+		self.__emergency_recover_threshold = None
 		self.calibration_done = None
 		
 		# enumeration of all states:
@@ -367,6 +370,9 @@ class Model:
 		self.__kp = 0.5
 		self.__too_close_threshold = 0.1
 		self.__too_close = False
+		self.__front_slow_threshold = 0.3
+		self.__emergency_stop_threshold = 0.18
+		self.__emergency_recover_threshold = 0.22
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
@@ -1589,7 +1595,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 2:
-				if self.laser_distance.dfront_min < 0.18:
+				if self.laser_distance.dfront_min < self.__emergency_stop_threshold:
 					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive()
 					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop_default()
 					self.__turtle_bot_turtle_bot_react(0)
@@ -1604,12 +1610,10 @@ class Model:
 				#then execute local reactions.
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
-				self.__v = ((self.__v * 0.5) if (self.laser_distance.dfront_min < 0.3) else self.__v) if (self.__v > 0.0) else self.__v
-				self.__too_close_threshold = 0.25
+				self.__v = ((self.__v * 0.5) if (self.laser_distance.dfront_min < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
 				self.__too_close = (self.laser_distance.dleft_min < self.__too_close_threshold) or (self.laser_distance.dright_min < self.__too_close_threshold)
 				self.__v = 0.0 if (self.__too_close and self.__v > 0.0) else self.__v
 				self.__distance_error = (self.laser_distance.dleft_min - self.laser_distance.dright_min)
-				self.__kp = 0.5
 				self.__w = (self.__w - (self.__kp * self.__distance_error))
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
@@ -1628,7 +1632,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 2:
-				if self.laser_distance.dfront_min > 0.22 and (self.__cmd_speed != 0.0 or self.__cmd_rot != 0.0):
+				if self.laser_distance.dfront_min > self.__emergency_recover_threshold and (self.__cmd_speed != 0.0 or self.__cmd_rot != 0.0):
 					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
 					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_drive_default()
 					self.__turtle_bot_turtle_bot_react(0)
