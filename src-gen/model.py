@@ -334,6 +334,12 @@ class Model:
 		self.__adaptive_gain_multiplier = None
 		self.__alignment_threshold = None
 		self.__realign_slow_factor = None
+		self.__target_yaw = None
+		self.__yaw_error = None
+		self.__is_north_south = None
+		self.__wall_error = None
+		self.__wall_correction_active = None
+		self.__is_misaligned = None
 		self.calibration_done = None
 		
 		# enumeration of all states:
@@ -381,6 +387,12 @@ class Model:
 		self.__adaptive_gain_multiplier = 2.0
 		self.__alignment_threshold = 0.05
 		self.__realign_slow_factor = 0.5
+		self.__target_yaw = 0.0
+		self.__yaw_error = 0.0
+		self.__is_north_south = False
+		self.__wall_error = 0.0
+		self.__wall_correction_active = False
+		self.__is_misaligned = False
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
@@ -1618,12 +1630,20 @@ class Model:
 				#then execute local reactions.
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
-				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_min < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
-				self.__too_close = (self.laser_distance.dleft_min < self.__too_close_threshold) or (self.laser_distance.dright_min < self.__too_close_threshold)
+				self.__target_yaw = 0.0 if (self.grid.orientation == 0) else (90.0 if (self.grid.orientation == 1) else (180.0 if (self.grid.orientation == 2) else -(90.0)))
+				self.__yaw_error = (self.__target_yaw - self.imu.yaw)
+				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
+				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
+				self.__is_north_south = (self.grid.orientation == 0 or self.grid.orientation == 2)
+				self.__wall_error = ((self.laser_distance.dleft_mean - self.laser_distance.dright_mean)) if self.__is_north_south else ((self.laser_distance.dback_mean - self.laser_distance.dfront_mean))
+				self.__w = (self.__w + ((self.__kp * self.__yaw_error) / 90.0))
+				self.__wall_correction_active = (self.laser_distance.dleft_mean < 1.0 and self.laser_distance.dright_mean < 1.0) if self.__is_north_south else (self.laser_distance.dfront_mean < 1.0 and self.laser_distance.dback_mean < 1.0)
+				self.__w = ((self.__w - ((self.__kp * self.__wall_error) * 0.5))) if self.__wall_correction_active else self.__w
+				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_mean < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
+				self.__too_close = (self.laser_distance.dleft_mean < self.__too_close_threshold) or (self.laser_distance.dright_mean < self.__too_close_threshold) or (self.laser_distance.dfront_mean < self.__too_close_threshold) or (self.laser_distance.dback_mean < self.__too_close_threshold)
 				self.__v = 0.0 if (self.__too_close and self.__v > 0.0) else self.__v
-				self.__distance_error = (self.laser_distance.dleft_min - self.laser_distance.dright_min)
-				self.__w = (self.__w - ((self.__kp * self.__distance_error) * ((1.0 + (self.__adaptive_gain_multiplier * ((((self.__too_close_threshold - self.laser_distance.dleft_min)) / self.__too_close_threshold) if (self.laser_distance.dleft_min < self.__too_close_threshold) else ((((self.__too_close_threshold - self.laser_distance.dright_min)) / self.__too_close_threshold) if (self.laser_distance.dright_min < self.__too_close_threshold) else 0.0)))))))
-				self.__v = (self.__v * self.__realign_slow_factor) if (self.__v > 0.0 and (self.__distance_error > self.__alignment_threshold or self.__distance_error < -(self.__alignment_threshold))) else self.__v
+				self.__is_misaligned = (self.__yaw_error > self.__alignment_threshold or self.__yaw_error < -(self.__alignment_threshold))
+				self.__v = (self.__v * self.__realign_slow_factor) if (self.__v > 0.0 and self.__is_misaligned) else self.__v
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
