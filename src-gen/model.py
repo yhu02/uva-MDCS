@@ -1697,6 +1697,7 @@ class Model:
 				self.__is_well_aligned = (self.__yaw_error > -(15.0) and self.__yaw_error < 15.0)
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
+				self.__is_north_south = (self.grid.orientation == 0 or self.grid.orientation == 2)
 				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_mean < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
 				self.__too_close_in_direction = (self.laser_distance.dleft_mean < self.__too_close_threshold or self.laser_distance.dright_mean < self.__too_close_threshold) if self.__is_north_south else (self.laser_distance.dfront_mean < self.__too_close_threshold or self.laser_distance.dback_mean < self.__too_close_threshold)
 				self.__v = 0.0 if (self.__too_close_in_direction and self.__v > 0.0) else self.__v
