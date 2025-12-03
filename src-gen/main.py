@@ -203,7 +203,16 @@ class SCTConnect():
                 # Print top walls
                 for col in range(self.maze.grid_cols):
                     cell = self.maze.grid[row][col]
-                    if cell.visited and cell.walls[0] == 1:  # North wall
+                    # Check this cell's North wall OR the cell above's South wall
+                    has_wall = False
+                    if cell.visited and cell.walls[0] == 1:
+                        has_wall = True
+                    if row > 0:
+                        cell_above = self.maze.grid[row-1][col]
+                        if cell_above.visited and cell_above.walls[2] == 1:
+                            has_wall = True
+                    
+                    if has_wall:
                         print("+---", end="")
                     else:
                         print("+   ", end="")
@@ -212,7 +221,16 @@ class SCTConnect():
                 # Print left walls and cell content
                 for col in range(self.maze.grid_cols):
                     cell = self.maze.grid[row][col]
-                    if cell.visited and cell.walls[3] == 1:  # West wall
+                    # Check this cell's West wall OR the cell to the left's East wall
+                    has_wall = False
+                    if cell.visited and cell.walls[3] == 1:
+                        has_wall = True
+                    if col > 0:
+                        cell_left = self.maze.grid[row][col-1]
+                        if cell_left.visited and cell_left.walls[1] == 1:
+                            has_wall = True
+                    
+                    if has_wall:
                         print("|", end="")
                     else:
                         print(" ", end="")
@@ -225,9 +243,9 @@ class SCTConnect():
                     else:
                         print("   ", end="")
                 
-                # Print rightmost wall
+                # Print rightmost wall (check last column's East wall)
                 cell = self.maze.grid[row][self.maze.grid_cols - 1]
-                if cell.visited and cell.walls[1] == 1:  # East wall
+                if cell.visited and cell.walls[1] == 1:
                     print("|")
                 else:
                     print(" ")
@@ -235,7 +253,7 @@ class SCTConnect():
             # Print bottom walls
             for col in range(self.maze.grid_cols):
                 cell = self.maze.grid[self.maze.grid_rows - 1][col]
-                if cell.visited and cell.walls[2] == 1:  # South wall
+                if cell.visited and cell.walls[2] == 1:
                     print("+---", end="")
                 else:
                     print("+   ", end="")
