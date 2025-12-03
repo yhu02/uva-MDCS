@@ -8,16 +8,12 @@ from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
-TURTLEBOT3_MODEL = os.environ.get('TURTLEBOT3_MODEL', 'burger')
+TURTLEBOT3_MODEL = os.environ['TURTLEBOT3_MODEL']
 
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time', default='True')
-    
-    # Get the absolute path to the world file
-    world_file_name = TURTLEBOT3_MODEL + '.world'
-    world_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), world_file_name)
-    
+    world = TURTLEBOT3_MODEL + '.model'
     launch_file_dir = os.path.join(get_package_share_directory('turtlebot3_gazebo'), 'launch')
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
 
@@ -26,7 +22,7 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(
                 os.path.join(pkg_gazebo_ros, 'launch', 'gzserver.launch.py')
             ),
-            launch_arguments={'world': world_path}.items(),
+            launch_arguments={'world': world}.items(),
         ),
 
         IncludeLaunchDescription(
