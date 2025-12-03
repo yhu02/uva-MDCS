@@ -1670,8 +1670,8 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				self.grid.row = (int((((((self.odom.y - self.start_pos.zero_y)) / self.grid.grid_size) + 0.5))))
-				self.grid.column = (int((((((self.odom.x - self.start_pos.zero_x)) / self.grid.grid_size) + 0.5))))
+				self.grid.row = (int(((((self.odom.y - self.start_pos.zero_y)) / self.grid.grid_size))))
+				self.grid.column = (int(((((self.odom.x - self.start_pos.zero_x)) / self.grid.grid_size))))
 				self.grid.orientation = 0 if (self.imu.yaw >= -(45.0) and self.imu.yaw < 45.0) else (1 if (self.imu.yaw >= 45.0 and self.imu.yaw < 135.0) else (2 if (self.imu.yaw >= 135.0 or self.imu.yaw < -(135.0)) else 3))
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
