@@ -336,9 +336,12 @@ class Model:
 		self.__realign_slow_factor = None
 		self.__target_yaw = None
 		self.__yaw_error = None
+		self.__yaw_alignment_gain = None
+		self.__is_well_aligned = None
 		self.__is_north_south = None
 		self.__wall_error = None
-		self.__wall_correction_active = None
+		self.__walls_visible = None
+		self.__too_close_in_direction = None
 		self.__is_misaligned = None
 		self.calibration_done = None
 		
@@ -389,9 +392,12 @@ class Model:
 		self.__realign_slow_factor = 0.5
 		self.__target_yaw = 0.0
 		self.__yaw_error = 0.0
+		self.__yaw_alignment_gain = 0.02
+		self.__is_well_aligned = False
 		self.__is_north_south = False
 		self.__wall_error = 0.0
-		self.__wall_correction_active = False
+		self.__walls_visible = False
+		self.__too_close_in_direction = False
 		self.__is_misaligned = False
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
@@ -1634,15 +1640,17 @@ class Model:
 				self.__yaw_error = (self.__target_yaw - self.imu.yaw)
 				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
+				self.__yaw_alignment_gain = 0.02
+				self.__w = (self.__w + (self.__yaw_alignment_gain * self.__yaw_error))
+				self.__is_well_aligned = (self.__yaw_error > -(10.0) and self.__yaw_error < 10.0)
 				self.__is_north_south = (self.grid.orientation == 0 or self.grid.orientation == 2)
 				self.__wall_error = ((self.laser_distance.dleft_mean - self.laser_distance.dright_mean)) if self.__is_north_south else ((self.laser_distance.dback_mean - self.laser_distance.dfront_mean))
-				self.__w = (self.__w + ((self.__kp * self.__yaw_error) / 90.0))
-				self.__wall_correction_active = (self.laser_distance.dleft_mean < 1.0 and self.laser_distance.dright_mean < 1.0) if self.__is_north_south else (self.laser_distance.dfront_mean < 1.0 and self.laser_distance.dback_mean < 1.0)
-				self.__w = ((self.__w - ((self.__kp * self.__wall_error) * 0.5))) if self.__wall_correction_active else self.__w
+				self.__walls_visible = (self.laser_distance.dleft_mean < 0.8 and self.laser_distance.dright_mean < 0.8) if self.__is_north_south else (self.laser_distance.dfront_mean < 0.8 and self.laser_distance.dback_mean < 0.8)
+				self.__w = ((self.__w - (0.3 * self.__wall_error))) if (self.__is_well_aligned and self.__walls_visible and self.__v > 0.0) else self.__w
 				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_mean < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
-				self.__too_close = (self.laser_distance.dleft_mean < self.__too_close_threshold) or (self.laser_distance.dright_mean < self.__too_close_threshold) or (self.laser_distance.dfront_mean < self.__too_close_threshold) or (self.laser_distance.dback_mean < self.__too_close_threshold)
-				self.__v = 0.0 if (self.__too_close and self.__v > 0.0) else self.__v
-				self.__is_misaligned = (self.__yaw_error > self.__alignment_threshold or self.__yaw_error < -(self.__alignment_threshold))
+				self.__too_close_in_direction = (self.laser_distance.dleft_mean < self.__too_close_threshold or self.laser_distance.dright_mean < self.__too_close_threshold) if self.__is_north_south else (self.laser_distance.dfront_mean < self.__too_close_threshold or self.laser_distance.dback_mean < self.__too_close_threshold)
+				self.__v = 0.0 if (self.__too_close_in_direction and self.__v > 0.0) else self.__v
+				self.__is_misaligned = (self.__yaw_error > 15.0 or self.__yaw_error < -(15.0))
 				self.__v = (self.__v * self.__realign_slow_factor) if (self.__v > 0.0 and self.__is_misaligned) else self.__v
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
