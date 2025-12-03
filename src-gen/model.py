@@ -34,9 +34,9 @@ class Model:
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore,
 			turtle_bot_turtle_bot_autonomous_logic_finished,
 			turtle_bot_turtle_bot_autonomous_logic_idle,
-			turtle_bot_turtle_bot_drive_and_safety_stopped,
-			turtle_bot_turtle_bot_drive_and_safety_drive,
-			turtle_bot_turtle_bot_drive_and_safety_emergency_stop,
+			turtle_bot_turtle_bot_zstopped,
+			turtle_bot_turtle_bot_zdrive,
+			turtle_bot_turtle_bot_zemergency_stop,
 			null_state
 		) = range(24)
 	
@@ -330,6 +330,10 @@ class Model:
 		self.__front_slow_threshold = None
 		self.__emergency_stop_threshold = None
 		self.__emergency_recover_threshold = None
+		self.__front_slow_factor = None
+		self.__adaptive_gain_multiplier = None
+		self.__alignment_threshold = None
+		self.__realign_slow_factor = None
 		self.calibration_done = None
 		
 		# enumeration of all states:
@@ -373,6 +377,10 @@ class Model:
 		self.__front_slow_threshold = 0.3
 		self.__emergency_stop_threshold = 0.18
 		self.__emergency_recover_threshold = 0.22
+		self.__front_slow_factor = 0.5
+		self.__adaptive_gain_multiplier = 2.0
+		self.__alignment_threshold = 0.05
+		self.__realign_slow_factor = 0.5
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
@@ -478,7 +486,7 @@ class Model:
 		s = state
 		if s == self.__State.turtle_bot_turtle_bot:
 			return (self.__state_vector[0] >= self.__State.turtle_bot_turtle_bot)\
-				and (self.__state_vector[0] <= self.__State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop)
+				and (self.__state_vector[0] <= self.__State.turtle_bot_turtle_bot_zemergency_stop)
 		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_init:
 			return self.__state_vector[0] == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_init
 		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
@@ -519,12 +527,12 @@ class Model:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_finished
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle
-		if s == self.__State.turtle_bot_turtle_bot_drive_and_safety_stopped:
-			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_drive_and_safety_stopped
-		if s == self.__State.turtle_bot_turtle_bot_drive_and_safety_drive:
-			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_drive_and_safety_drive
-		if s == self.__State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop:
-			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop
+		if s == self.__State.turtle_bot_turtle_bot_zstopped:
+			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_zstopped
+		if s == self.__State.turtle_bot_turtle_bot_zdrive:
+			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_zdrive
+		if s == self.__State.turtle_bot_turtle_bot_zemergency_stop:
+			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_zemergency_stop
 		return False
 		
 	def time_elapsed(self, event_id):
@@ -693,14 +701,14 @@ class Model:
 		self.output.rotation = 0
 		self.output.finish = 1
 		
-	def __entry_action_turtle_bot_turtle_bot_drive_and_safety_stopped(self):
+	def __entry_action_turtle_bot_turtle_bot_z_stopped(self):
 		"""Entry action for state 'Stopped'..
 		"""
 		#Entry action for state 'Stopped'.
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		
-	def __entry_action_turtle_bot_turtle_bot_drive_and_safety_emergency_stop(self):
+	def __entry_action_turtle_bot_turtle_bot_z_emergency_stop(self):
 		"""Entry action for state 'EmergencyStop'..
 		"""
 		#Entry action for state 'EmergencyStop'.
@@ -742,7 +750,7 @@ class Model:
 		#'default' enter sequence for state TurtleBot
 		self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_default()
 		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_default()
-		self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_z_default()
 		
 	def __enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_init_default(self):
 		"""'default' enter sequence for state Init.
@@ -898,29 +906,29 @@ class Model:
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped_default(self):
+	def __enter_sequence_turtle_bot_turtle_bot_z_stopped_default(self):
 		"""'default' enter sequence for state Stopped.
 		"""
 		#'default' enter sequence for state Stopped
-		self.__entry_action_turtle_bot_turtle_bot_drive_and_safety_stopped()
-		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_drive_and_safety_stopped
+		self.__entry_action_turtle_bot_turtle_bot_z_stopped()
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_zstopped
 		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_turtle_bot_turtle_bot_drive_and_safety_drive_default(self):
+	def __enter_sequence_turtle_bot_turtle_bot_z_drive_default(self):
 		"""'default' enter sequence for state Drive.
 		"""
 		#'default' enter sequence for state Drive
-		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_drive_and_safety_drive
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_zdrive
 		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop_default(self):
+	def __enter_sequence_turtle_bot_turtle_bot_z_emergency_stop_default(self):
 		"""'default' enter sequence for state EmergencyStop.
 		"""
 		#'default' enter sequence for state EmergencyStop
-		self.__entry_action_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
-		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop
+		self.__entry_action_turtle_bot_turtle_bot_z_emergency_stop()
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_zemergency_stop
 		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
@@ -954,11 +962,11 @@ class Model:
 		#'default' enter sequence for region null
 		self.__react_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0__entry_default()
 		
-	def __enter_sequence_turtle_bot_turtle_bot_drive_and_safety_default(self):
-		"""'default' enter sequence for region DriveAndSafety.
+	def __enter_sequence_turtle_bot_turtle_bot_z_default(self):
+		"""'default' enter sequence for region z.
 		"""
-		#'default' enter sequence for region DriveAndSafety
-		self.__react_turtle_bot_turtle_bot_drive_and_safety__entry_default()
+		#'default' enter sequence for region z
+		self.__react_turtle_bot_turtle_bot_z__entry_default()
 		
 	def __exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_init(self):
 		"""Default exit sequence for state Init.
@@ -1099,21 +1107,21 @@ class Model:
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 1
 		
-	def __exit_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped(self):
+	def __exit_sequence_turtle_bot_turtle_bot_z_stopped(self):
 		"""Default exit sequence for state Stopped.
 		"""
 		#Default exit sequence for state Stopped
 		self.__state_vector[2] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 2
 		
-	def __exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive(self):
+	def __exit_sequence_turtle_bot_turtle_bot_z_drive(self):
 		"""Default exit sequence for state Drive.
 		"""
 		#Default exit sequence for state Drive
 		self.__state_vector[2] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 2
 		
-	def __exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop(self):
+	def __exit_sequence_turtle_bot_turtle_bot_z_emergency_stop(self):
 		"""Default exit sequence for state EmergencyStop.
 		"""
 		#Default exit sequence for state EmergencyStop
@@ -1165,12 +1173,12 @@ class Model:
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle()
 		state = self.__state_vector[2]
-		if state == self.State.turtle_bot_turtle_bot_drive_and_safety_stopped:
-			self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped()
-		elif state == self.State.turtle_bot_turtle_bot_drive_and_safety_drive:
-			self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive()
-		elif state == self.State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop:
-			self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
+		if state == self.State.turtle_bot_turtle_bot_zstopped:
+			self.__exit_sequence_turtle_bot_turtle_bot_z_stopped()
+		elif state == self.State.turtle_bot_turtle_bot_zdrive:
+			self.__exit_sequence_turtle_bot_turtle_bot_z_drive()
+		elif state == self.State.turtle_bot_turtle_bot_zemergency_stop:
+			self.__exit_sequence_turtle_bot_turtle_bot_z_emergency_stop()
 		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0(self):
 		"""Default exit sequence for region null.
@@ -1232,11 +1240,11 @@ class Model:
 		#Default react sequence for initial entry 
 		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default()
 		
-	def __react_turtle_bot_turtle_bot_drive_and_safety__entry_default(self):
+	def __react_turtle_bot_turtle_bot_z__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_z_stopped_default()
 		
 	def __react_turtle_bot__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1569,16 +1577,16 @@ class Model:
 		return transitioned_after
 	
 	
-	def __turtle_bot_turtle_bot_drive_and_safety_stopped_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_drive_and_safety_stopped_react function.
+	def __turtle_bot_turtle_bot_z_stopped_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_z_stopped_react function.
 		"""
 		#The reactions of state Stopped.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 2:
 				if self.__cmd_speed != 0.0 or self.__cmd_rot != 0.0:
-					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped()
-					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_drive_default()
+					self.__exit_sequence_turtle_bot_turtle_bot_z_stopped()
+					self.__enter_sequence_turtle_bot_turtle_bot_z_drive_default()
 					self.__turtle_bot_turtle_bot_react(0)
 					transitioned_after = 2
 			#If no transition was taken
@@ -1588,21 +1596,21 @@ class Model:
 		return transitioned_after
 	
 	
-	def __turtle_bot_turtle_bot_drive_and_safety_drive_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_drive_and_safety_drive_react function.
+	def __turtle_bot_turtle_bot_z_drive_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_z_drive_react function.
 		"""
 		#The reactions of state Drive.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 2:
 				if self.laser_distance.dfront_min < self.__emergency_stop_threshold:
-					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive()
-					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop_default()
+					self.__exit_sequence_turtle_bot_turtle_bot_z_drive()
+					self.__enter_sequence_turtle_bot_turtle_bot_z_emergency_stop_default()
 					self.__turtle_bot_turtle_bot_react(0)
 					transitioned_after = 2
 				elif self.__cmd_speed == 0.0 and self.__cmd_rot == 0.0:
-					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive()
-					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped_default()
+					self.__exit_sequence_turtle_bot_turtle_bot_z_drive()
+					self.__enter_sequence_turtle_bot_turtle_bot_z_stopped_default()
 					self.__turtle_bot_turtle_bot_react(0)
 					transitioned_after = 2
 			#If no transition was taken
@@ -1610,11 +1618,12 @@ class Model:
 				#then execute local reactions.
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
-				self.__v = ((self.__v * 0.5) if (self.laser_distance.dfront_min < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
+				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_min < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
 				self.__too_close = (self.laser_distance.dleft_min < self.__too_close_threshold) or (self.laser_distance.dright_min < self.__too_close_threshold)
 				self.__v = 0.0 if (self.__too_close and self.__v > 0.0) else self.__v
 				self.__distance_error = (self.laser_distance.dleft_min - self.laser_distance.dright_min)
-				self.__w = (self.__w - ((self.__kp * self.__distance_error) * ((1.0 + (2.0 * ((((self.__too_close_threshold - self.laser_distance.dleft_min)) / self.__too_close_threshold) if (self.laser_distance.dleft_min < self.__too_close_threshold) else ((((self.__too_close_threshold - self.laser_distance.dright_min)) / self.__too_close_threshold) if (self.laser_distance.dright_min < self.__too_close_threshold) else 0.0)))))))
+				self.__w = (self.__w - ((self.__kp * self.__distance_error) * ((1.0 + (self.__adaptive_gain_multiplier * ((((self.__too_close_threshold - self.laser_distance.dleft_min)) / self.__too_close_threshold) if (self.laser_distance.dleft_min < self.__too_close_threshold) else ((((self.__too_close_threshold - self.laser_distance.dright_min)) / self.__too_close_threshold) if (self.laser_distance.dright_min < self.__too_close_threshold) else 0.0)))))))
+				self.__v = (self.__v * self.__realign_slow_factor) if (self.__v > 0.0 and (self.__distance_error > self.__alignment_threshold or self.__distance_error < -(self.__alignment_threshold))) else self.__v
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
@@ -1625,21 +1634,21 @@ class Model:
 		return transitioned_after
 	
 	
-	def __turtle_bot_turtle_bot_drive_and_safety_emergency_stop_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_drive_and_safety_emergency_stop_react function.
+	def __turtle_bot_turtle_bot_z_emergency_stop_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_z_emergency_stop_react function.
 		"""
 		#The reactions of state EmergencyStop.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 2:
 				if self.laser_distance.dfront_min > self.__emergency_recover_threshold and (self.__cmd_speed != 0.0 or self.__cmd_rot != 0.0):
-					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
-					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_drive_default()
+					self.__exit_sequence_turtle_bot_turtle_bot_z_emergency_stop()
+					self.__enter_sequence_turtle_bot_turtle_bot_z_drive_default()
 					self.__turtle_bot_turtle_bot_react(0)
 					transitioned_after = 2
 				elif self.laser_distance.dfront_min > 0.22 and self.__cmd_speed == 0.0 and self.__cmd_rot == 0.0:
-					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
-					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped_default()
+					self.__exit_sequence_turtle_bot_turtle_bot_z_emergency_stop()
+					self.__enter_sequence_turtle_bot_turtle_bot_z_stopped_default()
 					self.__turtle_bot_turtle_bot_react(0)
 					transitioned_after = 2
 			#If no transition was taken
@@ -1711,12 +1720,12 @@ class Model:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_idle_react(transitioned)
 		if self.__state_conf_vector_position < 2:
 			state = self.__state_vector[2]
-			if state == self.State.turtle_bot_turtle_bot_drive_and_safety_stopped:
-				self.__turtle_bot_turtle_bot_drive_and_safety_stopped_react(transitioned)
-			elif state == self.State.turtle_bot_turtle_bot_drive_and_safety_drive:
-				self.__turtle_bot_turtle_bot_drive_and_safety_drive_react(transitioned)
-			elif state == self.State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop:
-				self.__turtle_bot_turtle_bot_drive_and_safety_emergency_stop_react(transitioned)
+			if state == self.State.turtle_bot_turtle_bot_zstopped:
+				self.__turtle_bot_turtle_bot_z_stopped_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_zdrive:
+				self.__turtle_bot_turtle_bot_z_drive_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_zemergency_stop:
+				self.__turtle_bot_turtle_bot_z_emergency_stop_react(transitioned)
 	
 	
 	def run_cycle(self):
