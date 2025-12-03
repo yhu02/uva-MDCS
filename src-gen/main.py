@@ -187,6 +187,16 @@ class SCTConnect():
                     print(f' {wall_chars[3]}@{wall_chars[1]} ')
                     print(f'  {wall_chars[2]}  ')
             
+            # Print all stored walls for explored cells
+            print("\n--- Complete Wall Map ---")
+            for row in range(self.maze.grid_rows):
+                for col in range(self.maze.grid_cols):
+                    cell = self.maze.grid[row][col]
+                    if cell.visited:
+                        walls_str = f"[{','.join(str(w) for w in cell.walls)}]"
+                        print(f"({row},{col}): {walls_str}  ", end="")
+                print()  # New line after each row
+            
             self._print_internal_variables()
 
         # Print the final values and finish
