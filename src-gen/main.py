@@ -197,6 +197,50 @@ class SCTConnect():
                         print(f"({row},{col}): {walls_str}  ", end="")
                 print()  # New line after each row
             
+            # Print ASCII art of complete maze
+            print("\n--- ASCII Maze Map ---")
+            for row in range(self.maze.grid_rows):
+                # Print top walls
+                for col in range(self.maze.grid_cols):
+                    cell = self.maze.grid[row][col]
+                    if cell.visited and cell.walls[0] == 1:  # North wall
+                        print("+---", end="")
+                    else:
+                        print("+   ", end="")
+                print("+")
+                
+                # Print left walls and cell content
+                for col in range(self.maze.grid_cols):
+                    cell = self.maze.grid[row][col]
+                    if cell.visited and cell.walls[3] == 1:  # West wall
+                        print("|", end="")
+                    else:
+                        print(" ", end="")
+                    
+                    # Cell content
+                    if row == self.sm.grid.row and col == self.sm.grid.column:
+                        print(" @ ", end="")
+                    elif cell.visited:
+                        print(" X ", end="")
+                    else:
+                        print("   ", end="")
+                
+                # Print rightmost wall
+                cell = self.maze.grid[row][self.maze.grid_cols - 1]
+                if cell.visited and cell.walls[1] == 1:  # East wall
+                    print("|")
+                else:
+                    print(" ")
+            
+            # Print bottom walls
+            for col in range(self.maze.grid_cols):
+                cell = self.maze.grid[self.maze.grid_rows - 1][col]
+                if cell.visited and cell.walls[2] == 1:  # South wall
+                    print("+---", end="")
+                else:
+                    print("+   ", end="")
+            print("+")
+            
             self._print_internal_variables()
 
         # Print the final values and finish
