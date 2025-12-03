@@ -651,8 +651,6 @@ class Model:
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction(self):
 		""".
 		"""
-		#Entry action for state 'DecideDirection'.
-		self.grid.update = False
 		self.__completed = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell(self):
