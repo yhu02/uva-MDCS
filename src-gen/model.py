@@ -309,6 +309,8 @@ class Model:
 		self.__cmd_rot = None
 		self.__cell_start_x = None
 		self.__cell_start_y = None
+		self.__cell_start_row = None
+		self.__cell_start_col = None
 		self.__start_row = None
 		self.__start_col = None
 		self.__exploring_done = None
@@ -361,6 +363,8 @@ class Model:
 		self.__cmd_rot = 0.0
 		self.__cell_start_x = 0.0
 		self.__cell_start_y = 0.0
+		self.__cell_start_row = 0
+		self.__cell_start_col = 0
 		self.__start_row = 0
 		self.__start_col = 0
 		self.__exploring_done = False
@@ -660,6 +664,8 @@ class Model:
 		#Entry action for state 'MoveToNextCell'.
 		self.__cell_start_x = self.odom.x
 		self.__cell_start_y = self.odom.y
+		self.__cell_start_row = self.grid.row
+		self.__cell_start_col = self.grid.column
 		self.__cmd_rot = 0.0
 		self.__cmd_speed = self.user_var.base_speed
 		
@@ -1479,7 +1485,7 @@ class Model:
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
-				elif (self.grid.orientation == 0 and (self.odom.y >= (self.__cell_start_y + (self.grid.grid_size * 0.9)) or self.odom.y <= (self.__cell_start_y - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 2 and (self.odom.y >= (self.__cell_start_y + (self.grid.grid_size * 0.9)) or self.odom.y <= (self.__cell_start_y - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 1 and (self.odom.x >= (self.__cell_start_x + (self.grid.grid_size * 0.9)) or self.odom.x <= (self.__cell_start_x - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 3 and (self.odom.x >= (self.__cell_start_x + (self.grid.grid_size * 0.9)) or self.odom.x <= (self.__cell_start_x - (self.grid.grid_size * 0.9)))):
+				elif self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
