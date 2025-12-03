@@ -554,6 +554,17 @@ class SCTConnect():
             if state_id != Model.State.null_state:
                 state_name = self.state_names.get(state_id, f"State_{state_id}")
                 print(f"Region {i}: {state_name}")
+                
+                # Add helpful hints for specific states
+                if state_id == Model.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
+                    print(f"           ⚠️  PRESS 's' KEY TO START CALIBRATION ⚠️")
+                elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_init:
+                    print(f"           💡 Press 'm' to switch to Manual mode")
+                elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
+                    print(f"           💡 Press 'm' to switch to Autonomous mode")
+                    print(f"           💡 Use w/a/s/d keys to move, x to stop")
+                elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
+                    print(f"           💡 Press 'm' to switch to Manual mode")
             else:
                 print(f"Region {i}: <inactive>")
     
