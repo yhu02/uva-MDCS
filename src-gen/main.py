@@ -550,11 +550,19 @@ class SCTConnect():
     def update_grid(self):
         self.sm.grid.update = False
         self.current_node = self.maze.grid[self.sm.grid.row][self.sm.grid.column]
+        
+        # Debug: Print what wall values are being stored
+        print(f"[DEBUG] update_grid() called at ({self.sm.grid.row},{self.sm.grid.column})")
+        print(f"[DEBUG] Orientation: {self.sm.grid.orientation}, Wall values: F={self.sm.grid.wall_front}, R={self.sm.grid.wall_right}, B={self.sm.grid.wall_back}, L={self.sm.grid.wall_left}")
+        
         self.current_node.walls[self.sm.grid.orientation] = self.sm.grid.wall_front
         self.current_node.walls[(self.sm.grid.orientation + 1) % 4] = self.sm.grid.wall_right
         self.current_node.walls[(self.sm.grid.orientation - 1) % 4] = self.sm.grid.wall_left
         self.current_node.walls[(self.sm.grid.orientation - 2) % 4] = self.sm.grid.wall_back
         self.current_node.visited = True
+        
+        print(f"[DEBUG] Stored walls array: {self.current_node.walls}")
+
 
     """
     Get state name mapping from Model.State enum
