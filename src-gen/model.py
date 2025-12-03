@@ -323,7 +323,6 @@ class Model:
 		self.__turn_start_yaw = None
 		self.__v = None
 		self.__w = None
-		self.__dist_free = None
 		self.__distance_error = None
 		self.__kp = None
 		self.__too_close_threshold = None
@@ -380,7 +379,6 @@ class Model:
 		self.__turn_start_yaw = 0.0
 		self.__v = 0.0
 		self.__w = 0.0
-		self.__dist_free = 0.0
 		self.__distance_error = 0.0
 		self.__kp = 0.5
 		self.__too_close_threshold = 0.2
