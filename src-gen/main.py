@@ -111,7 +111,8 @@ class SCTConnect():
 
             # Publish the current speed and rotation from SCT
             # print("Velocity: ", self.sm.output.speed, self.sm.output.rotation)
-            self.node.vel_publish(x=self.sm.output.speed, rz = self.sm.output.rotation)
+            # Ensure float type for ROS2 message
+            self.node.vel_publish(x=float(self.sm.output.speed), rz=float(self.sm.output.rotation))
 
             # Print info
             os.system('clear')

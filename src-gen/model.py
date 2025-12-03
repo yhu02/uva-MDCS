@@ -32,8 +32,8 @@ class Model:
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore,
-			turtle_bot_turtle_bot_autonomous_logic_finished,
 			turtle_bot_turtle_bot_autonomous_logic_idle,
+			turtle_bot_turtle_bot_autonomous_logic_finished,
 			turtle_bot_turtle_bot_zstopped,
 			turtle_bot_turtle_bot_zdrive,
 			turtle_bot_turtle_bot_zemergency_stop,
@@ -529,10 +529,10 @@ class Model:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore
-		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_finished:
-			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_finished
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_finished:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_finished
 		if s == self.__State.turtle_bot_turtle_bot_zstopped:
 			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_zstopped
 		if s == self.__State.turtle_bot_turtle_bot_zdrive:
@@ -711,8 +711,8 @@ class Model:
 		"""Entry action for state 'Finished'..
 		"""
 		#Entry action for state 'Finished'.
-		self.output.speed = 0
-		self.output.rotation = 0
+		self.output.speed = 0.0
+		self.output.rotation = 0.0
 		self.output.finish = 1
 		
 	def __entry_action_turtle_bot_turtle_bot_z_stopped(self):
@@ -904,20 +904,20 @@ class Model:
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_idle_default(self):
+		"""'default' enter sequence for state Idle.
+		"""
+		#'default' enter sequence for state Idle
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_idle
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
 	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_finished_default(self):
 		"""'default' enter sequence for state Finished.
 		"""
 		#'default' enter sequence for state Finished
 		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_finished()
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_finished
-		self.__state_conf_vector_position = 1
-		self.__state_conf_vector_changed = True
-		
-	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_idle_default(self):
-		"""'default' enter sequence for state Idle.
-		"""
-		#'default' enter sequence for state Idle
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_idle
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
@@ -1108,17 +1108,17 @@ class Model:
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
 		self.__state_conf_vector_position = 1
 		
-	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_finished(self):
-		"""Default exit sequence for state Finished.
-		"""
-		#Default exit sequence for state Finished
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
-		self.__state_conf_vector_position = 1
-		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle(self):
 		"""Default exit sequence for state Idle.
 		"""
 		#Default exit sequence for state Idle
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_finished(self):
+		"""Default exit sequence for state Finished.
+		"""
+		#Default exit sequence for state Finished
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 1
 		
@@ -1183,10 +1183,10 @@ class Model:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
-		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_finished:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_finished()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_finished:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_finished()
 		state = self.__state_vector[2]
 		if state == self.State.turtle_bot_turtle_bot_zstopped:
 			self.__exit_sequence_turtle_bot_turtle_bot_z_stopped()
@@ -1780,10 +1780,10 @@ class Model:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_react(transitioned)
-			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_finished:
-				pass
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_idle_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_finished:
+				pass
 		if self.__state_conf_vector_position < 2:
 			state = self.__state_vector[2]
 			if state == self.State.turtle_bot_turtle_bot_zstopped:
