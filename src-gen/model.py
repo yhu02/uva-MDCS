@@ -1671,7 +1671,7 @@ class Model:
 				self.__is_misaligned = (self.__yaw_error >= 15.0 or self.__yaw_error <= -(15.0))
 				self.__v = (self.__v * self.__realign_slow_factor) if (self.__v > 0.0 and self.__is_misaligned) else self.__v
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
-				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
+				self.__v = 0.0 if (self.__v < 0.0) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
 				self.__w = -(self.base_values.max_rotation) if (self.__w < -(self.base_values.max_rotation)) else self.__w
 				self.output.speed = self.__v
