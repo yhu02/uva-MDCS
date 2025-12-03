@@ -720,6 +720,11 @@ class SCTConnect():
         print(f"cmd_speed: {self.sm._Model__cmd_speed:.3f} m/s")
         print(f"cmd_rot: {self.sm._Model__cmd_rot:.3f} rad/s")
         print(f"Final output - v: {self.sm._Model__v:.3f} m/s, w: {self.sm._Model__w:.3f} rad/s")
+        
+        print("\\n--- Alignment Debug ---")
+        print(f"targetYaw: {self.sm._Model__target_yaw:.3f}°")
+        print(f"yawError: {self.sm._Model__yaw_error:.3f}°")
+        print(f"isWellAligned: {self.sm._Model__is_well_aligned}")
         self.sm.grid.visited = True
 
 """
