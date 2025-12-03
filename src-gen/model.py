@@ -726,13 +726,6 @@ class Model:
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		
-	def __entry_action_turtle_bot_turtle_bot_z_emergency_stop(self):
-		"""Entry action for state 'EmergencyStop'..
-		"""
-		#Entry action for state 'EmergencyStop'.
-		self.output.speed = 0.0
-		self.output.rotation = 0.0
-		
 	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Exit action for state 'SettingZero'..
 		"""
@@ -945,7 +938,6 @@ class Model:
 		"""'default' enter sequence for state EmergencyStop.
 		"""
 		#'default' enter sequence for state EmergencyStop
-		self.__entry_action_turtle_bot_turtle_bot_z_emergency_stop()
 		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_zemergency_stop
 		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
@@ -1305,6 +1297,32 @@ class Model:
 				if self.computer.m_press:
 					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
 					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous_default()
+					transitioned_after = 0
+				elif self.computer.w_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+					self.__cmd_speed = self.user_var.base_speed
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
+					transitioned_after = 0
+				elif self.computer.a_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+					self.__cmd_rot = self.user_var.base_rotation
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
+					transitioned_after = 0
+				elif self.computer.s_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+					self.__cmd_speed = -(self.user_var.base_speed)
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
+					transitioned_after = 0
+				elif self.computer.d_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+					self.__cmd_rot = -(self.user_var.base_rotation)
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
+					transitioned_after = 0
+				elif self.computer.x_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+					self.__cmd_speed = 0.0
+					self.__cmd_rot = 0.0
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
 					transitioned_after = 0
 		return transitioned_after
 	
@@ -1682,6 +1700,8 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
+				self.output.speed = 0.0
+				self.output.rotation = self.__cmd_rot
 				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
 		return transitioned_after
 	
