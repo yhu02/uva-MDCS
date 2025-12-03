@@ -4,6 +4,7 @@ from tkinter import ttk
 from lxml import etree
 import numpy as np
 import itertools
+import random
 
 # Notes:
 # Copy generated model.sdf into:
@@ -195,25 +196,54 @@ def detect_click(event):
     #print()
 
 
+def generate_maze():
+    """Generate a fully connected maze using randomized DFS."""
+    # Initialize all inner walls present
+    h_walls = np.ones((MAZE_SIZE + 1, MAZE_SIZE), dtype=bool)
+    v_walls = np.ones((MAZE_SIZE, MAZE_SIZE + 1), dtype=bool)
+    
+    # Track visited cells
+    visited = np.zeros((MAZE_SIZE, MAZE_SIZE), dtype=bool)
+    
+    def carve_path(r, c):
+        """Recursively carve paths using DFS."""
+        visited[r, c] = True
+        
+        # Randomize direction order: up, down, left, right
+        directions = [(r-1, c, 'up'), (r+1, c, 'down'), 
+                      (r, c-1, 'left'), (r, c+1, 'right')]
+        random.shuffle(directions)
+        
+        for nr, nc, direction in directions:
+            # Check if neighbor is valid and unvisited
+            if 0 <= nr < MAZE_SIZE and 0 <= nc < MAZE_SIZE and not visited[nr, nc]:
+                # Remove wall between current and neighbor
+                if direction == 'up':
+                    h_walls[r, c] = False
+                elif direction == 'down':
+                    h_walls[r+1, c] = False
+                elif direction == 'left':
+                    v_walls[r, c] = False
+                else:  # right
+                    v_walls[r, c+1] = False
+                
+                carve_path(nr, nc)
+    
+    # Start from northwest corner (0,0)
+    carve_path(0, 0)
+    
+    # Create single entrance/exit at (0,0) - west wall
+    v_walls[0, 0] = False
+    
+    return h_walls, v_walls
+
+
 # Main
 def main():
     global h_walls, v_walls, C
 
-    # Initialize horizontal and vertical wall matrices
-    # Note that horizontal walls have 1 more row and vertical
-    # walls have 1 more column. This is because of the outter
-    # walls (sice MAZE_SIZE reffers to the cells)
-    h_walls = np.zeros((MAZE_SIZE + 1, MAZE_SIZE), dtype=bool)
-    v_walls = np.zeros((MAZE_SIZE, MAZE_SIZE + 1), dtype=bool)
-    for c in range(MAZE_SIZE):
-        h_walls[0, c] = True
-        h_walls[MAZE_SIZE, c] = True
-    for r in range(MAZE_SIZE):
-        v_walls[r, 0] = True
-        v_walls[r, MAZE_SIZE] = True
-
-    # opening starts at west wall of the north-west cell
-    v_walls[0, 0] = False
+    # Generate maze using DFS algorithm
+    h_walls, v_walls = generate_maze()
 
     # Initialize canvas and draw all the walls.
     root = tk.Tk()
