@@ -177,6 +177,16 @@ class SCTConnect():
             print(f'Wall front: {self.sm.grid.wall_front}, right: {self.sm.grid.wall_right}, '
                     f'back: {self.sm.grid.wall_back}, left: {self.sm.grid.wall_left}')
             
+            # Print stored wall information for current cell
+            if self.sm.grid.row < self.maze.grid_rows and self.sm.grid.column < self.maze.grid_cols:
+                current_cell = self.maze.grid[self.sm.grid.row][self.sm.grid.column]
+                print(f'Stored walls [N,E,S,W]: {current_cell.walls}')
+                if current_cell.visited:
+                    wall_chars = ['█' if w == 1 else ' ' for w in current_cell.walls]
+                    print(f'  {wall_chars[0]}  ')
+                    print(f' {wall_chars[3]}@{wall_chars[1]} ')
+                    print(f'  {wall_chars[2]}  ')
+            
             self._print_internal_variables()
 
         # Print the final values and finish

@@ -633,9 +633,6 @@ class Model:
 		#Entry action for state 'AtCellCenter'.
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
-		self.grid.visited = True
-		self.grid.update = True
-		self.grid.receive = False
 		self.__been_at_start_once = True if (self.grid.row != self.__start_row or self.grid.column != self.__start_col) else self.__been_at_start_once
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto(self):
