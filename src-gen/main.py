@@ -17,6 +17,7 @@
 
 import sys, os, select
 import numpy as np
+from datetime import datetime
 
 from model import Model
 
@@ -34,6 +35,14 @@ from geometry_msgs.msg import Twist
 class SCTConnect():
 
     """
+    Write message to both console and log file
+    """
+    def log(self, message):
+        print(message, end='')
+        self.log_file.write(message)
+        self.log_file.flush()
+
+    """
     initialise class and main variables
     """
     def __init__(self):
@@ -47,6 +56,11 @@ class SCTConnect():
         # Debug tracking
         self.previous_states = [None, None, None]
         self.state_names = self._get_state_names()
+        
+        # Open log file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.log_file = open(f"turtlebot_log_{timestamp}.txt", "w")
+        self.log("=== TurtleBot Maze Exploration Log Started ===\n")
 
     """
     Setup the statemachine and the ROS 2 node
@@ -56,7 +70,7 @@ class SCTConnect():
         self.maze = Maze(self.sm.grid.max_col+1, self.sm.grid.max_row+1)
 
         self.sm.timer_service = Timer()
-        print("\n[DEBUG] Entering state machine...")
+        self.log("\n[DEBUG] Entering state machine...\n")
         self.sm.enter()
         self._log_active_states()
 
@@ -116,26 +130,26 @@ class SCTConnect():
 
             # Print info
             os.system('clear')
-            print("========= TurtleBot Stats =========")
-            print(f"velocity: {self.sm.output.speed}")
-            print(f"rotation speed: {self.sm.output.rotation}")
-            print(f"yaw: {self.sm.imu.yaw:.3f}")
+            self.log("========= TurtleBot Stats =========\n")
+            self.log(f"velocity: {self.sm.output.speed}\n")
+            self.log(f"rotation speed: {self.sm.output.rotation}\n")
+            self.log(f"yaw: {self.sm.imu.yaw:.3f}\n")
             
-            print("\n========= ACTIVE STATES =========")
+            self.log("\n========= ACTIVE STATES =========\n")
             self._print_active_states()
 
-            print("\n----------- Grid Info -----------")
-            print(f"orientation: {self.sm.grid.orientation}")
-            print(f"row: {self.sm.grid.row}")
-            print(f"col: {self.sm.grid.column}")
+            self.log("\n----------- Grid Info -----------\n")
+            self.log(f"orientation: {self.sm.grid.orientation}\n")
+            self.log(f"row: {self.sm.grid.row}\n")
+            self.log(f"col: {self.sm.grid.column}\n")
 
-            print(f"start pos:")
-            print(f"\tzero x: {self.sm.start_pos.zero_x:.2f}")
-            print(f"\tzero y: {self.sm.start_pos.zero_y:.2f}")
-            print(f"\tset zero: {self.sm.start_pos.set_zero}")
+            self.log(f"start pos:\n")
+            self.log(f"\tzero x: {self.sm.start_pos.zero_x:.2f}\n")
+            self.log(f"\tzero y: {self.sm.start_pos.zero_y:.2f}\n")
+            self.log(f"\tset zero: {self.sm.start_pos.set_zero}\n")
             
             # Print explored cells
-            print("----------- Explored Cells -----------")
+            self.log("----------- Explored Cells -----------\n")
             explored_count = 0
             explored_cells = []
             for row in range(self.maze.grid_rows):
@@ -143,22 +157,22 @@ class SCTConnect():
                     if self.maze.grid[row][col].visited:
                         explored_count += 1
                         explored_cells.append(f"({row},{col})")
-            print(f"Total explored: {explored_count}/{self.maze.grid_rows * self.maze.grid_cols}")
+            self.log(f"Total explored: {explored_count}/{self.maze.grid_rows * self.maze.grid_cols}\n")
             if explored_cells:
-                print(f"Cells: {', '.join(explored_cells)}")            
+                self.log(f"Cells: {', '.join(explored_cells)}\n")            
 
-            print("----------- Laser stuff -----------")
-            print(f"front mean:\t{self.sm.laser_distance.dfront_mean:.2f}")
-            print(f"left mean:\t{self.sm.laser_distance.dleft_mean:.2f}")
-            print(f"back mean:\t{self.sm.laser_distance.dback_mean:.2f}")
-            print(f"right mean:\t{self.sm.laser_distance.dright_mean:.2f}")
+            self.log("----------- Laser stuff -----------\n")
+            self.log(f"front mean:\t{self.sm.laser_distance.dfront_mean:.2f}\n")
+            self.log(f"left mean:\t{self.sm.laser_distance.dleft_mean:.2f}\n")
+            self.log(f"back mean:\t{self.sm.laser_distance.dback_mean:.2f}\n")
+            self.log(f"right mean:\t{self.sm.laser_distance.dright_mean:.2f}\n")
 
-            print("------------ Odometry -------------")
-            print(f"x: {self.sm.odom.x:.2f}")
-            print(f"y: {self.sm.odom.y:.2f}")
+            self.log("------------ Odometry -------------\n")
+            self.log(f"x: {self.sm.odom.x:.2f}\n")
+            self.log(f"y: {self.sm.odom.y:.2f}\n")
 
-            print("------------ Logging -------------")
-            print(f"visited: {self.sm.grid.visited:.2f}")
+            self.log("------------ Logging -------------\n")
+            self.log(f"visited: {self.sm.grid.visited:.2f}\n")
             print(f'Wall front: {self.sm.grid.wall_front}, right: {self.sm.grid.wall_right}, '
                     f'back: {self.sm.grid.wall_back}, left: {self.sm.grid.wall_left}')
             
@@ -173,7 +187,7 @@ class SCTConnect():
                     print(f'  {wall_chars[2]}  ')
             
             # Print all stored walls for explored cells
-            print("\n--- Complete Wall Map ---")
+            self.log("\n--- Complete Wall Map ---\n")
             for row in range(self.maze.grid_rows):
                 for col in range(self.maze.grid_cols):
                     cell = self.maze.grid[row][col]
@@ -183,17 +197,17 @@ class SCTConnect():
                 print()  # New line after each row
             
             # Print ASCII art of complete maze
-            print("\n--- ASCII Maze Map ---")
-            print(f"  Orientation: {['N','E','S','W'][self.sm.grid.orientation]}")
+            self.log("\n--- ASCII Maze Map ---\n")
+            self.log(f"  Orientation: {['N','E','S','W'][self.sm.grid.orientation]}\n")
             
             # Print top border of first row
             for col in range(self.maze.grid_cols):
                 cell = self.maze.grid[0][col]
                 if cell.visited and cell.walls[0] == 1:
-                    print("+---", end="")
+                    self.log("+---")
                 else:
-                    print("+   ", end="")
-            print("+")
+                    self.log("+   ")
+            self.log("+\n")
             
             # Print each row
             for row in range(self.maze.grid_rows):
@@ -213,24 +227,24 @@ class SCTConnect():
                             has_left_wall = True
                     
                     if has_left_wall:
-                        print("|", end="")
+                        self.log("|")
                     else:
-                        print(" ", end="")
+                        self.log(" ")
                     
                     # Cell content
                     if row == self.sm.grid.row and col == self.sm.grid.column:
-                        print(" @ ", end="")
+                        self.log(" @ ")
                     elif cell.visited:
-                        print(" X ", end="")
+                        self.log(" X ")
                     else:
-                        print("   ", end="")
+                        self.log("   ")
                 
                 # Print rightmost wall
                 cell = self.maze.grid[row][self.maze.grid_cols - 1]
                 if cell.visited and cell.walls[1] == 1:
-                    print("|")
+                    self.log("|\n")
                 else:
-                    print(" ")
+                    self.log(" \n")
                 
                 # Print bottom border (check this row's South walls OR next row's North walls)
                 for col in range(self.maze.grid_cols):
@@ -248,15 +262,15 @@ class SCTConnect():
                             has_bottom_wall = True
                     
                     if has_bottom_wall:
-                        print("+---", end="")
+                        self.log("+---")
                     else:
-                        print("+   ", end="")
-                print("+")
+                        self.log("+   ")
+                self.log("+\n")
             
             self._print_internal_variables()
 
         # Print the final values and finish
-        print("\n[DEBUG] State machine finished!")
+        self.log("\n[DEBUG] State machine finished!\n")
         print("gems: ", self.sm.output.gems)
         print("obstacles: ", self.sm.output.obstacles)
         self.shutdown()
@@ -522,27 +536,27 @@ class SCTConnect():
     """
     def parse_input(self):
         if self.input == 'm':
-           print("[DEBUG-INPUT] Key 'm' pressed - Mode switch")
+           self.log("[DEBUG-INPUT] Key 'm' pressed - Mode switch\n")
            self.sm.computer.raise_m_press()
            return True
         elif self.input == 'w':
-            print("[DEBUG-INPUT] Key 'w' pressed - Forward")
+            self.log("[DEBUG-INPUT] Key 'w' pressed - Forward\n")
             self.sm.computer.raise_w_press()
             return True
         elif self.input == 'a':
-            print("[DEBUG-INPUT] Key 'a' pressed - Left")
+            self.log("[DEBUG-INPUT] Key 'a' pressed - Left\n")
             self.sm.computer.raise_a_press()
             return True
         elif self.input == 's':
-            print("[DEBUG-INPUT] Key 's' pressed - Backward")
+            self.log("[DEBUG-INPUT] Key 's' pressed - Backward\n")
             self.sm.computer.raise_s_press()
             return True
         elif self.input == 'd':
-            print("[DEBUG-INPUT] Key 'd' pressed - Right")
+            self.log("[DEBUG-INPUT] Key 'd' pressed - Right\n")
             self.sm.computer.raise_d_press()
             return True
         elif self.input == 'x':
-            print("[DEBUG-INPUT] Key 'x' pressed - Stop")
+            self.log("[DEBUG-INPUT] Key 'x' pressed - Stop\n")
             self.sm.computer.raise_x_press()
             return True
         else:
@@ -618,8 +632,8 @@ class SCTConnect():
         self.current_node = self.maze.grid[self.sm.grid.row][self.sm.grid.column]
         
         # Debug: Print what wall values are being stored
-        print(f"[DEBUG] update_grid() called at ({self.sm.grid.row},{self.sm.grid.column})")
-        print(f"[DEBUG] Orientation: {self.sm.grid.orientation}, Wall values: F={self.sm.grid.wall_front}, R={self.sm.grid.wall_right}, B={self.sm.grid.wall_back}, L={self.sm.grid.wall_left}")
+        self.log(f"[DEBUG] update_grid() called at ({self.sm.grid.row},{self.sm.grid.column})\n")
+        self.log(f"[DEBUG] Orientation: {self.sm.grid.orientation}, Wall values: F={self.sm.grid.wall_front}, R={self.sm.grid.wall_right}, B={self.sm.grid.wall_back}, L={self.sm.grid.wall_left}\n")
         
         self.current_node.walls[self.sm.grid.orientation] = self.sm.grid.wall_front
         self.current_node.walls[(self.sm.grid.orientation + 1) % 4] = self.sm.grid.wall_right
@@ -627,7 +641,7 @@ class SCTConnect():
         self.current_node.walls[(self.sm.grid.orientation - 2) % 4] = self.sm.grid.wall_back
         self.current_node.visited = True
         
-        print(f"[DEBUG] Stored walls array: {self.current_node.walls}")
+        self.log(f"[DEBUG] Stored walls array: {self.current_node.walls}\n")
 
 
     """
@@ -656,7 +670,7 @@ class SCTConnect():
                 active.append(f"[{i}] {state_name}")
         
         if active:
-            print(f"[DEBUG] Active states: {', '.join(active)}")
+            self.log(f"[DEBUG] Active states: {', '.join(active)}\n")
     
     """
     Print currently active states to display
@@ -666,20 +680,20 @@ class SCTConnect():
         for i, state_id in enumerate(state_vector):
             if state_id != Model.State.null_state:
                 state_name = self.state_names.get(state_id, f"State_{state_id}")
-                print(f"Region {i}: {state_name}")
+                self.log(f"Region {i}: {state_name}\n")
                 
                 # Add helpful hints for specific states
                 if state_id == Model.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
-                    print(f"           ⚠️  PRESS 's' KEY TO START CALIBRATION ⚠️")
+                    self.log(f"           ⚠️  PRESS 's' KEY TO START CALIBRATION ⚠️\n")
                 elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_init:
-                    print(f"           💡 Press 'm' to switch to Manual mode")
+                    self.log(f"           💡 Press 'm' to switch to Manual mode\n")
                 elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
-                    print(f"           💡 Press 'm' to switch to Autonomous mode")
-                    print(f"           💡 Use w/a/s/d keys to move, x to stop")
+                    self.log(f"           💡 Press 'm' to switch to Autonomous mode\n")
+                    self.log(f"           💡 Use w/a/s/d keys to move, x to stop\n")
                 elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
-                    print(f"           💡 Press 'm' to switch to Manual mode")
+                    self.log(f"           💡 Press 'm' to switch to Manual mode\n")
             else:
-                print(f"Region {i}: <inactive>")
+                self.log(f"Region {i}: <inactive>\n")
     
     """
     Check for state changes and log them
@@ -694,11 +708,11 @@ class SCTConnect():
                 
                 if old_state != Model.State.null_state and old_state is not None:
                     old_name = self.state_names.get(old_state, f"State_{old_state}")
-                    print(f"[DEBUG] Region {i} EXIT: {old_name}")
+                    self.log(f"[DEBUG] Region {i} EXIT: {old_name}\n")
                 
                 if new_state != Model.State.null_state:
                     new_name = self.state_names.get(new_state, f"State_{new_state}")
-                    print(f"[DEBUG] Region {i} ENTER: {new_name}")
+                    self.log(f"[DEBUG] Region {i} ENTER: {new_name}\n")
                 
                 self.previous_states[i] = new_state
     
@@ -706,62 +720,62 @@ class SCTConnect():
     Print internal state machine variables
     """
     def _print_internal_variables(self):
-        print("\\n------ Internal Variables ------")
-        print(f"dist_free: {self.sm._Model__dist_free:.3f}")
-        print(f"is_manual: {self.sm._Model__is_manual}")
-        print(f"autonomous_active: {self.sm._Model__autonomous_active}")
-        print(f"left_free: {self.sm._Model__left_free}")
-        print(f"front_free: {self.sm._Model__front_free}")
-        print(f"right_free: {self.sm._Model__right_free}")
-        print(f"back_free: {self.sm._Model__back_free}")
-        print(f"exploring_done: {self.sm._Model__exploring_done}")
+        self.log("\\n------ Internal Variables ------\n")
+        self.log(f"dist_free: {self.sm._Model__dist_free:.3f}\n")
+        self.log(f"is_manual: {self.sm._Model__is_manual}\n")
+        self.log(f"autonomous_active: {self.sm._Model__autonomous_active}\n")
+        self.log(f"left_free: {self.sm._Model__left_free}\n")
+        self.log(f"front_free: {self.sm._Model__front_free}\n")
+        self.log(f"right_free: {self.sm._Model__right_free}\n")
+        self.log(f"back_free: {self.sm._Model__back_free}\n")
+        self.log(f"exploring_done: {self.sm._Model__exploring_done}\n")
         
-        print("\\n--- Navigation ---")
-        print(f"cmd_speed: {self.sm._Model__cmd_speed:.3f} m/s")
-        print(f"cmd_rot: {self.sm._Model__cmd_rot:.3f} rad/s")
-        print(f"Final output - v: {self.sm._Model__v:.3f} m/s, w: {self.sm._Model__w:.3f} rad/s")
+        self.log("\\n--- Navigation ---\n")
+        self.log(f"cmd_speed: {self.sm._Model__cmd_speed:.3f} m/s\n")
+        self.log(f"cmd_rot: {self.sm._Model__cmd_rot:.3f} rad/s\n")
+        self.log(f"Final output - v: {self.sm._Model__v:.3f} m/s, w: {self.sm._Model__w:.3f} rad/s\n")
         
-        print("\\n--- Alignment Debug ---")
-        print(f"targetYaw: {self.sm._Model__target_yaw:.3f}°")
-        print(f"yawError: {self.sm._Model__yaw_error:.3f}°")
-        print(f"isWellAligned: {self.sm._Model__is_well_aligned}")
+        self.log("\\n--- Alignment Debug ---\n")
+        self.log(f"targetYaw: {self.sm._Model__target_yaw:.3f}°\n")
+        self.log(f"yawError: {self.sm._Model__yaw_error:.3f}°\n")
+        self.log(f"isWellAligned: {self.sm._Model__is_well_aligned}\n")
         
-        print("\\n--- Timer Debug ---")
-        print(f"Timer events array: {self.sm._Model__time_events}")
-        print(f"Timer service active: {self.sm.timer_service is not None}")
+        self.log("\\n--- Timer Debug ---\n")
+        self.log(f"Timer events array: {self.sm._Model__time_events}\n")
+        self.log(f"Timer service active: {self.sm.timer_service is not None}\n")
         
-        print("\\n--- Transition Conditions Debug ---")
-        print(f"autonomousActive: {self.sm._Model__autonomous_active}")
-        print(f"exploringDone: {self.sm._Model__exploring_done}")
-        print(f"Condition for Goto (timer1): autonomousActive={self.sm._Model__autonomous_active} AND exploringDone={self.sm._Model__exploring_done} AND isWellAligned={self.sm._Model__is_well_aligned}")
-        print(f"  -> Result: {self.sm._Model__autonomous_active and self.sm._Model__exploring_done and self.sm._Model__is_well_aligned}")
-        print(f"Condition for Explore (timer2): autonomousActive={self.sm._Model__autonomous_active} AND NOT exploringDone={not self.sm._Model__exploring_done} AND isWellAligned={self.sm._Model__is_well_aligned}")
-        print(f"  -> Result: {self.sm._Model__autonomous_active and not self.sm._Model__exploring_done and self.sm._Model__is_well_aligned}")
+        self.log("\\n--- Transition Conditions Debug ---\n")
+        self.log(f"autonomousActive: {self.sm._Model__autonomous_active}\n")
+        self.log(f"exploringDone: {self.sm._Model__exploring_done}\n")
+        self.log(f"Condition for Goto (timer1): autonomousActive={self.sm._Model__autonomous_active} AND exploringDone={self.sm._Model__exploring_done} AND isWellAligned={self.sm._Model__is_well_aligned}\n")
+        self.log(f"  -> Result: {self.sm._Model__autonomous_active and self.sm._Model__exploring_done and self.sm._Model__is_well_aligned}\n")
+        self.log(f"Condition for Explore (timer2): autonomousActive={self.sm._Model__autonomous_active} AND NOT exploringDone={not self.sm._Model__exploring_done} AND isWellAligned={self.sm._Model__is_well_aligned}\n")
+        self.log(f"  -> Result: {self.sm._Model__autonomous_active and not self.sm._Model__exploring_done and self.sm._Model__is_well_aligned}\n")
         
-        print("\\n--- Command Variables ---")
-        print(f"cmdSpeed: {self.sm._Model__cmd_speed}")
-        print(f"cmdRot: {self.sm._Model__cmd_rot}")
-        print(f"v (computed): {self.sm._Model__v}")
-        print(f"w (computed): {self.sm._Model__w}")
+        self.log("\\n--- Command Variables ---\n")
+        self.log(f"cmdSpeed: {self.sm._Model__cmd_speed}\n")
+        self.log(f"cmdRot: {self.sm._Model__cmd_rot}\n")
+        self.log(f"v (computed): {self.sm._Model__v}\n")
+        self.log(f"w (computed): {self.sm._Model__w}\n")
         
-        print("\\n--- Wall Centering Debug ---")
-        print(f"isNorthSouth: {self.sm._Model__is_north_south}")
-        print(f"wallError: {self.sm._Model__wall_error:.3f}")
-        print(f"wallsVisible: {self.sm._Model__walls_visible}")
-        print(f"tooCloseInDirection: {self.sm._Model__too_close_in_direction}")
+        self.log("\\n--- Wall Centering Debug ---\n")
+        self.log(f"isNorthSouth: {self.sm._Model__is_north_south}\n")
+        self.log(f"wallError: {self.sm._Model__wall_error:.3f}\n")
+        self.log(f"wallsVisible: {self.sm._Model__walls_visible}\n")
+        self.log(f"tooCloseInDirection: {self.sm._Model__too_close_in_direction}\n")
         
-        print("\\n--- State Machine Status ---")
-        print(f"State vector: {self.sm._Model__state_vector}")
-        print(f"Is active: {self.sm.is_active()}")
-        print(f"AtCellCenter active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center)}")
-        print(f"Explore active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore)}")
-        print(f"Drive active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_zdrive)}")
-        print(f"Stopped active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_zstopped)}")
+        self.log("\\n--- State Machine Status ---\n")
+        self.log(f"State vector: {self.sm._Model__state_vector}\n")
+        self.log(f"Is active: {self.sm.is_active()}\n")
+        self.log(f"AtCellCenter active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center)}\n")
+        self.log(f"Explore active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore)}\n")
+        self.log(f"Drive active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_zdrive)}\n")
+        self.log(f"Stopped active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_zstopped)}\n")
         
-        print("\\n--- Internal Flags ---")
-        print(f"beenAtStartOnce: {self.sm._Model__been_at_start_once}")
-        print(f"completed: {self.sm._Model__completed}")
-        print(f"do_completion: {self.sm._Model__do_completion}")
+        self.log("\\n--- Internal Flags ---\n")
+        self.log(f"beenAtStartOnce: {self.sm._Model__been_at_start_once}\n")
+        self.log(f"completed: {self.sm._Model__completed}\n")
+        self.log(f"do_completion: {self.sm._Model__do_completion}\n")
         
         self.sm.grid.visited = True
 
@@ -775,3 +789,6 @@ if __name__ == "__main__":
         states.run()
     except KeyboardInterrupt:
         states.shutdown()
+    finally:
+        states.log("\n=== Log file closed ===\n")
+        states.log_file.close()
