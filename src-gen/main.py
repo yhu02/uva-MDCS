@@ -725,6 +725,44 @@ class SCTConnect():
         print(f"targetYaw: {self.sm._Model__target_yaw:.3f}°")
         print(f"yawError: {self.sm._Model__yaw_error:.3f}°")
         print(f"isWellAligned: {self.sm._Model__is_well_aligned}")
+        
+        print("\\n--- Timer Debug ---")
+        print(f"Timer events array: {self.sm._Model__time_events}")
+        print(f"Timer service active: {self.sm.timer_service is not None}")
+        
+        print("\\n--- Transition Conditions Debug ---")
+        print(f"autonomousActive: {self.sm._Model__autonomous_active}")
+        print(f"exploringDone: {self.sm._Model__exploring_done}")
+        print(f"Condition for Goto (timer1): autonomousActive={self.sm._Model__autonomous_active} AND exploringDone={self.sm._Model__exploring_done} AND isWellAligned={self.sm._Model__is_well_aligned}")
+        print(f"  -> Result: {self.sm._Model__autonomous_active and self.sm._Model__exploring_done and self.sm._Model__is_well_aligned}")
+        print(f"Condition for Explore (timer2): autonomousActive={self.sm._Model__autonomous_active} AND NOT exploringDone={not self.sm._Model__exploring_done} AND isWellAligned={self.sm._Model__is_well_aligned}")
+        print(f"  -> Result: {self.sm._Model__autonomous_active and not self.sm._Model__exploring_done and self.sm._Model__is_well_aligned}")
+        
+        print("\\n--- Command Variables ---")
+        print(f"cmdSpeed: {self.sm._Model__cmd_speed}")
+        print(f"cmdRot: {self.sm._Model__cmd_rot}")
+        print(f"v (computed): {self.sm._Model__v}")
+        print(f"w (computed): {self.sm._Model__w}")
+        
+        print("\\n--- Wall Centering Debug ---")
+        print(f"isNorthSouth: {self.sm._Model__is_north_south}")
+        print(f"wallError: {self.sm._Model__wall_error:.3f}")
+        print(f"wallsVisible: {self.sm._Model__walls_visible}")
+        print(f"tooCloseInDirection: {self.sm._Model__too_close_in_direction}")
+        
+        print("\\n--- State Machine Status ---")
+        print(f"State vector: {self.sm._Model__state_vector}")
+        print(f"Is active: {self.sm.is_active()}")
+        print(f"AtCellCenter active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center)}")
+        print(f"Explore active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore)}")
+        print(f"Drive active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_zdrive)}")
+        print(f"Stopped active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_zstopped)}")
+        
+        print("\\n--- Internal Flags ---")
+        print(f"beenAtStartOnce: {self.sm._Model__been_at_start_once}")
+        print(f"completed: {self.sm._Model__completed}")
+        print(f"do_completion: {self.sm._Model__do_completion}")
+        
         self.sm.grid.visited = True
 
 """
