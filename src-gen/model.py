@@ -1651,7 +1651,7 @@ class Model:
 				self.__too_close_in_direction = (self.laser_distance.dleft_mean < self.__too_close_threshold or self.laser_distance.dright_mean < self.__too_close_threshold) if self.__is_north_south else (self.laser_distance.dfront_mean < self.__too_close_threshold or self.laser_distance.dback_mean < self.__too_close_threshold)
 				self.__v = 0.0 if (self.__too_close_in_direction and self.__v > 0.0) else self.__v
 				self.__is_misaligned = (self.__yaw_error > 15.0 or self.__yaw_error < -(15.0))
-				self.__v = (self.__v * self.__realign_slow_factor) if (self.__v > 0.0 and self.__is_misaligned) else self.__v
+				self.__v = (self.__v * self.__realign_slow_factor) if (self.__v > 0.0 and self.__is_misaligned) else self.base_values.max_speed
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
