@@ -323,6 +323,8 @@ class Model:
 		self.__turn_start_yaw = None
 		self.__v = None
 		self.__w = None
+		self.__distance_error = None
+		self.__kp = None
 		self.calibration_done = None
 		
 		# enumeration of all states:
@@ -359,6 +361,8 @@ class Model:
 		self.__turn_start_yaw = 0.0
 		self.__v = 0.0
 		self.__w = 0.0
+		self.__distance_error = 0.0
+		self.__kp = 0.5
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
@@ -1597,7 +1601,9 @@ class Model:
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
 				self.__v = ((self.__v * 0.5) if (self.laser_distance.dfront_min < 0.3) else self.__v) if (self.__v > 0.0) else self.__v
-				self.__w = ((self.__w - 0.1) if (self.laser_distance.dleft_min < ((self.laser_distance.dright_min - 0.05))) else ((self.__w + 0.1) if (self.laser_distance.dright_min < (self.laser_distance.dleft_min - 0.05)) else self.__w)) if (self.__v > 0.0) else self.__w
+				self.__distance_error = (self.laser_distance.dleft_min - self.laser_distance.dright_min)
+				self.__kp = 0.5
+				self.__w = ((self.__w - (self.__kp * self.__distance_error))) if (self.__v > 0.0) else self.__w
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w

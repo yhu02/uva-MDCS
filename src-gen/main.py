@@ -610,6 +610,25 @@ class SCTConnect():
         print(f"back_free: {self.sm._Model__back_free}")
         print(f"target_row: {self.sm._Model__target_row}")
         print(f"target_col: {self.sm._Model__target_col}")
+        
+        # Wall-following debug info
+        print("\\n--- Wall Following Debug ---")
+        left_dist = self.sm.laser_distance.dleft_min
+        right_dist = self.sm.laser_distance.dright_min
+        dist_diff = left_dist - right_dist
+        print(f"Left wall dist:  {left_dist:.3f}m")
+        print(f"Right wall dist: {right_dist:.3f}m")
+        print(f"Difference (L-R): {dist_diff:+.3f}m")
+        
+        # Show if correction would be applied
+        if left_dist < (right_dist - 0.05):
+            print(f"⚠️  TOO CLOSE TO LEFT - Correction: -0.1 rad/s")
+        elif right_dist < (left_dist - 0.05):
+            print(f"⚠️  TOO CLOSE TO RIGHT - Correction: +0.1 rad/s")
+        else:
+            print(f"✓ Centered (deadband ±0.05m)")
+        
+        print(f"Final v: {self.sm._Model__v:.3f}, w: {self.sm._Model__w:.3f}")
         self.sm.grid.visited = True
 
 """
