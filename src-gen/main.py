@@ -132,6 +132,34 @@ class SCTConnect():
             print(f"\tzero x: {self.sm.start_pos.zero_x:.2f}")
             print(f"\tzero y: {self.sm.start_pos.zero_y:.2f}")
             print(f"\tset zero: {self.sm.start_pos.set_zero}")
+            
+            # Print explored cells
+            print("----------- Explored Cells -----------")
+            explored_count = 0
+            explored_cells = []
+            for row in range(self.maze.grid_rows):
+                for col in range(self.maze.grid_cols):
+                    if self.maze.grid[row][col].visited:
+                        explored_count += 1
+                        explored_cells.append(f"({row},{col})")
+            print(f"Total explored: {explored_count}/{self.maze.grid_rows * self.maze.grid_cols}")
+            if explored_cells:
+                print(f"Cells: {', '.join(explored_cells)}")
+            
+            # Print visual grid map
+            print("\n--- Grid Map (X=explored, .=unexplored, @=current) ---")
+            for row in range(self.maze.grid_rows):
+                row_str = ""
+                for col in range(self.maze.grid_cols):
+                    if row == self.sm.grid.row and col == self.sm.grid.column:
+                        row_str += "@ "  # Current position
+                    elif self.maze.grid[row][col].visited:
+                        row_str += "X "  # Explored
+                    else:
+                        row_str += ". "  # Unexplored
+                print(f"  {row_str}")
+            print(f"  Orientation: {['N','E','S','W'][self.sm.grid.orientation]}")
+            
 
             print("----------- Laser stuff -----------")
             print(f"front mean:\t{self.sm.laser_distance.dfront_mean:.2f}")
