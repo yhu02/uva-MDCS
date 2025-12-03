@@ -671,7 +671,7 @@ class Model:
 		#Entry action for state 'TurnLeft'.
 		self.__turn_start_yaw = self.imu.yaw
 		self.__total_turned = 0.0
-		self.__cmd_speed = 0.02
+		self.__cmd_speed = 0.0
 		self.__cmd_rot = self.user_var.base_rotation
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right(self):
@@ -680,7 +680,7 @@ class Model:
 		#Entry action for state 'TurnRight'.
 		self.__turn_start_yaw = self.imu.yaw
 		self.__total_turned = 0.0
-		self.__cmd_speed = 0.02
+		self.__cmd_speed = 0.0
 		self.__cmd_rot = -(self.user_var.base_rotation)
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around(self):
@@ -689,7 +689,7 @@ class Model:
 		#Entry action for state 'TurnAround'.
 		self.__turn_start_yaw = self.imu.yaw
 		self.__total_turned = 0.0
-		self.__cmd_speed = 0.02
+		self.__cmd_speed = 0.0
 		self.__cmd_rot = self.user_var.base_rotation
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight(self):
