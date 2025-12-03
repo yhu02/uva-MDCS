@@ -323,6 +323,7 @@ class Model:
 		self.__turn_start_yaw = None
 		self.__v = None
 		self.__w = None
+		self.__dist_free = None
 		self.__distance_error = None
 		self.__kp = None
 		self.__too_close_threshold = None
@@ -379,6 +380,7 @@ class Model:
 		self.__turn_start_yaw = 0.0
 		self.__v = 0.0
 		self.__w = 0.0
+		self.__dist_free = 0.0
 		self.__distance_error = 0.0
 		self.__kp = 0.5
 		self.__too_close_threshold = 0.2
@@ -1496,7 +1498,12 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if (self.grid.orientation == 0 and (self.odom.y >= (self.__cell_start_y + (self.grid.grid_size * 0.9)) or self.odom.y <= (self.__cell_start_y - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 2 and (self.odom.y >= (self.__cell_start_y + (self.grid.grid_size * 0.9)) or self.odom.y <= (self.__cell_start_y - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 1 and (self.odom.x >= (self.__cell_start_x + (self.grid.grid_size * 0.9)) or self.odom.x <= (self.__cell_start_x - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 3 and (self.odom.x >= (self.__cell_start_x + (self.grid.grid_size * 0.9)) or self.odom.x <= (self.__cell_start_x - (self.grid.grid_size * 0.9)))):
+				if self.laser_distance.dfront_min < (self.__dist_free * 0.8):
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+				elif (self.grid.orientation == 0 and (self.odom.y >= (self.__cell_start_y + (self.grid.grid_size * 0.9)) or self.odom.y <= (self.__cell_start_y - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 2 and (self.odom.y >= (self.__cell_start_y + (self.grid.grid_size * 0.9)) or self.odom.y <= (self.__cell_start_y - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 1 and (self.odom.x >= (self.__cell_start_x + (self.grid.grid_size * 0.9)) or self.odom.x <= (self.__cell_start_x - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 3 and (self.odom.x >= (self.__cell_start_x + (self.grid.grid_size * 0.9)) or self.odom.x <= (self.__cell_start_x - (self.grid.grid_size * 0.9)))):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
