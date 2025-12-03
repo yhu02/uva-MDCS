@@ -54,6 +54,12 @@ class TurtleBot(Node):
 
         # What callback has hapened
         self.last_callback = 0
+        
+        # Debug counters
+        self.scan_callback_count = 0
+        self.odom_callback_count = 0
+        self.imu_callback_count = 0
+        self.debug_enabled = True
 
     # Replace NaN values in lidar data with a neighbouring value.
     # NOTE: not used anymore, data is zeroed instead
@@ -98,6 +104,10 @@ class TurtleBot(Node):
     # Receive laser data
     def scan_callback(self, msgs):
         # Debug output
+        self.scan_callback_count += 1
+        if self.debug_enabled and self.scan_callback_count % 100 == 0:
+            print(f"[DEBUG-SENSOR] Scan callback #{self.scan_callback_count}")
+
         #print("************** SP: {} {} {}".format(msgs.angle_min, msgs.angle_max, len(msgs.ranges)))
 
         #print("************** SP: fill angle {}-{} (valid degrees {})".format(int(math.degrees(msgs.angle_min)), math.degrees(msgs.angle_max), math.degrees(msgs.angle_increment) * len(msgs.ranges)))
@@ -114,6 +124,9 @@ class TurtleBot(Node):
 
     # Receive odometry data
     def odom_callback(self, msgs):
+        self.odom_callback_count += 1
+        if self.debug_enabled and self.odom_callback_count % 100 == 0:
+            print(f"[DEBUG-SENSOR] Odom callback #{self.odom_callback_count} - pos: ({msgs.pose.pose.position.x:.2f}, {msgs.pose.pose.position.y:.2f})")
         self.odom_x = msgs.pose.pose.position.x
         self.odom_y = msgs.pose.pose.position.y
         self.odom_z = msgs.pose.pose.position.z
@@ -121,6 +134,9 @@ class TurtleBot(Node):
 
     # Receive imu data
     def imu_callback(self, msgs):
+        self.imu_callback_count += 1
+        if self.debug_enabled and self.imu_callback_count % 100 == 0:
+            print(f"[DEBUG-SENSOR] IMU callback #{self.imu_callback_count}")
         self.orientation = msgs.orientation
         self.last_callback = 3
 
@@ -130,6 +146,13 @@ class TurtleBot(Node):
 
     # Publish velocity to ROS2
     def vel_publish(self, x=0.0, y=0.0, z=0.0, rx=0.0, ry=0.0, rz=0.0):
+        # Debug non-zero velocity commands
+        if self.debug_enabled and (abs(x) > 0.001 or abs(rz) > 0.001):
+            if not hasattr(self, '_last_vel_x') or abs(self._last_vel_x - x) > 0.01 or abs(self._last_vel_rz - rz) > 0.01:
+                print(f"[DEBUG-CMD] Publishing velocity: linear.x={x:.3f}, angular.z={rz:.3f}")
+                self._last_vel_x = x
+                self._last_vel_rz = rz
+        
         self.vel_msg.linear.x = x
         self.vel_msg.linear.y = y
         self.vel_msg.linear.z = z

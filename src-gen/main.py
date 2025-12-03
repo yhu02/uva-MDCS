@@ -43,6 +43,10 @@ class SCTConnect():
 
         # Initialize the statecharts
         self.sm = Model()
+        
+        # Debug tracking
+        self.previous_states = [None, None, None]
+        self.state_names = self._get_state_names()
 
     """
     Setup the statemachine and the ROS 2 node
@@ -52,7 +56,9 @@ class SCTConnect():
         self.maze = Maze(self.sm.grid.max_col+1, self.sm.grid.max_row+1)
 
         self.sm.timer_service = Timer()
+        print("\n[DEBUG] Entering state machine...")
         self.sm.enter()
+        self._log_active_states()
 
         # Setup variables to be used that will not be changed by the statecharts
         self.degrees_list = [i for i in range(0,180)]
@@ -89,6 +95,7 @@ class SCTConnect():
             # Run a cycle of the statechart
             if(not self.parse_input()):
                 self.sm.run_cycle()
+                self._check_state_changes()
 
             # Reset input
             self.input = ''
@@ -112,8 +119,11 @@ class SCTConnect():
             print(f"velocity: {self.sm.output.speed}")
             print(f"rotation speed: {self.sm.output.rotation}")
             print(f"yaw: {self.sm.imu.yaw:.3f}")
+            
+            print("\n========= ACTIVE STATES =========")
+            self._print_active_states()
 
-            print("----------- Grid Info -----------")
+            print("\n----------- Grid Info -----------")
             print(f"orientation: {self.sm.grid.orientation}")
             print(f"row: {self.sm.grid.row}")
             print(f"col: {self.sm.grid.column}")
@@ -137,8 +147,11 @@ class SCTConnect():
             print(f"visited: {self.sm.grid.visited:.2f}")
             print(f'Wall front: {self.sm.grid.wall_front}, right: {self.sm.grid.wall_right}, '
                     f'back: {self.sm.grid.wall_back}, left: {self.sm.grid.wall_left}')
+            
+            self._print_internal_variables()
 
         # Print the final values and finish
+        print("\n[DEBUG] State machine finished!")
         print("gems: ", self.sm.output.gems)
         print("obstacles: ", self.sm.output.obstacles)
         self.shutdown()
@@ -404,21 +417,27 @@ class SCTConnect():
     """
     def parse_input(self):
         if self.input == 'm':
+           print("[DEBUG-INPUT] Key 'm' pressed - Mode switch")
            self.sm.computer.raise_m_press()
            return True
         elif self.input == 'w':
+            print("[DEBUG-INPUT] Key 'w' pressed - Forward")
             self.sm.computer.raise_w_press()
             return True
         elif self.input == 'a':
+            print("[DEBUG-INPUT] Key 'a' pressed - Left")
             self.sm.computer.raise_a_press()
             return True
         elif self.input == 's':
+            print("[DEBUG-INPUT] Key 's' pressed - Backward")
             self.sm.computer.raise_s_press()
             return True
         elif self.input == 'd':
+            print("[DEBUG-INPUT] Key 'd' pressed - Right")
             self.sm.computer.raise_d_press()
             return True
         elif self.input == 'x':
+            print("[DEBUG-INPUT] Key 'x' pressed - Stop")
             self.sm.computer.raise_x_press()
             return True
         else:
@@ -497,6 +516,89 @@ class SCTConnect():
         self.current_node.walls[(self.sm.grid.orientation - 1) % 4] = self.sm.grid.wall_left
         self.current_node.walls[(self.sm.grid.orientation - 2) % 4] = self.sm.grid.wall_back
         self.current_node.visited = True
+
+    """
+    Get state name mapping from Model.State enum
+    """
+    def _get_state_names(self):
+        state_map = {}
+        for attr_name in dir(Model.State):
+            if not attr_name.startswith('_'):
+                attr_value = getattr(Model.State, attr_name)
+                if isinstance(attr_value, int):
+                    # Clean up state name for readability
+                    clean_name = attr_name.replace('turtle_bot_turtle_bot_', '').replace('_region0', '').replace('_', ' ').title()
+                    state_map[attr_value] = clean_name
+        return state_map
+
+    """
+    Log currently active states
+    """
+    def _log_active_states(self):
+        active = []
+        state_vector = self.sm._Model__state_vector
+        for i, state_id in enumerate(state_vector):
+            if state_id != Model.State.null_state:
+                state_name = self.state_names.get(state_id, f"State_{state_id}")
+                active.append(f"[{i}] {state_name}")
+        
+        if active:
+            print(f"[DEBUG] Active states: {', '.join(active)}")
+    
+    """
+    Print currently active states to display
+    """
+    def _print_active_states(self):
+        state_vector = self.sm._Model__state_vector
+        for i, state_id in enumerate(state_vector):
+            if state_id != Model.State.null_state:
+                state_name = self.state_names.get(state_id, f"State_{state_id}")
+                print(f"Region {i}: {state_name}")
+            else:
+                print(f"Region {i}: <inactive>")
+    
+    """
+    Check for state changes and log them
+    """
+    def _check_state_changes(self):
+        state_vector = self.sm._Model__state_vector
+        for i in range(len(state_vector)):
+            if state_vector[i] != self.previous_states[i]:
+                # State changed in region i
+                old_state = self.previous_states[i]
+                new_state = state_vector[i]
+                
+                if old_state != Model.State.null_state and old_state is not None:
+                    old_name = self.state_names.get(old_state, f"State_{old_state}")
+                    print(f"[DEBUG] Region {i} EXIT: {old_name}")
+                
+                if new_state != Model.State.null_state:
+                    new_name = self.state_names.get(new_state, f"State_{new_state}")
+                    print(f"[DEBUG] Region {i} ENTER: {new_name}")
+                
+                self.previous_states[i] = new_state
+    
+    """
+    Print internal state machine variables
+    """
+    def _print_internal_variables(self):
+        print("\\n------ Internal Variables ------")
+        # Access private variables through name mangling
+        print(f"dist_free: {self.sm._Model__dist_free:.3f}")
+        print(f"is_manual: {self.sm._Model__is_manual}")
+        print(f"autonomous_active: {self.sm._Model__autonomous_active}")
+        print(f"cmd_speed: {self.sm._Model__cmd_speed:.3f}")
+        print(f"cmd_rot: {self.sm._Model__cmd_rot:.3f}")
+        print(f"cell_start_x: {self.sm._Model__cell_start_x:.3f}")
+        print(f"cell_start_y: {self.sm._Model__cell_start_y:.3f}")
+        print(f"all_cells_visited: {self.sm._Model__all_cells_visited}")
+        print(f"exploring_done: {self.sm._Model__exploring_done}")
+        print(f"left_free: {self.sm._Model__left_free}")
+        print(f"front_free: {self.sm._Model__front_free}")
+        print(f"right_free: {self.sm._Model__right_free}")
+        print(f"back_free: {self.sm._Model__back_free}")
+        print(f"target_row: {self.sm._Model__target_row}")
+        print(f"target_col: {self.sm._Model__target_col}")
         self.sm.grid.visited = True
 
 """

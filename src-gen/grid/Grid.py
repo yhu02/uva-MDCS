@@ -27,6 +27,7 @@ class Maze:
 
     # Draw the maze to an image
     def draw(self):
+        print("[DEBUG-GRID] Drawing maze visualization...")
         self.visualiser = Visualizer(self, 2, "map")
         self.visualiser.show_maze()
 
