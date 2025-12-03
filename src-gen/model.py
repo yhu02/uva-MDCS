@@ -320,6 +320,8 @@ class Model:
 		self.__target_col = None
 		self.__been_at_start_once = None
 		self.__turn_start_yaw = None
+		self.__total_turned = None
+		self.__yaw_diff = None
 		self.__v = None
 		self.__w = None
 		self.__too_close_threshold = None
@@ -370,6 +372,8 @@ class Model:
 		self.__target_col = 0
 		self.__been_at_start_once = False
 		self.__turn_start_yaw = 0.0
+		self.__total_turned = 0.0
+		self.__yaw_diff = 0.0
 		self.__v = 0.0
 		self.__w = 0.0
 		self.__too_close_threshold = 0.2
@@ -664,6 +668,7 @@ class Model:
 		"""
 		#Entry action for state 'TurnLeft'.
 		self.__turn_start_yaw = self.imu.yaw
+		self.__total_turned = 0.0
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = self.user_var.base_rotation
 		
@@ -672,6 +677,7 @@ class Model:
 		"""
 		#Entry action for state 'TurnRight'.
 		self.__turn_start_yaw = self.imu.yaw
+		self.__total_turned = 0.0
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = -(self.user_var.base_rotation)
 		
@@ -680,6 +686,7 @@ class Model:
 		"""
 		#Entry action for state 'TurnAround'.
 		self.__turn_start_yaw = self.imu.yaw
+		self.__total_turned = 0.0
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = self.user_var.base_rotation
 		
@@ -1491,7 +1498,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.imu.yaw > (self.__turn_start_yaw + 1.57):
+				if self.__total_turned > 85.0:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
@@ -1499,6 +1506,10 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
+				self.__yaw_diff = (self.imu.yaw - self.__turn_start_yaw)
+				self.__yaw_diff = (self.__yaw_diff - 360.0) if (self.__yaw_diff > 180.0) else self.__yaw_diff
+				self.__yaw_diff = (self.__yaw_diff + 360.0) if (self.__yaw_diff < -(180.0)) else self.__yaw_diff
+				self.__total_turned = self.__yaw_diff
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
@@ -1510,7 +1521,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.imu.yaw < (self.__turn_start_yaw - 1.57):
+				if self.__total_turned < -(85.0):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
@@ -1518,6 +1529,10 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
+				self.__yaw_diff = (self.imu.yaw - self.__turn_start_yaw)
+				self.__yaw_diff = (self.__yaw_diff - 360.0) if (self.__yaw_diff > 180.0) else self.__yaw_diff
+				self.__yaw_diff = (self.__yaw_diff + 360.0) if (self.__yaw_diff < -(180.0)) else self.__yaw_diff
+				self.__total_turned = self.__yaw_diff
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
@@ -1529,7 +1544,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.imu.yaw > (self.__turn_start_yaw + 3.0) or self.imu.yaw < (self.__turn_start_yaw - 3.0):
+				if self.__total_turned > 170.0 or self.__total_turned < -(170.0):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
@@ -1537,6 +1552,10 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
+				self.__yaw_diff = (self.imu.yaw - self.__turn_start_yaw)
+				self.__yaw_diff = (self.__yaw_diff - 360.0) if (self.__yaw_diff > 180.0) else self.__yaw_diff
+				self.__yaw_diff = (self.__yaw_diff + 360.0) if (self.__yaw_diff < -(180.0)) else self.__yaw_diff
+				self.__total_turned = self.__yaw_diff
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
