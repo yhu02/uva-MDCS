@@ -368,7 +368,7 @@ class Model:
 		self.__w = 0.0
 		self.__distance_error = 0.0
 		self.__kp = 0.5
-		self.__too_close_threshold = 0.1
+		self.__too_close_threshold = 0.2
 		self.__too_close = False
 		self.__front_slow_threshold = 0.3
 		self.__emergency_stop_threshold = 0.18
@@ -1614,7 +1614,7 @@ class Model:
 				self.__too_close = (self.laser_distance.dleft_min < self.__too_close_threshold) or (self.laser_distance.dright_min < self.__too_close_threshold)
 				self.__v = 0.0 if (self.__too_close and self.__v > 0.0) else self.__v
 				self.__distance_error = (self.laser_distance.dleft_min - self.laser_distance.dright_min)
-				self.__w = (self.__w - (self.__kp * self.__distance_error))
+				self.__w = (self.__w - ((self.__kp * self.__distance_error) * ((1.0 + (2.0 * ((((self.__too_close_threshold - self.laser_distance.dleft_min)) / self.__too_close_threshold) if (self.laser_distance.dleft_min < self.__too_close_threshold) else ((((self.__too_close_threshold - self.laser_distance.dright_min)) / self.__too_close_threshold) if (self.laser_distance.dright_min < self.__too_close_threshold) else 0.0)))))))
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
