@@ -615,20 +615,31 @@ class SCTConnect():
         print("\\n--- Wall Following Debug ---")
         left_dist = self.sm.laser_distance.dleft_min
         right_dist = self.sm.laser_distance.dright_min
-        dist_diff = left_dist - right_dist
+        
+        # Get actual statechart variables
+        distance_error = self.sm._Model__distance_error
+        kp = self.sm._Model__kp
+        too_close = self.sm._Model__too_close
+        too_close_threshold = self.sm._Model__too_close_threshold
+        
         print(f"Left wall dist:  {left_dist:.3f}m")
         print(f"Right wall dist: {right_dist:.3f}m")
-        print(f"Difference (L-R): {dist_diff:+.3f}m")
+        print(f"Distance error (L-R): {distance_error:+.3f}m")
+        print(f"Proportional gain (kP): {kp:.2f}")
+        print(f"Correction applied: {-kp * distance_error:+.3f} rad/s")
         
-        # Show if correction would be applied
-        if left_dist < (right_dist - 0.05):
-            print(f"⚠️  TOO CLOSE TO LEFT - Correction: -0.1 rad/s")
-        elif right_dist < (left_dist - 0.05):
-            print(f"⚠️  TOO CLOSE TO RIGHT - Correction: +0.1 rad/s")
+        # Show wall proximity status
+        print(f"\\nToo close threshold: {too_close_threshold:.3f}m")
+        if too_close:
+            print(f"⚠️  TOO CLOSE TO WALL - Forward motion stopped!")
+            if left_dist < too_close_threshold:
+                print(f"   Left wall: {left_dist:.3f}m < {too_close_threshold:.3f}m")
+            if right_dist < too_close_threshold:
+                print(f"   Right wall: {right_dist:.3f}m < {too_close_threshold:.3f}m")
         else:
-            print(f"✓ Centered (deadband ±0.05m)")
+            print(f"✓ Safe distance from walls")
         
-        print(f"Final v: {self.sm._Model__v:.3f}, w: {self.sm._Model__w:.3f}")
+        print(f"\\nFinal output - v: {self.sm._Model__v:.3f} m/s, w: {self.sm._Model__w:.3f} rad/s")
         self.sm.grid.visited = True
 
 """

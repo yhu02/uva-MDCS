@@ -1616,7 +1616,7 @@ class Model:
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
 				self.__w = -(self.base_values.max_rotation) if (self.__w < -(self.base_values.max_rotation)) else self.__w
 				self.output.speed = self.__v
-				self.output.rotation = -(self.__w)
+				self.output.rotation = self.__w
 				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
 		return transitioned_after
 	
