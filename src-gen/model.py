@@ -632,7 +632,6 @@ class Model:
 		"""
 		#Entry action for state 'AtCellCenter'.
 		self.__cmd_speed = 0.0
-		self.__cmd_rot = 0.0
 		self.__been_at_start_once = True if (self.grid.row != self.__start_row or self.grid.column != self.__start_col) else self.__been_at_start_once
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto(self):
@@ -1423,12 +1422,12 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.__autonomous_active and self.__exploring_done:
+				if self.__autonomous_active and self.__exploring_done and self.__is_well_aligned:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
-				elif self.__autonomous_active and not self.__exploring_done:
+				elif self.__autonomous_active and not self.__exploring_done and self.__is_well_aligned:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
@@ -1436,6 +1435,7 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
+				self.__cmd_rot = -(0.12) if (self.__yaw_error > 5.0) else (0.12 if (self.__yaw_error < -(5.0)) else 0.0)
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
@@ -1675,6 +1675,11 @@ class Model:
 				self.grid.row = (int(((-(((self.odom.y - self.start_pos.zero_y))) / self.grid.grid_size))))
 				self.grid.column = (int(((((self.odom.x - self.start_pos.zero_x)) / self.grid.grid_size))))
 				self.grid.orientation = 0 if (self.imu.yaw >= 45.0 and self.imu.yaw < 135.0) else (1 if (self.imu.yaw >= -(45.0) and self.imu.yaw < 45.0) else (2 if (self.imu.yaw >= -(135.0) and self.imu.yaw < -(45.0)) else 3))
+				self.__target_yaw = 90.0 if (self.grid.orientation == 0) else (0.0 if (self.grid.orientation == 1) else (-(90.0) if (self.grid.orientation == 2) else 180.0))
+				self.__yaw_error = (self.imu.yaw - self.__target_yaw)
+				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
+				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
+				self.__is_well_aligned = (self.__yaw_error > -(5.0) and self.__yaw_error < 5.0)
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
 				self.__is_north_south = (self.grid.orientation == 0 or self.grid.orientation == 2)
