@@ -14,14 +14,31 @@ class Model:
 		""" State Enum
 		"""
 		(
-			main_region_control_node,
-			main_region_control_node_region0autonomous,
-			main_region_control_node_region0autonomous_r1rotating,
-			main_region_control_node_region0manual,
-			main_region_control_node_region0manual_r1stopped,
-			main_region_control_node_region0manual_r1moving,
+			turtle_bot_turtle_bot,
+			turtle_bot_turtle_bot_mode_and_keyboard_init,
+			turtle_bot_turtle_bot_mode_and_keyboard_manual,
+			turtle_bot_turtle_bot_mode_and_keyboard_autonomous,
+			turtle_bot_turtle_bot_autonomous_logic_calibrate,
+			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key,
+			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero,
+			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0goto,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_left,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_right,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight,
+			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore,
+			turtle_bot_turtle_bot_autonomous_logic_finished,
+			turtle_bot_turtle_bot_autonomous_logic_idle,
+			turtle_bot_turtle_bot_drive_and_safety_stopped,
+			turtle_bot_turtle_bot_drive_and_safety_drive,
+			turtle_bot_turtle_bot_drive_and_safety_emergency_stop,
 			null_state
-		) = range(7)
+		) = range(24)
 	
 	
 	class UserVar:
@@ -283,12 +300,36 @@ class Model:
 		self.laser_distance = Model.LaserDistance(self)
 		self.laser_intensity = Model.LaserIntensity(self)
 		
+		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
+		self.__dist_free = None
+		self.__is_manual = None
+		self.__autonomous_active = None
+		self.__cmd_speed = None
+		self.__cmd_rot = None
+		self.__cell_start_x = None
+		self.__cell_start_y = None
+		self.__start_row = None
+		self.__start_col = None
+		self.__all_cells_visited = None
+		self.__exploring_done = None
+		self.__left_free = None
+		self.__front_free = None
+		self.__right_free = None
+		self.__back_free = None
+		self.__target_row = None
+		self.__target_col = None
+		self.__been_at_start_once = None
+		self.__turn_start_yaw = None
+		self.__v = None
+		self.__w = None
+		self.calibration_done = None
+		
 		# enumeration of all states:
 		self.__State = Model.State
 		self.__state_conf_vector_changed = None
-		self.__state_vector = [None] * 1
-		for __state_index in range(1):
+		self.__state_vector = [None] * 3
+		for __state_index in range(3):
 			self.__state_vector[__state_index] = self.State.null_state
 		
 		# for timed statechart:
@@ -297,6 +338,27 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
+		self.__dist_free = 0.35
+		self.__is_manual = False
+		self.__autonomous_active = False
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = 0.0
+		self.__cell_start_x = 0.0
+		self.__cell_start_y = 0.0
+		self.__start_row = 0
+		self.__start_col = 0
+		self.__all_cells_visited = False
+		self.__exploring_done = False
+		self.__left_free = False
+		self.__front_free = False
+		self.__right_free = False
+		self.__back_free = False
+		self.__target_row = 0
+		self.__target_col = 0
+		self.__been_at_start_once = False
+		self.__turn_start_yaw = 0.0
+		self.__v = 0.0
+		self.__w = 0.0
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
@@ -380,12 +442,15 @@ class Model:
 		self.laser_intensity.ileft_min = 0.0
 		self.laser_intensity.ileft_max = 0.0
 		self.laser_intensity.ileft_mean = 0.0
+		self.__completed = False
+		self.__do_completion = False
 		self.__is_executing = False
+		self.__state_conf_vector_position = None
 	
 	def is_active(self):
 		"""Checks if the state machine is active.
 		"""
-		return self.__state_vector[0] is not self.__State.null_state
+		return self.__state_vector[0] is not self.__State.null_state or self.__state_vector[1] is not self.__State.null_state or self.__state_vector[2] is not self.__State.null_state
 	
 	def is_final(self):
 		"""Checks if the statemachine is final.
@@ -397,21 +462,55 @@ class Model:
 		"""Checks if the state is currently active.
 		"""
 		s = state
-		if s == self.__State.main_region_control_node:
-			return (self.__state_vector[0] >= self.__State.main_region_control_node)\
-				and (self.__state_vector[0] <= self.__State.main_region_control_node_region0manual_r1moving)
-		if s == self.__State.main_region_control_node_region0autonomous:
-			return (self.__state_vector[0] >= self.__State.main_region_control_node_region0autonomous)\
-				and (self.__state_vector[0] <= self.__State.main_region_control_node_region0autonomous_r1rotating)
-		if s == self.__State.main_region_control_node_region0autonomous_r1rotating:
-			return self.__state_vector[0] == self.__State.main_region_control_node_region0autonomous_r1rotating
-		if s == self.__State.main_region_control_node_region0manual:
-			return (self.__state_vector[0] >= self.__State.main_region_control_node_region0manual)\
-				and (self.__state_vector[0] <= self.__State.main_region_control_node_region0manual_r1moving)
-		if s == self.__State.main_region_control_node_region0manual_r1stopped:
-			return self.__state_vector[0] == self.__State.main_region_control_node_region0manual_r1stopped
-		if s == self.__State.main_region_control_node_region0manual_r1moving:
-			return self.__state_vector[0] == self.__State.main_region_control_node_region0manual_r1moving
+		if s == self.__State.turtle_bot_turtle_bot:
+			return (self.__state_vector[0] >= self.__State.turtle_bot_turtle_bot)\
+				and (self.__state_vector[0] <= self.__State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop)
+		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_init:
+			return self.__state_vector[0] == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_init
+		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
+			return self.__state_vector[0] == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_manual
+		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
+			return self.__state_vector[0] == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate:
+			return (self.__state_vector[1] >= self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate)\
+				and (self.__state_vector[1] <= self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done)
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze:
+			return (self.__state_vector[1] >= self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze)\
+				and (self.__state_vector[1] <= self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore)
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0goto:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0goto
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_left:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_left
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_right:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_right
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_finished:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_finished
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle
+		if s == self.__State.turtle_bot_turtle_bot_drive_and_safety_stopped:
+			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_drive_and_safety_stopped
+		if s == self.__State.turtle_bot_turtle_bot_drive_and_safety_drive:
+			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_drive_and_safety_drive
+		if s == self.__State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop:
+			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop
 		return False
 		
 	def time_elapsed(self, event_id):
@@ -430,296 +529,1106 @@ class Model:
 		func()
 	
 	def __get_next_event(self):
+		if not self.__internal_event_queue.empty():
+			return self.__internal_event_queue.get()
 		if not self.in_event_queue.empty():
 			return self.in_event_queue.get()
 		return None
 	
-	def __entry_action_main_region_control_node__region0_autonomous_r1_rotating(self):
-		"""Entry action for state 'Rotating'..
+	
+	def raise_calibration_done(self):
+		"""Raise method for event calibration_done.
 		"""
-		#Entry action for state 'Rotating'.
-		self.output.rotation = 0.1
+		self.__internal_event_queue.put(self.__raise_calibration_done_call)
+	
+	def __raise_calibration_done_call(self):
+		"""Raise callback for event calibration_done.
+		"""
+		self.calibration_done = True
+	
+	def __entry_action_turtle_bot_turtle_bot_mode_and_keyboard_init(self):
+		"""Entry action for state 'Init'..
+		"""
+		#Entry action for state 'Init'.
+		self.__is_manual = False
 		
-	def __entry_action_main_region_control_node__region0_manual_r1_stopped(self):
+	def __entry_action_turtle_bot_turtle_bot_mode_and_keyboard_manual(self):
+		"""Entry action for state 'Manual'..
+		"""
+		#Entry action for state 'Manual'.
+		self.__is_manual = True
+		self.__autonomous_active = False
+		
+	def __entry_action_turtle_bot_turtle_bot_mode_and_keyboard_autonomous(self):
+		"""Entry action for state 'Autonomous'..
+		"""
+		#Entry action for state 'Autonomous'.
+		self.__is_manual = False
+		self.__autonomous_active = True
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key(self):
+		"""Entry action for state 'WaitForKey'..
+		"""
+		#Entry action for state 'WaitForKey'.
+		self.__cmd_speed = 0
+		self.__cmd_rot = 0
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
+		"""Entry action for state 'SettingZero'..
+		"""
+		#Entry action for state 'SettingZero'.
+		self.timer_service.set_timer(self, 0, (1 * 1000), False)
+		self.start_pos.set_zero = True
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done(self):
+		"""Entry action for state 'Done'..
+		"""
+		#Entry action for state 'Done'.
+		self.grid.row = 0
+		self.grid.column = 0
+		self.grid.orientation = 2
+		self.__start_row = 0
+		self.__start_col = 0
+		self.raise_calibration_done()
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center(self):
+		"""Entry action for state 'AtCellCenter'..
+		"""
+		#Entry action for state 'AtCellCenter'.
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = 0.0
+		self.grid.visited = True
+		self.grid.update = True
+		self.grid.receive = False
+		self.__been_at_start_once = True if (self.grid.row != self.__start_row or self.grid.column != self.__start_col) else self.__been_at_start_once
+		self.__exploring_done = True if (self.grid.row == self.__start_row and self.grid.column == self.__start_col and self.__been_at_start_once) else self.__exploring_done
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto(self):
+		""".
+		"""
+		#Entry action for state 'Goto'.
+		self.grid.receive = True
+		self.__front_free = (self.grid.wall_front == 0)
+		self.__left_free = (self.grid.wall_left == 0)
+		self.__right_free = (self.grid.wall_right == 0)
+		self.__back_free = (self.grid.wall_back == 0)
+		self.grid.update = False
+		self.__completed = True
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction(self):
+		""".
+		"""
+		#Entry action for state 'DecideDirection'.
+		self.grid.update = False
+		self.__completed = True
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell(self):
+		"""Entry action for state 'MoveToNextCell'..
+		"""
+		#Entry action for state 'MoveToNextCell'.
+		self.__cell_start_x = self.odom.x
+		self.__cell_start_y = self.odom.y
+		self.__cmd_rot = 0.0
+		self.__cmd_speed = self.user_var.base_speed
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left(self):
+		"""Entry action for state 'TurnLeft'..
+		"""
+		#Entry action for state 'TurnLeft'.
+		self.__turn_start_yaw = self.imu.yaw
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = self.user_var.base_rotation
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right(self):
+		"""Entry action for state 'TurnRight'..
+		"""
+		#Entry action for state 'TurnRight'.
+		self.__turn_start_yaw = self.imu.yaw
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = -(self.user_var.base_rotation)
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight(self):
+		""".
+		"""
+		#Entry action for state 'GoStraight'.
+		self.__cmd_speed = self.user_var.base_speed
+		self.__cmd_rot = 0.0
+		self.__completed = True
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore(self):
+		""".
+		"""
+		#Entry action for state 'Explore'.
+		self.__front_free = self.laser_distance.dfront_min > self.__dist_free
+		self.__left_free = self.laser_distance.dleft_min > self.__dist_free
+		self.__right_free = self.laser_distance.dright_min > self.__dist_free
+		self.__back_free = self.laser_distance.dback_min > self.__dist_free
+		self.grid.wall_front = 0 if (self.__front_free) else 1
+		self.grid.wall_left = 0 if (self.__left_free) else 1
+		self.grid.wall_right = 0 if (self.__right_free) else 1
+		self.grid.wall_back = 0 if (self.__back_free) else 1
+		self.grid.update = True
+		self.grid.receive = False
+		self.__completed = True
+		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_finished(self):
+		"""Entry action for state 'Finished'..
+		"""
+		#Entry action for state 'Finished'.
+		self.output.speed = 0
+		self.output.rotation = 0
+		self.output.finish = 1
+		
+	def __entry_action_turtle_bot_turtle_bot_drive_and_safety_stopped(self):
 		"""Entry action for state 'Stopped'..
 		"""
 		#Entry action for state 'Stopped'.
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		
-	def __entry_action_main_region_control_node__region0_manual_r1_moving(self):
-		"""Entry action for state 'Moving'..
+	def __entry_action_turtle_bot_turtle_bot_drive_and_safety_emergency_stop(self):
+		"""Entry action for state 'EmergencyStop'..
 		"""
-		#Entry action for state 'Moving'.
-		self.timer_service.set_timer(self, 0, (2 * 1000), False)
-		self.output.speed = (self.user_var.base_speed * 2)
+		#Entry action for state 'EmergencyStop'.
+		self.output.speed = 0.0
+		self.output.rotation = 0.0
 		
-	def __exit_action_main_region_control_node__region0_manual_r1_moving(self):
-		"""Exit action for state 'Moving'..
+	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
+		"""Exit action for state 'SettingZero'..
 		"""
-		#Exit action for state 'Moving'.
+		#Exit action for state 'SettingZero'.
 		self.timer_service.unset_timer(self, 0)
 		
-	def __enter_sequence_main_region_control_node_default(self):
-		"""'default' enter sequence for state Control Node.
+	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell(self):
+		"""Exit action for state 'MoveToNextCell'..
 		"""
-		#'default' enter sequence for state Control Node
-		self.__enter_sequence_main_region_control_node__region0_default()
+		#Exit action for state 'MoveToNextCell'.
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = 0.0
+		self.grid.row = (self.grid.row - 1) if (self.grid.orientation == 0) else ((self.grid.row + 1) if self.grid.orientation == 2 else self.grid.row)
+		self.grid.column = (self.grid.column + 1) if (self.grid.orientation == 1) else ((self.grid.column - 1) if self.grid.orientation == 3 else self.grid.column)
 		
-	def __enter_sequence_main_region_control_node__region0_autonomous_default(self):
-		"""'default' enter sequence for state Autonomous.
+	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left(self):
+		"""Exit action for state 'TurnLeft'..
 		"""
-		#'default' enter sequence for state Autonomous
-		self.__enter_sequence_main_region_control_node__region0_autonomous_r1_default()
+		#Exit action for state 'TurnLeft'.
+		self.__cmd_rot = 0.0
+		self.grid.orientation = 3 if self.grid.orientation == 0 else (self.grid.orientation - 1)
 		
-	def __enter_sequence_main_region_control_node__region0_autonomous_r1_rotating_default(self):
-		"""'default' enter sequence for state Rotating.
+	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right(self):
+		"""Exit action for state 'TurnRight'..
 		"""
-		#'default' enter sequence for state Rotating
-		self.__entry_action_main_region_control_node__region0_autonomous_r1_rotating()
-		self.__state_vector[0] = self.State.main_region_control_node_region0autonomous_r1rotating
+		#Exit action for state 'TurnRight'.
+		self.__cmd_rot = 0.0
+		self.grid.orientation = 0 if self.grid.orientation == 3 else (self.grid.orientation + 1)
+		
+	def __enter_sequence_turtle_bot_turtle_bot_default(self):
+		"""'default' enter sequence for state TurtleBot.
+		"""
+		#'default' enter sequence for state TurtleBot
+		self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_default()
+		
+	def __enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_init_default(self):
+		"""'default' enter sequence for state Init.
+		"""
+		#'default' enter sequence for state Init
+		self.__entry_action_turtle_bot_turtle_bot_mode_and_keyboard_init()
+		self.__state_vector[0] = self.State.turtle_bot_turtle_bot_mode_and_keyboard_init
+		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_control_node__region0_manual_default(self):
+	def __enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default(self):
 		"""'default' enter sequence for state Manual.
 		"""
 		#'default' enter sequence for state Manual
-		self.__enter_sequence_main_region_control_node__region0_manual_r1_default()
+		self.__entry_action_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+		self.__state_vector[0] = self.State.turtle_bot_turtle_bot_mode_and_keyboard_manual
+		self.__state_conf_vector_position = 0
+		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_control_node__region0_manual_r1_stopped_default(self):
+	def __enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous_default(self):
+		"""'default' enter sequence for state Autonomous.
+		"""
+		#'default' enter sequence for state Autonomous
+		self.__entry_action_turtle_bot_turtle_bot_mode_and_keyboard_autonomous()
+		self.__state_vector[0] = self.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous
+		self.__state_conf_vector_position = 0
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default(self):
+		"""'default' enter sequence for state Calibrate.
+		"""
+		#'default' enter sequence for state Calibrate
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_default()
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_default(self):
+		"""'default' enter sequence for state WaitForKey.
+		"""
+		#'default' enter sequence for state WaitForKey
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_default(self):
+		"""'default' enter sequence for state SettingZero.
+		"""
+		#'default' enter sequence for state SettingZero
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done_default(self):
+		"""'default' enter sequence for state Done.
+		"""
+		#'default' enter sequence for state Done
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze_default(self):
+		"""'default' enter sequence for state ExploreMaze.
+		"""
+		#'default' enter sequence for state ExploreMaze
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_default()
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default(self):
+		"""'default' enter sequence for state AtCellCenter.
+		"""
+		#'default' enter sequence for state AtCellCenter
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto_default(self):
+		"""'default' enter sequence for state Goto.
+		"""
+		#'default' enter sequence for state Goto
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0goto
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default(self):
+		"""'default' enter sequence for state MoveToNextCell.
+		"""
+		#'default' enter sequence for state MoveToNextCell
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left_default(self):
+		"""'default' enter sequence for state TurnLeft.
+		"""
+		#'default' enter sequence for state TurnLeft
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_left
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right_default(self):
+		"""'default' enter sequence for state TurnRight.
+		"""
+		#'default' enter sequence for state TurnRight
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_right
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around_default(self):
+		"""'default' enter sequence for state TurnAround.
+		"""
+		#'default' enter sequence for state TurnAround
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight_default(self):
+		"""'default' enter sequence for state GoStraight.
+		"""
+		#'default' enter sequence for state GoStraight
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default(self):
+		"""'default' enter sequence for state Explore.
+		"""
+		#'default' enter sequence for state Explore
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_finished_default(self):
+		"""'default' enter sequence for state Finished.
+		"""
+		#'default' enter sequence for state Finished
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_finished()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_finished
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_idle_default(self):
+		"""'default' enter sequence for state Idle.
+		"""
+		#'default' enter sequence for state Idle
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_idle
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped_default(self):
 		"""'default' enter sequence for state Stopped.
 		"""
 		#'default' enter sequence for state Stopped
-		self.__entry_action_main_region_control_node__region0_manual_r1_stopped()
-		self.__state_vector[0] = self.State.main_region_control_node_region0manual_r1stopped
+		self.__entry_action_turtle_bot_turtle_bot_drive_and_safety_stopped()
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_drive_and_safety_stopped
+		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_control_node__region0_manual_r1_moving_default(self):
-		"""'default' enter sequence for state Moving.
+	def __enter_sequence_turtle_bot_turtle_bot_drive_and_safety_drive_default(self):
+		"""'default' enter sequence for state Drive.
 		"""
-		#'default' enter sequence for state Moving
-		self.__entry_action_main_region_control_node__region0_manual_r1_moving()
-		self.__state_vector[0] = self.State.main_region_control_node_region0manual_r1moving
+		#'default' enter sequence for state Drive
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_drive_and_safety_drive
+		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_default(self):
-		"""'default' enter sequence for region main region.
+	def __enter_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop_default(self):
+		"""'default' enter sequence for state EmergencyStop.
 		"""
-		#'default' enter sequence for region main region
-		self.__react_main_region__entry_default()
+		#'default' enter sequence for state EmergencyStop
+		self.__entry_action_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop
+		self.__state_conf_vector_position = 2
+		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_control_node__region0_default(self):
-		"""'default' enter sequence for region .
+	def __enter_sequence_turtle_bot_default(self):
+		"""'default' enter sequence for region TurtleBot.
 		"""
-		#'default' enter sequence for region 
-		self.__react_main_region_control_node__region0__entry_default()
+		#'default' enter sequence for region TurtleBot
+		self.__react_turtle_bot__entry_default()
 		
-	def __enter_sequence_main_region_control_node__region0_autonomous_r1_default(self):
-		"""'default' enter sequence for region r1.
+	def __enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_default(self):
+		"""'default' enter sequence for region ModeAndKeyboard.
 		"""
-		#'default' enter sequence for region r1
-		self.__react_main_region_control_node__region0_autonomous_r1__entry_default()
+		#'default' enter sequence for region ModeAndKeyboard
+		self.__react_turtle_bot_turtle_bot_mode_and_keyboard__entry_default()
 		
-	def __enter_sequence_main_region_control_node__region0_manual_r1_default(self):
-		"""'default' enter sequence for region r1.
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_default(self):
+		"""'default' enter sequence for region AutonomousLogic.
 		"""
-		#'default' enter sequence for region r1
-		self.__react_main_region_control_node__region0_manual_r1__entry_default()
+		#'default' enter sequence for region AutonomousLogic
+		self.__react_turtle_bot_turtle_bot_autonomous_logic__entry_default()
 		
-	def __exit_sequence_main_region_control_node(self):
-		"""Default exit sequence for state Control Node.
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_default(self):
+		"""'default' enter sequence for region null.
 		"""
-		#Default exit sequence for state Control Node
-		self.__exit_sequence_main_region_control_node__region0()
-		self.__state_vector[0] = self.State.null_state
+		#'default' enter sequence for region null
+		self.__react_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0__entry_default()
 		
-	def __exit_sequence_main_region_control_node__region0_autonomous(self):
-		"""Default exit sequence for state Autonomous.
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_default(self):
+		"""'default' enter sequence for region null.
 		"""
-		#Default exit sequence for state Autonomous
-		self.__exit_sequence_main_region_control_node__region0_autonomous_r1()
-		self.__state_vector[0] = self.State.main_region_control_node
+		#'default' enter sequence for region null
+		self.__react_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0__entry_default()
 		
-	def __exit_sequence_main_region_control_node__region0_autonomous_r1_rotating(self):
-		"""Default exit sequence for state Rotating.
+	def __enter_sequence_turtle_bot_turtle_bot_drive_and_safety_default(self):
+		"""'default' enter sequence for region DriveAndSafety.
 		"""
-		#Default exit sequence for state Rotating
-		self.__state_vector[0] = self.State.main_region_control_node_region0autonomous
+		#'default' enter sequence for region DriveAndSafety
+		self.__react_turtle_bot_turtle_bot_drive_and_safety__entry_default()
 		
-	def __exit_sequence_main_region_control_node__region0_manual(self):
+	def __exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_init(self):
+		"""Default exit sequence for state Init.
+		"""
+		#Default exit sequence for state Init
+		self.__state_vector[0] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 0
+		
+	def __exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual(self):
 		"""Default exit sequence for state Manual.
 		"""
 		#Default exit sequence for state Manual
-		self.__exit_sequence_main_region_control_node__region0_manual_r1()
-		self.__state_vector[0] = self.State.main_region_control_node
+		self.__state_vector[0] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 0
 		
-	def __exit_sequence_main_region_control_node__region0_manual_r1_stopped(self):
+	def __exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous(self):
+		"""Default exit sequence for state Autonomous.
+		"""
+		#Default exit sequence for state Autonomous
+		self.__state_vector[0] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 0
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate(self):
+		"""Default exit sequence for state Calibrate.
+		"""
+		#Default exit sequence for state Calibrate
+		self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key(self):
+		"""Default exit sequence for state WaitForKey.
+		"""
+		#Default exit sequence for state WaitForKey
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
+		"""Default exit sequence for state SettingZero.
+		"""
+		#Default exit sequence for state SettingZero
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate
+		self.__state_conf_vector_position = 1
+		self.__exit_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done(self):
+		"""Default exit sequence for state Done.
+		"""
+		#Default exit sequence for state Done
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze(self):
+		"""Default exit sequence for state ExploreMaze.
+		"""
+		#Default exit sequence for state ExploreMaze
+		self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center(self):
+		"""Default exit sequence for state AtCellCenter.
+		"""
+		#Default exit sequence for state AtCellCenter
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto(self):
+		"""Default exit sequence for state Goto.
+		"""
+		#Default exit sequence for state Goto
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction(self):
+		"""Default exit sequence for state DecideDirection.
+		"""
+		#Default exit sequence for state DecideDirection
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell(self):
+		"""Default exit sequence for state MoveToNextCell.
+		"""
+		#Default exit sequence for state MoveToNextCell
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		self.__exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left(self):
+		"""Default exit sequence for state TurnLeft.
+		"""
+		#Default exit sequence for state TurnLeft
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		self.__exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left()
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right(self):
+		"""Default exit sequence for state TurnRight.
+		"""
+		#Default exit sequence for state TurnRight
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		self.__exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right()
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around(self):
+		"""Default exit sequence for state TurnAround.
+		"""
+		#Default exit sequence for state TurnAround
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight(self):
+		"""Default exit sequence for state GoStraight.
+		"""
+		#Default exit sequence for state GoStraight
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore(self):
+		"""Default exit sequence for state Explore.
+		"""
+		#Default exit sequence for state Explore
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_finished(self):
+		"""Default exit sequence for state Finished.
+		"""
+		#Default exit sequence for state Finished
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle(self):
+		"""Default exit sequence for state Idle.
+		"""
+		#Default exit sequence for state Idle
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped(self):
 		"""Default exit sequence for state Stopped.
 		"""
 		#Default exit sequence for state Stopped
-		self.__state_vector[0] = self.State.main_region_control_node_region0manual
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 2
 		
-	def __exit_sequence_main_region_control_node__region0_manual_r1_moving(self):
-		"""Default exit sequence for state Moving.
+	def __exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive(self):
+		"""Default exit sequence for state Drive.
 		"""
-		#Default exit sequence for state Moving
-		self.__state_vector[0] = self.State.main_region_control_node_region0manual
-		self.__exit_action_main_region_control_node__region0_manual_r1_moving()
+		#Default exit sequence for state Drive
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 2
 		
-	def __exit_sequence_main_region(self):
-		"""Default exit sequence for region main region.
+	def __exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop(self):
+		"""Default exit sequence for state EmergencyStop.
 		"""
-		#Default exit sequence for region main region
+		#Default exit sequence for state EmergencyStop
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 2
+		
+	def __exit_sequence_turtle_bot(self):
+		"""Default exit sequence for region TurtleBot.
+		"""
+		#Default exit sequence for region TurtleBot
 		state = self.__state_vector[0]
-		if state == self.State.main_region_control_node:
-			self.__exit_sequence_main_region_control_node()
-		elif state == self.State.main_region_control_node_region0autonomous:
-			self.__exit_sequence_main_region_control_node__region0_autonomous()
-		elif state == self.State.main_region_control_node_region0autonomous_r1rotating:
-			self.__exit_sequence_main_region_control_node__region0_autonomous_r1_rotating()
-		elif state == self.State.main_region_control_node_region0manual:
-			self.__exit_sequence_main_region_control_node__region0_manual()
-		elif state == self.State.main_region_control_node_region0manual_r1stopped:
-			self.__exit_sequence_main_region_control_node__region0_manual_r1_stopped()
-		elif state == self.State.main_region_control_node_region0manual_r1moving:
-			self.__exit_sequence_main_region_control_node__region0_manual_r1_moving()
+		if state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_init:
+			self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_init()
+		elif state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
+			self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+		elif state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
+			self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous()
+		state = self.__state_vector[1]
+		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0goto:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_left:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_right:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_finished:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_finished()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle()
+		state = self.__state_vector[2]
+		if state == self.State.turtle_bot_turtle_bot_drive_and_safety_stopped:
+			self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped()
+		elif state == self.State.turtle_bot_turtle_bot_drive_and_safety_drive:
+			self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive()
+		elif state == self.State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop:
+			self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
 		
-	def __exit_sequence_main_region_control_node__region0(self):
-		"""Default exit sequence for region .
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0(self):
+		"""Default exit sequence for region null.
 		"""
-		#Default exit sequence for region 
-		state = self.__state_vector[0]
-		if state == self.State.main_region_control_node_region0autonomous:
-			self.__exit_sequence_main_region_control_node__region0_autonomous()
-		elif state == self.State.main_region_control_node_region0autonomous_r1rotating:
-			self.__exit_sequence_main_region_control_node__region0_autonomous_r1_rotating()
-		elif state == self.State.main_region_control_node_region0manual:
-			self.__exit_sequence_main_region_control_node__region0_manual()
-		elif state == self.State.main_region_control_node_region0manual_r1stopped:
-			self.__exit_sequence_main_region_control_node__region0_manual_r1_stopped()
-		elif state == self.State.main_region_control_node_region0manual_r1moving:
-			self.__exit_sequence_main_region_control_node__region0_manual_r1_moving()
+		#Default exit sequence for region null
+		state = self.__state_vector[1]
+		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done()
 		
-	def __exit_sequence_main_region_control_node__region0_autonomous_r1(self):
-		"""Default exit sequence for region r1.
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0(self):
+		"""Default exit sequence for region null.
 		"""
-		#Default exit sequence for region r1
-		state = self.__state_vector[0]
-		if state == self.State.main_region_control_node_region0autonomous_r1rotating:
-			self.__exit_sequence_main_region_control_node__region0_autonomous_r1_rotating()
+		#Default exit sequence for region null
+		state = self.__state_vector[1]
+		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0goto:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_left:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_right:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
 		
-	def __exit_sequence_main_region_control_node__region0_manual_r1(self):
-		"""Default exit sequence for region r1.
-		"""
-		#Default exit sequence for region r1
-		state = self.__state_vector[0]
-		if state == self.State.main_region_control_node_region0manual_r1stopped:
-			self.__exit_sequence_main_region_control_node__region0_manual_r1_stopped()
-		elif state == self.State.main_region_control_node_region0manual_r1moving:
-			self.__exit_sequence_main_region_control_node__region0_manual_r1_moving()
-		
-	def __react_main_region_control_node__region0_autonomous_r1__entry_default(self):
+	def __react_turtle_bot_turtle_bot_mode_and_keyboard__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_control_node__region0_autonomous_r1_rotating_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_init_default()
 		
-	def __react_main_region_control_node__region0_manual_r1__entry_default(self):
+	def __react_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_control_node__region0_manual_r1_stopped_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_default()
 		
-	def __react_main_region_control_node__region0__entry_default(self):
+	def __react_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_control_node__region0_manual_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 		
-	def __react_main_region__entry_default(self):
+	def __react_turtle_bot_turtle_bot_autonomous_logic__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_control_node_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default()
 		
-	def __main_region_control_node__region0_autonomous_react(self, transitioned_before):
-		"""Implementation of __main_region_control_node__region0_autonomous_react function.
+	def __react_turtle_bot_turtle_bot_drive_and_safety__entry_default(self):
+		"""Default react sequence for initial entry .
 		"""
-		#The reactions of state Autonomous.
+		#Default react sequence for initial entry 
+		self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped_default()
+		
+	def __react_turtle_bot__entry_default(self):
+		"""Default react sequence for initial entry .
+		"""
+		#Default react sequence for initial entry 
+		self.__enter_sequence_turtle_bot_turtle_bot_default()
+		
+	def __turtle_bot_turtle_bot_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_react function.
+		"""
+		#The reactions of state TurtleBot.
 		transitioned_after = transitioned_before
-		if transitioned_after < 0:
-			if self.computer.x_press:
-				self.__exit_sequence_main_region_control_node__region0_autonomous()
-				self.__enter_sequence_main_region_control_node__region0_manual_default()
-				transitioned_after = 0
-		#If no transition was taken
-		if transitioned_after == transitioned_before:
-			#then execute local reactions.
+		if not self.__do_completion:
+			#Always execute local reactions.
 			transitioned_after = transitioned_before
 		return transitioned_after
 	
 	
-	def __main_region_control_node__region0_autonomous_r1_rotating_react(self, transitioned_before):
-		"""Implementation of __main_region_control_node__region0_autonomous_r1_rotating_react function.
+	def __turtle_bot_turtle_bot_mode_and_keyboard_init_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_mode_and_keyboard_init_react function.
 		"""
-		#The reactions of state Rotating.
+		#The reactions of state Init.
 		transitioned_after = transitioned_before
-		#Always execute local reactions.
-		transitioned_after = self.__main_region_control_node__region0_autonomous_react(transitioned_before)
+		if not self.__do_completion:
+			if transitioned_after < 0:
+				if self.computer.m_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_init()
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
+					transitioned_after = 0
 		return transitioned_after
 	
 	
-	def __main_region_control_node__region0_manual_react(self, transitioned_before):
-		"""Implementation of __main_region_control_node__region0_manual_react function.
+	def __turtle_bot_turtle_bot_mode_and_keyboard_manual_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_mode_and_keyboard_manual_react function.
 		"""
 		#The reactions of state Manual.
 		transitioned_after = transitioned_before
-		if transitioned_after < 0:
-			if self.computer.x_press:
-				self.__exit_sequence_main_region_control_node__region0_manual()
-				self.__enter_sequence_main_region_control_node__region0_autonomous_default()
-				transitioned_after = 0
-		#If no transition was taken
-		if transitioned_after == transitioned_before:
-			#then execute local reactions.
-			transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 0:
+				if self.computer.m_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous_default()
+					transitioned_after = 0
 		return transitioned_after
 	
 	
-	def __main_region_control_node__region0_manual_r1_stopped_react(self, transitioned_before):
-		"""Implementation of __main_region_control_node__region0_manual_r1_stopped_react function.
+	def __turtle_bot_turtle_bot_mode_and_keyboard_autonomous_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_mode_and_keyboard_autonomous_react function.
+		"""
+		#The reactions of state Autonomous.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 0:
+				if self.computer.m_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous()
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
+					transitioned_after = 0
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_calibrate_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_calibrate_react function.
+		"""
+		#The reactions of state Calibrate.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.calibration_done:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_idle_default()
+					transitioned_after = 1
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_react function.
+		"""
+		#The reactions of state WaitForKey.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.computer.s_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_react function.
+		"""
+		#The reactions of state SettingZero.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.__time_events[0]:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
+					self.start_pos.set_zero = False
+					self.__time_events[0] = False
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done_react function.
+		"""
+		#The reactions of state Done.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			#Always execute local reactions.
+			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze_react function.
+		"""
+		#The reactions of state ExploreMaze.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.__exploring_done and self.grid.row == self.__target_row and self.grid.column == self.__target_col:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_finished_default()
+					transitioned_after = 1
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_react function.
+		"""
+		#The reactions of state AtCellCenter.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.__autonomous_active and self.__exploring_done:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+				elif self.__autonomous_active and not self.__exploring_done:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto_react function.
+		"""
+		#The reactions of state Goto.
+		transitioned_after = transitioned_before
+		if self.__do_completion:
+			#Default exit sequence for state Goto
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+			self.__state_conf_vector_position = 1
+			#'default' enter sequence for state DecideDirection
+			self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction
+			self.__state_conf_vector_position = 1
+			self.__state_conf_vector_changed = True
+			self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+		else:
+			#Always execute local reactions.
+			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction_react function.
+		"""
+		#The reactions of state DecideDirection.
+		transitioned_after = transitioned_before
+		if self.__do_completion:
+			#Default exit sequence for state DecideDirection
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+			self.__state_conf_vector_position = 1
+			#The reactions of state null.
+			if (not self.__exploring_done and self.__right_free and ((self.grid.orientation == 0 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 1 and self.grid.row < self.grid.max_row) or (self.grid.orientation == 2 and self.grid.column > 0) or (self.grid.orientation == 3 and self.grid.row > 0))) or (self.__exploring_done and self.__right_free and ((self.grid.orientation == 0 and self.grid.column < self.grid.max_col and self.__target_col > self.grid.column) or (self.grid.orientation == 1 and self.grid.row < self.grid.max_row and self.__target_row > self.grid.row) or (self.grid.orientation == 2 and self.grid.column > 0 and self.__target_col < self.grid.column) or (self.grid.orientation == 3 and self.grid.row > 0 and self.__target_row < self.grid.row))):
+				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right_default()
+			elif (not self.__exploring_done and self.__front_free and ((self.grid.orientation == 0 and self.grid.row > 0) or (self.grid.orientation == 1 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 2 and self.grid.row < self.grid.max_row) or (self.grid.orientation == 3 and self.grid.column > 0))) or (self.__exploring_done and self.__front_free and ((self.grid.orientation == 0 and self.grid.row > 0 and self.__target_row < self.grid.row) or (self.grid.orientation == 1 and self.grid.column < self.grid.max_col and self.__target_col > self.grid.column) or (self.grid.orientation == 2 and self.grid.row < self.grid.max_row and self.__target_row > self.grid.row) or (self.grid.orientation == 3 and self.grid.column > 0 and self.__target_col < self.grid.column))):
+				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight_default()
+			elif (not self.__exploring_done and self.__left_free and ((self.grid.orientation == 0 and self.grid.column > 0) or (self.grid.orientation == 1 and self.grid.row > 0) or (self.grid.orientation == 2 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 3 and self.grid.row < self.grid.max_row))) or (self.__exploring_done and self.__left_free and ((self.grid.orientation == 0 and self.grid.column > 0 and self.__target_col < self.grid.column) or (self.grid.orientation == 1 and self.grid.row > 0 and self.__target_row < self.grid.row) or (self.grid.orientation == 2 and self.grid.column < self.grid.max_col and self.__target_col > self.grid.column) or (self.grid.orientation == 3 and self.grid.row < self.grid.max_row and self.__target_row > self.grid.row))):
+				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left_default()
+			else:
+				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around_default()
+		else:
+			#Always execute local reactions.
+			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_react function.
+		"""
+		#The reactions of state MoveToNextCell.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if (self.grid.orientation == 0 and (self.odom.y >= (self.__cell_start_y + (self.grid.grid_size * 0.9)) or self.odom.y <= (self.__cell_start_y - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 2 and (self.odom.y >= (self.__cell_start_y + (self.grid.grid_size * 0.9)) or self.odom.y <= (self.__cell_start_y - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 1 and (self.odom.x >= (self.__cell_start_x + (self.grid.grid_size * 0.9)) or self.odom.x <= (self.__cell_start_x - (self.grid.grid_size * 0.9)))) or (self.grid.orientation == 3 and (self.odom.x >= (self.__cell_start_x + (self.grid.grid_size * 0.9)) or self.odom.x <= (self.__cell_start_x - (self.grid.grid_size * 0.9)))):
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left_react function.
+		"""
+		#The reactions of state TurnLeft.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.imu.yaw > (self.__turn_start_yaw + 1.57):
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right_react function.
+		"""
+		#The reactions of state TurnRight.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.imu.yaw < (self.__turn_start_yaw - 1.57):
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around_react function.
+		"""
+		#The reactions of state TurnAround.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			#Always execute local reactions.
+			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight_react function.
+		"""
+		#The reactions of state GoStraight.
+		transitioned_after = transitioned_before
+		if self.__do_completion:
+			#Default exit sequence for state GoStraight
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+			self.__state_conf_vector_position = 1
+			#'default' enter sequence for state MoveToNextCell
+			self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell
+			self.__state_conf_vector_position = 1
+			self.__state_conf_vector_changed = True
+			self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+		else:
+			#Always execute local reactions.
+			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_react function.
+		"""
+		#The reactions of state Explore.
+		transitioned_after = transitioned_before
+		if self.__do_completion:
+			#Default exit sequence for state Explore
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+			self.__state_conf_vector_position = 1
+			#'default' enter sequence for state DecideDirection
+			self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction
+			self.__state_conf_vector_position = 1
+			self.__state_conf_vector_changed = True
+			self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+		else:
+			#Always execute local reactions.
+			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_idle_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_idle_react function.
+		"""
+		#The reactions of state Idle.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.__autonomous_active:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze_default()
+					transitioned_after = 1
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_drive_and_safety_stopped_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_drive_and_safety_stopped_react function.
 		"""
 		#The reactions of state Stopped.
 		transitioned_after = transitioned_before
-		if transitioned_after < 0:
-			if self.computer.w_press:
-				self.__exit_sequence_main_region_control_node__region0_manual_r1_stopped()
-				self.__enter_sequence_main_region_control_node__region0_manual_r1_moving_default()
-				self.__main_region_control_node__region0_manual_react(0)
-				transitioned_after = 0
-		#If no transition was taken
-		if transitioned_after == transitioned_before:
-			#then execute local reactions.
-			transitioned_after = self.__main_region_control_node__region0_manual_react(transitioned_before)
+		if not self.__do_completion:
+			if transitioned_after < 2:
+				if self.__cmd_speed != 0.0 or self.__cmd_rot != 0.0:
+					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped()
+					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_drive_default()
+					self.__turtle_bot_turtle_bot_react(0)
+					transitioned_after = 2
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
 		return transitioned_after
 	
 	
-	def __main_region_control_node__region0_manual_r1_moving_react(self, transitioned_before):
-		"""Implementation of __main_region_control_node__region0_manual_r1_moving_react function.
+	def __turtle_bot_turtle_bot_drive_and_safety_drive_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_drive_and_safety_drive_react function.
 		"""
-		#The reactions of state Moving.
+		#The reactions of state Drive.
 		transitioned_after = transitioned_before
-		if transitioned_after < 0:
-			if self.__time_events[0]:
-				self.__exit_sequence_main_region_control_node__region0_manual_r1_moving()
-				self.__time_events[0] = False
-				self.__enter_sequence_main_region_control_node__region0_manual_r1_stopped_default()
-				self.__main_region_control_node__region0_manual_react(0)
-				transitioned_after = 0
-		#If no transition was taken
-		if transitioned_after == transitioned_before:
-			#then execute local reactions.
-			transitioned_after = self.__main_region_control_node__region0_manual_react(transitioned_before)
+		if not self.__do_completion:
+			if transitioned_after < 2:
+				if self.laser_distance.dfront_min < 0.18:
+					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive()
+					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop_default()
+					self.__turtle_bot_turtle_bot_react(0)
+					transitioned_after = 2
+				elif self.__cmd_speed == 0.0 and self.__cmd_rot == 0.0:
+					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_drive()
+					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped_default()
+					self.__turtle_bot_turtle_bot_react(0)
+					transitioned_after = 2
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				self.__v = self.__cmd_speed
+				self.__w = self.__cmd_rot
+				self.__v = ((self.__v * 0.5) if (self.laser_distance.dfront_min < 0.3) else self.__v) if (self.__v > 0.0) else self.__v
+				self.__w = ((self.__w - 0.1) if (self.laser_distance.dleft_min < ((self.laser_distance.dright_min - 0.05))) else ((self.__w + 0.1) if (self.laser_distance.dright_min < (self.laser_distance.dleft_min - 0.05)) else self.__w)) if (self.__v > 0.0) else self.__w
+				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
+				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
+				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
+				self.__w = -(self.base_values.max_rotation) if (self.__w < -(self.base_values.max_rotation)) else self.__w
+				self.output.speed = self.__v
+				self.output.rotation = self.__w
+				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_drive_and_safety_emergency_stop_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_drive_and_safety_emergency_stop_react function.
+		"""
+		#The reactions of state EmergencyStop.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 2:
+				if self.laser_distance.dfront_min > 0.22 and (self.__cmd_speed != 0.0 or self.__cmd_rot != 0.0):
+					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
+					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_drive_default()
+					self.__turtle_bot_turtle_bot_react(0)
+					transitioned_after = 2
+				elif self.laser_distance.dfront_min > 0.22 and self.__cmd_speed == 0.0 and self.__cmd_rot == 0.0:
+					self.__exit_sequence_turtle_bot_turtle_bot_drive_and_safety_emergency_stop()
+					self.__enter_sequence_turtle_bot_turtle_bot_drive_and_safety_stopped_default()
+					self.__turtle_bot_turtle_bot_react(0)
+					transitioned_after = 2
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -735,16 +1644,62 @@ class Model:
 		self.__time_events[0] = False
 	
 	
+	def __clear_internal_events(self):
+		"""Implementation of __clear_internal_events function.
+		"""
+		self.calibration_done = False
+	
+	
 	def __micro_step(self):
 		"""Implementation of __micro_step function.
 		"""
+		transitioned = -1
+		self.__state_conf_vector_position = 0
 		state = self.__state_vector[0]
-		if state == self.State.main_region_control_node_region0autonomous_r1rotating:
-			self.__main_region_control_node__region0_autonomous_r1_rotating_react(-1)
-		elif state == self.State.main_region_control_node_region0manual_r1stopped:
-			self.__main_region_control_node__region0_manual_r1_stopped_react(-1)
-		elif state == self.State.main_region_control_node_region0manual_r1moving:
-			self.__main_region_control_node__region0_manual_r1_moving_react(-1)
+		if state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_init:
+			transitioned = self.__turtle_bot_turtle_bot_mode_and_keyboard_init_react(transitioned)
+		elif state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
+			transitioned = self.__turtle_bot_turtle_bot_mode_and_keyboard_manual_react(transitioned)
+		elif state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
+			transitioned = self.__turtle_bot_turtle_bot_mode_and_keyboard_autonomous_react(transitioned)
+		if self.__state_conf_vector_position < 1:
+			state = self.__state_vector[1]
+			if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0goto:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_left:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_right:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_finished:
+				pass
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_idle_react(transitioned)
+		if self.__state_conf_vector_position < 2:
+			state = self.__state_vector[2]
+			if state == self.State.turtle_bot_turtle_bot_drive_and_safety_stopped:
+				self.__turtle_bot_turtle_bot_drive_and_safety_stopped_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_drive_and_safety_drive:
+				self.__turtle_bot_turtle_bot_drive_and_safety_drive_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_drive_and_safety_emergency_stop:
+				self.__turtle_bot_turtle_bot_drive_and_safety_emergency_stop_react(transitioned)
 	
 	
 	def run_cycle(self):
@@ -762,8 +1717,17 @@ class Model:
 			self.__execute_queued_event(next_event)
 		condition_0 = True
 		while condition_0:
-			self.__micro_step()
-			self.__clear_in_events()
+			self.__do_completion = False
+			condition_1 = True
+			while condition_1:
+				if self.__completed:
+					self.__do_completion = True
+				self.__completed = False
+				self.__micro_step()
+				self.__clear_in_events()
+				self.__clear_internal_events()
+				self.__do_completion = False
+				condition_1 = self.__completed
 			condition_0 = False
 			next_event = self.__get_next_event()
 			if next_event is not None:
@@ -783,7 +1747,18 @@ class Model:
 			return
 		self.__is_executing = True
 		#Default enter sequence for statechart model
-		self.__enter_sequence_main_region_default()
+		self.__enter_sequence_turtle_bot_default()
+		self.__do_completion = False
+		condition_0 = True
+		while condition_0:
+			if self.__completed:
+				self.__do_completion = True
+			self.__completed = False
+			self.__micro_step()
+			self.__clear_in_events()
+			self.__clear_internal_events()
+			self.__do_completion = False
+			condition_0 = self.__completed
 		self.__is_executing = False
 	
 	
@@ -795,8 +1770,11 @@ class Model:
 			return
 		self.__is_executing = True
 		#Default exit sequence for statechart model
-		self.__exit_sequence_main_region()
+		self.__exit_sequence_turtle_bot()
 		self.__state_vector[0] = self.State.null_state
+		self.__state_vector[1] = self.State.null_state
+		self.__state_vector[2] = self.State.null_state
+		self.__state_conf_vector_position = 2
 		self.__is_executing = False
 	
 	
