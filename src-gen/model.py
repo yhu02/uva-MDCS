@@ -305,6 +305,7 @@ class Model:
 		self.__dist_free = None
 		self.__is_manual = None
 		self.__autonomous_active = None
+		self.__all_cells_visited = None
 		self.__cmd_speed = None
 		self.__cmd_rot = None
 		self.__cell_start_x = None
@@ -355,6 +356,7 @@ class Model:
 		self.__dist_free = 0.35
 		self.__is_manual = False
 		self.__autonomous_active = False
+		self.__all_cells_visited = False
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.__cell_start_x = 0.0
