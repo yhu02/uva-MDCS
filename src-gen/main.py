@@ -145,22 +145,7 @@ class SCTConnect():
                         explored_cells.append(f"({row},{col})")
             print(f"Total explored: {explored_count}/{self.maze.grid_rows * self.maze.grid_cols}")
             if explored_cells:
-                print(f"Cells: {', '.join(explored_cells)}")
-            
-            # Print visual grid map
-            print("\n--- Grid Map (X=explored, .=unexplored, @=current) ---")
-            for row in range(self.maze.grid_rows):
-                row_str = ""
-                for col in range(self.maze.grid_cols):
-                    if row == self.sm.grid.row and col == self.sm.grid.column:
-                        row_str += "@ "  # Current position
-                    elif self.maze.grid[row][col].visited:
-                        row_str += "X "  # Explored
-                    else:
-                        row_str += ". "  # Unexplored
-                print(f"  {row_str}")
-            print(f"  Orientation: {['N','E','S','W'][self.sm.grid.orientation]}")
-            
+                print(f"Cells: {', '.join(explored_cells)}")            
 
             print("----------- Laser stuff -----------")
             print(f"front mean:\t{self.sm.laser_distance.dfront_mean:.2f}")
@@ -199,38 +184,35 @@ class SCTConnect():
             
             # Print ASCII art of complete maze
             print("\n--- ASCII Maze Map ---")
+            print(f"  Orientation: {['N','E','S','W'][self.sm.grid.orientation]}")
+            
+            # Print top border of first row
+            for col in range(self.maze.grid_cols):
+                cell = self.maze.grid[0][col]
+                if cell.visited and cell.walls[0] == 1:
+                    print("+---", end="")
+                else:
+                    print("+   ", end="")
+            print("+")
+            
+            # Print each row
             for row in range(self.maze.grid_rows):
-                # Print top walls
-                for col in range(self.maze.grid_cols):
-                    cell = self.maze.grid[row][col]
-                    # Check this cell's North wall OR the cell above's South wall
-                    has_wall = False
-                    if cell.visited and cell.walls[0] == 1:
-                        has_wall = True
-                    if row > 0:
-                        cell_above = self.maze.grid[row-1][col]
-                        if cell_above.visited and cell_above.walls[2] == 1:
-                            has_wall = True
-                    
-                    if has_wall:
-                        print("+---", end="")
-                    else:
-                        print("+   ", end="")
-                print("+")
-                
                 # Print left walls and cell content
                 for col in range(self.maze.grid_cols):
                     cell = self.maze.grid[row][col]
-                    # Check this cell's West wall OR the cell to the left's East wall
-                    has_wall = False
+                    has_left_wall = False
+                    
+                    # Check this cell's West wall
                     if cell.visited and cell.walls[3] == 1:
-                        has_wall = True
+                        has_left_wall = True
+                    
+                    # Check cell to the left's East wall
                     if col > 0:
                         cell_left = self.maze.grid[row][col-1]
                         if cell_left.visited and cell_left.walls[1] == 1:
-                            has_wall = True
+                            has_left_wall = True
                     
-                    if has_wall:
+                    if has_left_wall:
                         print("|", end="")
                     else:
                         print(" ", end="")
@@ -243,21 +225,33 @@ class SCTConnect():
                     else:
                         print("   ", end="")
                 
-                # Print rightmost wall (check last column's East wall)
+                # Print rightmost wall
                 cell = self.maze.grid[row][self.maze.grid_cols - 1]
                 if cell.visited and cell.walls[1] == 1:
                     print("|")
                 else:
                     print(" ")
-            
-            # Print bottom walls
-            for col in range(self.maze.grid_cols):
-                cell = self.maze.grid[self.maze.grid_rows - 1][col]
-                if cell.visited and cell.walls[2] == 1:
-                    print("+---", end="")
-                else:
-                    print("+   ", end="")
-            print("+")
+                
+                # Print bottom border (check this row's South walls OR next row's North walls)
+                for col in range(self.maze.grid_cols):
+                    cell = self.maze.grid[row][col]
+                    has_bottom_wall = False
+                    
+                    # Check this cell's South wall
+                    if cell.visited and cell.walls[2] == 1:
+                        has_bottom_wall = True
+                    
+                    # Check cell below's North wall (if not last row)
+                    if row < self.maze.grid_rows - 1:
+                        cell_below = self.maze.grid[row + 1][col]
+                        if cell_below.visited and cell_below.walls[0] == 1:
+                            has_bottom_wall = True
+                    
+                    if has_bottom_wall:
+                        print("+---", end="")
+                    else:
+                        print("+   ", end="")
+                print("+")
             
             self._print_internal_variables()
 
