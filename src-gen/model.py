@@ -352,7 +352,7 @@ class Model:
 		
 		# for timed statechart:
 		self.timer_service = None
-		self.__time_events = [None] * 4
+		self.__time_events = [None] * 1
 		
 		# initializations:
 		#Default init sequence for statechart model
@@ -552,7 +552,7 @@ class Model:
 	def time_elapsed(self, event_id):
 		"""Add time events to in event queue
 		"""
-		if event_id in range(4):
+		if event_id in range(1):
 			self.in_event_queue.put(lambda: self.raise_time_event(event_id))
 			self.run_cycle()
 	
@@ -631,8 +631,6 @@ class Model:
 		"""Entry action for state 'AtCellCenter'..
 		"""
 		#Entry action for state 'AtCellCenter'.
-		self.timer_service.set_timer(self, 1, 100, False)
-		self.timer_service.set_timer(self, 2, 100, False)
 		self.__cmd_speed = 0.0
 		self.__been_at_start_once = True if (self.grid.row != self.__start_row or self.grid.column != self.__start_col) else self.__been_at_start_once
 		
@@ -700,10 +698,9 @@ class Model:
 		self.__completed = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore(self):
-		"""Entry action for state 'Explore'..
+		""".
 		"""
 		#Entry action for state 'Explore'.
-		self.timer_service.set_timer(self, 3, 1, False)
 		self.__front_free = self.laser_distance.dfront_min > self.__dist_free
 		self.__left_free = self.laser_distance.dleft_min > self.__dist_free
 		self.__right_free = self.laser_distance.dright_min > self.__dist_free
@@ -714,6 +711,7 @@ class Model:
 		self.grid.wall_back = 0 if (self.__back_free) else 1
 		self.grid.update = True
 		self.grid.receive = False
+		self.__completed = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_finished(self):
 		"""Entry action for state 'Finished'..
@@ -735,19 +733,6 @@ class Model:
 		"""
 		#Exit action for state 'SettingZero'.
 		self.timer_service.unset_timer(self, 0)
-		
-	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center(self):
-		"""Exit action for state 'AtCellCenter'..
-		"""
-		#Exit action for state 'AtCellCenter'.
-		self.timer_service.unset_timer(self, 1)
-		self.timer_service.unset_timer(self, 2)
-		
-	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore(self):
-		"""Exit action for state 'Explore'..
-		"""
-		#Exit action for state 'Explore'.
-		self.timer_service.unset_timer(self, 3)
 		
 	def __enter_sequence_turtle_bot_turtle_bot_default(self):
 		"""'default' enter sequence for state TurtleBot.
@@ -838,15 +823,6 @@ class Model:
 		#'default' enter sequence for state Goto
 		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto()
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0goto
-		self.__state_conf_vector_position = 1
-		self.__state_conf_vector_changed = True
-		
-	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction_default(self):
-		"""'default' enter sequence for state DecideDirection.
-		"""
-		#'default' enter sequence for state DecideDirection
-		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
@@ -1047,7 +1023,6 @@ class Model:
 		#Default exit sequence for state AtCellCenter
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
 		self.__state_conf_vector_position = 1
-		self.__exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto(self):
 		"""Default exit sequence for state Goto.
@@ -1104,7 +1079,6 @@ class Model:
 		#Default exit sequence for state Explore
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
 		self.__state_conf_vector_position = 1
-		self.__exit_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
 		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle(self):
 		"""Default exit sequence for state Idle.
@@ -1430,15 +1404,13 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if (self.__time_events[1]) and (self.__autonomous_active and self.__exploring_done and self.__is_well_aligned):
+				if self.__autonomous_active and self.__exploring_done and self.__is_well_aligned:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
-					self.__time_events[1] = False
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_goto_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
-				elif (self.__time_events[2]) and (self.__autonomous_active and not self.__exploring_done and self.__is_well_aligned):
+				elif self.__autonomous_active and not self.__exploring_done and self.__is_well_aligned:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
-					self.__time_events[2] = False
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
@@ -1619,18 +1591,19 @@ class Model:
 		"""
 		#The reactions of state Explore.
 		transitioned_after = transitioned_before
-		if not self.__do_completion:
-			if transitioned_after < 1:
-				if self.__time_events[3]:
-					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
-					self.__time_events[3] = False
-					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction_default()
-					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
-					transitioned_after = 1
-			#If no transition was taken
-			if transitioned_after == transitioned_before:
-				#then execute local reactions.
-				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		if self.__do_completion:
+			#Default exit sequence for state Explore
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
+			self.__state_conf_vector_position = 1
+			#'default' enter sequence for state DecideDirection
+			self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
+			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction
+			self.__state_conf_vector_position = 1
+			self.__state_conf_vector_changed = True
+			self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+		else:
+			#Always execute local reactions.
+			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1747,9 +1720,6 @@ class Model:
 		self.computer.d_press = False
 		self.computer.x_press = False
 		self.__time_events[0] = False
-		self.__time_events[1] = False
-		self.__time_events[2] = False
-		self.__time_events[3] = False
 	
 	
 	def __clear_internal_events(self):

@@ -24,6 +24,7 @@ class Timer(ITimer):
         so do vice versa.
         """
         timer_id = (callback, event_id)
+        print(f"[TIMER-DEBUG] set_timer called: event_id={event_id}, interval={interval}ms, periodic={periodic}")
         if timer_id in self.timer_queue:
             self.unset_timer(callback, event_id)
         m_interval = float(interval)/1000.0
@@ -60,8 +61,13 @@ class SingleTimer:
     def __init__(self, period, callback, event_id):
         self.callback = callback
         self.event_id = event_id
-        self.single_timer = threading.Timer(period, self.callback.time_elapsed, [self.event_id])
+        print(f"[TIMER-DEBUG] SingleTimer created: event_id={event_id}, period={period}s")
+        self.single_timer = threading.Timer(period, self._fire)
         self.single_timer.start()
+    
+    def _fire(self):
+        print(f"[TIMER-DEBUG] Timer FIRED: event_id={self.event_id}")
+        self.callback.time_elapsed(self.event_id)
 
 class RepeatedTimer:
 
