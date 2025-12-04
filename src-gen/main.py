@@ -178,18 +178,18 @@ class SCTConnect():
             
             # Print internal maze storage from statechart
             print(f'\n--- Internal Maze Storage (Bitwise) ---')
-            print(f'maze1 (cells 0-7):  {self.sm.maze1:032b}')
-            print(f'maze2 (cells 8-15): {self.sm.maze2:032b}')
+            print(f'maze1 (cells 0-7):  {self.sm.grid.maze1:032b}')
+            print(f'maze2 (cells 8-15): {self.sm.grid.maze2:032b}')
             
             # Decode and display current cell from internal storage
             if self.sm.grid.row < self.maze.grid_rows and self.sm.grid.column < self.maze.grid_cols:
                 cell_idx = self.sm.grid.row * 4 + self.sm.grid.column
                 if cell_idx < 8:
                     shift = cell_idx * 4
-                    wall_bits = (self.sm.maze1 >> shift) & 15
+                    wall_bits = (self.sm.grid.maze1 >> shift) & 15
                 else:
                     shift = (cell_idx - 8) * 4
-                    wall_bits = (self.sm.maze2 >> shift) & 15
+                    wall_bits = (self.sm.grid.maze2 >> shift) & 15
                 
                 # Extract N, E, S, W from bits
                 wall_n = (wall_bits >> 3) & 1
@@ -210,10 +210,10 @@ class SCTConnect():
                     cell_idx = row * 4 + col
                     if cell_idx < 8:
                         shift = cell_idx * 4
-                        wall_bits = (self.sm.maze1 >> shift) & 15
+                        wall_bits = (self.sm.grid.maze1 >> shift) & 15
                     else:
                         shift = (cell_idx - 8) * 4
-                        wall_bits = (self.sm.maze2 >> shift) & 15
+                        wall_bits = (self.sm.grid.maze2 >> shift) & 15
                     
                     # Extract walls
                     wall_n = (wall_bits >> 3) & 1
