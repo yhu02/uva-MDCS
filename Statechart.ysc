@@ -59,16 +59,16 @@
                 <outgoingTransitions xmi:id="_76KpkNA-EfCuzfYF5B9klg" specification="" target="_g1S7IM4nEfCibLM5nbHmTw"/>
               </vertices>
               <vertices xsi:type="sgraph:State" xmi:id="_FCQN0M4uEfCTW5L3smoo6A" specification="entry /&#xD;&#xA;    // Remember start yaw&#xD;&#xA;    turnStartYaw = imu.yaw;&#xD;&#xA;    totalTurned = 0.0;&#xD;&#xA;&#xD;&#xA;    // Turn left in place (no forward speed to avoid crossing cells)&#xD;&#xA;    cmdSpeed = 0.0;&#xD;&#xA;    cmdRot   = userVar.baseRotation&#xD;&#xA;&#xD;&#xA;always /&#xD;&#xA;    yawDiff = imu.yaw - turnStartYaw;&#xD;&#xA;    yawDiff = (yawDiff > 180.0) ? yawDiff - 360.0 : yawDiff;&#xD;&#xA;    yawDiff = (yawDiff &lt; -180.0) ? yawDiff + 360.0 : yawDiff;&#xD;&#xA;    totalTurned = yawDiff" name="TurnLeft" incomingTransitions="_QnOs4M4uEfCTW5L3smoo6A">
-                <outgoingTransitions xmi:id="_8nbqsM46EfCZO51tC_aMQw" specification="always [totalTurned > 85.0]" target="_nYW_gM4nEfCibLM5nbHmTw"/>
+                <outgoingTransitions xmi:id="_8nbqsM46EfCZO51tC_aMQw" specification="always [totalTurned > 85.0]" target="_g1S7IM4nEfCibLM5nbHmTw"/>
               </vertices>
               <vertices xsi:type="sgraph:State" xmi:id="_GjKm_M4uEfCTW5L3smoo6A" specification="    entry /&#xD;&#xA;        turnStartYaw = imu.yaw;&#xD;&#xA;        totalTurned = 0.0;&#xD;&#xA;        cmdSpeed = 0.0;&#xD;&#xA;        cmdRot   = -userVar.baseRotation&#xD;&#xA;&#xD;&#xA;always /&#xD;&#xA;    yawDiff = imu.yaw - turnStartYaw;&#xD;&#xA;    yawDiff = (yawDiff > 180.0) ? yawDiff - 360.0 : yawDiff;&#xD;&#xA;    yawDiff = (yawDiff &lt; -180.0) ? yawDiff + 360.0 : yawDiff;&#xD;&#xA;    totalTurned = yawDiff" name="TurnRight" incomingTransitions="_YnK-8M4uEfCTW5L3smoo6A">
-                <outgoingTransitions xmi:id="_k_VQoM49EfCGn-gnJkkTqQ" specification="always [totalTurned &lt; -85.0]" target="_nYW_gM4nEfCibLM5nbHmTw"/>
+                <outgoingTransitions xmi:id="_k_VQoM49EfCGn-gnJkkTqQ" specification="always [totalTurned &lt; -85.0]" target="_g1S7IM4nEfCibLM5nbHmTw"/>
               </vertices>
               <vertices xsi:type="sgraph:State" xmi:id="_G_5mTc4uEfCTW5L3smoo6A" specification="entry /&#xD;&#xA;    turnStartYaw = imu.yaw;&#xD;&#xA;    totalTurned = 0.0;&#xD;&#xA;    cmdSpeed = 0.0;&#xD;&#xA;    cmdRot = userVar.baseRotation&#xD;&#xA;&#xD;&#xA;always /&#xD;&#xA;    yawDiff = imu.yaw - turnStartYaw;&#xD;&#xA;    yawDiff = (yawDiff > 180.0) ? yawDiff - 360.0 : yawDiff;&#xD;&#xA;    yawDiff = (yawDiff &lt; -180.0) ? yawDiff + 360.0 : yawDiff;&#xD;&#xA;    totalTurned = yawDiff" name="TurnAround" incomingTransitions="_t5eQMM40EfCTW5L3smoo6A">
-                <outgoingTransitions xmi:id="_J9ywANB5EfCuzpZHd8EwyA" specification="[totalTurned > 170.0 || totalTurned &lt; -170.0]" target="_nYW_gM4nEfCibLM5nbHmTw"/>
+                <outgoingTransitions xmi:id="_J9ywANB5EfCuzpZHd8EwyA" specification="[totalTurned > 170.0 || totalTurned &lt; -170.0]" target="_g1S7IM4nEfCibLM5nbHmTw"/>
               </vertices>
-              <vertices xsi:type="sgraph:State" xmi:id="_Ha3D_M4uEfCTW5L3smoo6A" specification="entry /&#xD;&#xA;    cmdSpeed = userVar.baseSpeed;&#xD;&#xA;    cmdRot   = 0.0&#xD;&#xA;" name="GoStraight" incomingTransitions="_VAHYsM4uEfCTW5L3smoo6A">
-                <outgoingTransitions xmi:id="_IFrvUM4-EfCGn-gnJkkTqQ" specification="" target="_nYW_gM4nEfCibLM5nbHmTw"/>
+              <vertices xsi:type="sgraph:State" xmi:id="_Ha3D_M4uEfCTW5L3smoo6A" specification="entry /&#xD;&#xA;    cmdSpeed = 0.0;&#xD;&#xA;    cmdRot   = 0.0&#xD;&#xA;" name="GoStraight" incomingTransitions="_VAHYsM4uEfCTW5L3smoo6A">
+                <outgoingTransitions xmi:id="_IFrvUM4-EfCGn-gnJkkTqQ" specification="" target="_g1S7IM4nEfCibLM5nbHmTw"/>
               </vertices>
               <vertices xsi:type="sgraph:Choice" xmi:id="_fgzhgM40EfCTW5L3smoo6A" incomingTransitions="_lGOR4M40EfCTW5L3smoo6A">
                 <outgoingTransitions xmi:id="_t5eQMM40EfCTW5L3smoo6A" specification="else" target="_G_5mTc4uEfCTW5L3smoo6A"/>

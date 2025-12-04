@@ -701,7 +701,7 @@ class Model:
 		""".
 		"""
 		#Entry action for state 'GoStraight'.
-		self.__cmd_speed = self.user_var.base_speed
+		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.__completed = True
 		
