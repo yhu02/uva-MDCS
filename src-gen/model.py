@@ -395,7 +395,7 @@ class Model:
 		self.__walls_visible = False
 		self.__too_close_in_direction = False
 		self.__is_misaligned = False
-		self.user_var.base_speed = 0.05
+		self.user_var.base_speed = 0.15
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
 		self.base_values.max_speed = 0.22
@@ -1429,7 +1429,7 @@ class Model:
 				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
 				self.__is_well_aligned = (self.__yaw_error > -(15.0) and self.__yaw_error < 15.0)
-				self.__cmd_rot = -(0.12) if (self.__yaw_error > 15.0) else (0.12 if (self.__yaw_error < -(15.0)) else 0.0)
+				self.__cmd_rot = -(0.2) if (self.__yaw_error > 15.0) else (0.2 if (self.__yaw_error < -(15.0)) else 0.0)
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
