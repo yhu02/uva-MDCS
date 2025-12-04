@@ -413,8 +413,8 @@ class Model:
 		self.__walls_visible = False
 		self.__too_close_in_direction = False
 		self.__is_misaligned = False
-		self.user_var.base_speed = 0.15
-		self.user_var.base_rotation = 0.2
+		self.user_var.base_speed = 0.5
+		self.user_var.base_rotation = 0.4
 		self.user_var.startprocedure = True
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
