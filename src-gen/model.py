@@ -662,6 +662,8 @@ class Model:
 		self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 		self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
 		self.__is_well_aligned = (self.__yaw_error == 0.0)
+		self.grid.orientation = (((self.grid.orientation + 2)) % 4) if self.__exploring_done else self.grid.orientation
+		self.__target_yaw = 90.0 if (self.grid.orientation == 0) else (0.0 if (self.grid.orientation == 1) else (-(90.0) if (self.grid.orientation == 2) else 180.0))
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory(self):
 		""".
