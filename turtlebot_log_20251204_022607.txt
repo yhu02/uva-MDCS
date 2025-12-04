@@ -1,0 +1,6 @@
+=== TurtleBot Maze Exploration Log Started ===
+
+[DEBUG] Entering state machine...
+[DEBUG] Active states: [0] Mode And Keyboard Init, [1] Autonomous Logic Calibratewait For Key, [2] Zstopped
+
+=== Log file closed ===
