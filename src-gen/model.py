@@ -302,6 +302,16 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
+		self.__maze1 = None
+		self.__maze2 = None
+		self.__cell_index = None
+		self.__wall_bits = None
+		self.__absolute_n = None
+		self.__absolute_e = None
+		self.__absolute_s = None
+		self.__absolute_w = None
+		self.__temp_mask = None
+		self.__temp_shift = None
 		self.__dist_free = None
 		self.__is_manual = None
 		self.__autonomous_active = None
@@ -356,6 +366,16 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
+		self.__maze1 = 0
+		self.__maze2 = 0
+		self.__cell_index = 0
+		self.__wall_bits = 0
+		self.__absolute_n = 0
+		self.__absolute_e = 0
+		self.__absolute_s = 0
+		self.__absolute_w = 0
+		self.__temp_mask = 0
+		self.__temp_shift = 0
 		self.__dist_free = 0.35
 		self.__is_manual = False
 		self.__autonomous_active = False
@@ -646,12 +666,23 @@ class Model:
 		""".
 		"""
 		#Entry action for state 'Goto'.
-		self.grid.receive = True
+		self.__cell_index = ((self.grid.row * 4) + self.grid.column)
+		self.__temp_shift = ((self.__cell_index * 4)) if (self.__cell_index < 8) else ((((self.__cell_index - 8)) * 4))
+		self.__wall_bits = ((((self.__maze1 >> self.__temp_shift)) & 15)) if (self.__cell_index < 8) else ((((self.__maze2 >> self.__temp_shift)) & 15))
+		self.__absolute_n = (((self.__wall_bits >> 3)) & 1)
+		self.__absolute_e = (((self.__wall_bits >> 2)) & 1)
+		self.__absolute_s = (((self.__wall_bits >> 1)) & 1)
+		self.__absolute_w = (self.__wall_bits & 1)
+		self.grid.wall_front = self.__absolute_n if (self.grid.orientation == 0) else (self.__absolute_e if (self.grid.orientation == 1) else (self.__absolute_s if (self.grid.orientation == 2) else self.__absolute_w))
+		self.grid.wall_right = self.__absolute_e if (self.grid.orientation == 0) else (self.__absolute_s if (self.grid.orientation == 1) else (self.__absolute_w if (self.grid.orientation == 2) else self.__absolute_n))
+		self.grid.wall_back = self.__absolute_s if (self.grid.orientation == 0) else (self.__absolute_w if (self.grid.orientation == 1) else (self.__absolute_n if (self.grid.orientation == 2) else self.__absolute_e))
+		self.grid.wall_left = self.__absolute_w if (self.grid.orientation == 0) else (self.__absolute_n if (self.grid.orientation == 1) else (self.__absolute_e if (self.grid.orientation == 2) else self.__absolute_s))
 		self.__front_free = (self.grid.wall_front == 0)
 		self.__left_free = (self.grid.wall_left == 0)
 		self.__right_free = (self.grid.wall_right == 0)
 		self.__back_free = (self.grid.wall_back == 0)
 		self.grid.update = False
+		self.grid.receive = False
 		self.__completed = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction(self):
@@ -713,11 +744,21 @@ class Model:
 		self.__left_free = self.laser_distance.dleft_min > self.__dist_free
 		self.__right_free = self.laser_distance.dright_min > self.__dist_free
 		self.__back_free = self.laser_distance.dback_min > self.__dist_free
-		self.grid.wall_front = 0 if (self.__front_free) else 1
-		self.grid.wall_left = 0 if (self.__left_free) else 1
-		self.grid.wall_right = 0 if (self.__right_free) else 1
-		self.grid.wall_back = 0 if (self.__back_free) else 1
-		self.grid.update = True
+		self.__absolute_n = (0 if self.__front_free else 1) if (self.grid.orientation == 0) else ((0 if self.__left_free else 1) if (self.grid.orientation == 1) else ((0 if self.__back_free else 1) if (self.grid.orientation == 2) else (0 if self.__right_free else 1)))
+		self.__absolute_e = (0 if self.__right_free else 1) if (self.grid.orientation == 0) else ((0 if self.__front_free else 1) if (self.grid.orientation == 1) else ((0 if self.__left_free else 1) if (self.grid.orientation == 2) else (0 if self.__back_free else 1)))
+		self.__absolute_s = (0 if self.__back_free else 1) if (self.grid.orientation == 0) else ((0 if self.__right_free else 1) if (self.grid.orientation == 1) else ((0 if self.__front_free else 1) if (self.grid.orientation == 2) else (0 if self.__left_free else 1)))
+		self.__absolute_w = (0 if self.__left_free else 1) if (self.grid.orientation == 0) else ((0 if self.__back_free else 1) if (self.grid.orientation == 1) else ((0 if self.__right_free else 1) if (self.grid.orientation == 2) else (0 if self.__front_free else 1)))
+		self.__wall_bits = (((((self.__absolute_n << 3)) | ((self.__absolute_e << 2))) | ((self.__absolute_s << 1))) | self.__absolute_w)
+		self.__cell_index = ((self.grid.row * 4) + self.grid.column)
+		self.__temp_shift = ((self.__cell_index * 4)) if (self.__cell_index < 8) else ((((self.__cell_index - 8)) * 4))
+		self.__temp_mask = ~(((15 << self.__temp_shift)))
+		self.__maze1 = ((((self.__maze1 & self.__temp_mask)) | ((self.__wall_bits << self.__temp_shift)))) if (self.__cell_index < 8) else self.__maze1
+		self.__maze2 = ((((self.__maze2 & self.__temp_mask)) | ((self.__wall_bits << self.__temp_shift)))) if (self.__cell_index >= 8) else self.__maze2
+		self.grid.wall_front = 0 if self.__front_free else 1
+		self.grid.wall_left = 0 if self.__left_free else 1
+		self.grid.wall_right = 0 if self.__right_free else 1
+		self.grid.wall_back = 0 if self.__back_free else 1
+		self.grid.update = False
 		self.grid.receive = False
 		self.__completed = True
 		

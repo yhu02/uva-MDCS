@@ -176,23 +176,54 @@ class SCTConnect():
             print(f'Wall front: {self.sm.grid.wall_front}, right: {self.sm.grid.wall_right}, '
                     f'back: {self.sm.grid.wall_back}, left: {self.sm.grid.wall_left}')
             
-            # Print stored wall information for current cell
-            if self.sm.grid.row < self.maze.grid_rows and self.sm.grid.column < self.maze.grid_cols:
-                current_cell = self.maze.grid[self.sm.grid.row][self.sm.grid.column]
-                print(f'Stored walls [N,E,S,W]: {current_cell.walls}')
-                if current_cell.visited:
-                    wall_chars = ['█' if w == 1 else ' ' for w in current_cell.walls]
-                    print(f'  {wall_chars[0]}  ')
-                    print(f' {wall_chars[3]}@{wall_chars[1]} ')
-                    print(f'  {wall_chars[2]}  ')
+            # Print internal maze storage from statechart
+            print(f'\n--- Internal Maze Storage (Bitwise) ---')
+            print(f'maze1 (cells 0-7):  {self.sm.maze1:032b}')
+            print(f'maze2 (cells 8-15): {self.sm.maze2:032b}')
             
-            # Print all stored walls for explored cells
-            self.log("\n--- Complete Wall Map ---\n")
+            # Decode and display current cell from internal storage
+            if self.sm.grid.row < self.maze.grid_rows and self.sm.grid.column < self.maze.grid_cols:
+                cell_idx = self.sm.grid.row * 4 + self.sm.grid.column
+                if cell_idx < 8:
+                    shift = cell_idx * 4
+                    wall_bits = (self.sm.maze1 >> shift) & 15
+                else:
+                    shift = (cell_idx - 8) * 4
+                    wall_bits = (self.sm.maze2 >> shift) & 15
+                
+                # Extract N, E, S, W from bits
+                wall_n = (wall_bits >> 3) & 1
+                wall_e = (wall_bits >> 2) & 1
+                wall_s = (wall_bits >> 1) & 1
+                wall_w = wall_bits & 1
+                
+                print(f'Current cell ({self.sm.grid.row},{self.sm.grid.column}) walls [N,E,S,W]: [{wall_n},{wall_e},{wall_s},{wall_w}]')
+                wall_chars = ['█' if w == 1 else ' ' for w in [wall_n, wall_e, wall_s, wall_w]]
+                print(f'  {wall_chars[0]}  ')
+                print(f' {wall_chars[3]}@{wall_chars[1]} ')
+                print(f'  {wall_chars[2]}  ')
+            
+            # Print all stored walls from internal maze storage
+            self.log("\n--- Complete Wall Map (from internal storage) ---\n")
             for row in range(self.maze.grid_rows):
                 for col in range(self.maze.grid_cols):
-                    cell = self.maze.grid[row][col]
-                    if cell.visited:
-                        walls_str = f"[{','.join(str(w) for w in cell.walls)}]"
+                    cell_idx = row * 4 + col
+                    if cell_idx < 8:
+                        shift = cell_idx * 4
+                        wall_bits = (self.sm.maze1 >> shift) & 15
+                    else:
+                        shift = (cell_idx - 8) * 4
+                        wall_bits = (self.sm.maze2 >> shift) & 15
+                    
+                    # Extract walls
+                    wall_n = (wall_bits >> 3) & 1
+                    wall_e = (wall_bits >> 2) & 1
+                    wall_s = (wall_bits >> 1) & 1
+                    wall_w = wall_bits & 1
+                    
+                    # Only show if any walls are set (not all zeros = unexplored)
+                    if wall_bits != 0:
+                        walls_str = f"[{wall_n},{wall_e},{wall_s},{wall_w}]"
                         print(f"({row},{col}): {walls_str}  ", end="")
                 print()  # New line after each row
             
