@@ -101,6 +101,7 @@ class Model:
 			self.max_row = None
 			self.maze1 = None
 			self.maze2 = None
+			self.visited_cells = None
 			
 			self.statemachine = statemachine
 		
@@ -441,6 +442,7 @@ class Model:
 		self.grid.max_row = 3
 		self.grid.maze1 = 0
 		self.grid.maze2 = 0
+		self.grid.visited_cells = 0
 		self.start_pos.set_zero = False
 		self.start_pos.zero_x = 0.0
 		self.start_pos.zero_y = 0.0
@@ -745,6 +747,7 @@ class Model:
 		self.__temp_mask = ~(((15 << self.__temp_shift)))
 		self.grid.maze1 = ((((self.grid.maze1 & self.__temp_mask)) | ((self.__wall_bits << self.__temp_shift)))) if (self.__cell_index < 8) else self.grid.maze1
 		self.grid.maze2 = ((((self.grid.maze2 & self.__temp_mask)) | ((self.__wall_bits << self.__temp_shift)))) if (self.__cell_index >= 8) else self.grid.maze2
+		self.grid.visited_cells = (self.grid.visited_cells | ((1 << self.__cell_index)))
 		self.grid.wall_front = 0 if self.__front_free else 1
 		self.grid.wall_left = 0 if self.__left_free else 1
 		self.grid.wall_right = 0 if self.__right_free else 1

@@ -180,10 +180,13 @@ class SCTConnect():
             print(f'\n--- Internal Maze Storage (Bitwise) ---')
             print(f'maze1 (cells 0-7):  {self.sm.grid.maze1:032b}')
             print(f'maze2 (cells 8-15): {self.sm.grid.maze2:032b}')
+            print(f'visitedCells:       {self.sm.grid.visited_cells:016b}')
             
             # Decode and display current cell from internal storage
             if self.sm.grid.row < self.maze.grid_rows and self.sm.grid.column < self.maze.grid_cols:
                 cell_idx = self.sm.grid.row * 4 + self.sm.grid.column
+                is_visited = (self.sm.grid.visited_cells >> cell_idx) & 1
+                
                 if cell_idx < 8:
                     shift = cell_idx * 4
                     wall_bits = (self.sm.grid.maze1 >> shift) & 15
@@ -197,7 +200,8 @@ class SCTConnect():
                 wall_s = (wall_bits >> 1) & 1
                 wall_w = wall_bits & 1
                 
-                print(f'Current cell ({self.sm.grid.row},{self.sm.grid.column}) walls [N,E,S,W]: [{wall_n},{wall_e},{wall_s},{wall_w}]')
+                visited_marker = '✓' if is_visited else '✗'
+                print(f'Current cell ({self.sm.grid.row},{self.sm.grid.column}) visited:{visited_marker} walls [N,E,S,W]: [{wall_n},{wall_e},{wall_s},{wall_w}]')
                 wall_chars = ['█' if w == 1 else ' ' for w in [wall_n, wall_e, wall_s, wall_w]]
                 print(f'  {wall_chars[0]}  ')
                 print(f' {wall_chars[3]}@{wall_chars[1]} ')
@@ -208,6 +212,8 @@ class SCTConnect():
             for row in range(self.maze.grid_rows):
                 for col in range(self.maze.grid_cols):
                     cell_idx = row * 4 + col
+                    is_visited = (self.sm.grid.visited_cells >> cell_idx) & 1
+                    
                     if cell_idx < 8:
                         shift = cell_idx * 4
                         wall_bits = (self.sm.grid.maze1 >> shift) & 15
@@ -221,10 +227,10 @@ class SCTConnect():
                     wall_s = (wall_bits >> 1) & 1
                     wall_w = wall_bits & 1
                     
-                    # Only show if any walls are set (not all zeros = unexplored)
-                    if wall_bits != 0:
+                    # Show only visited cells with checkmark
+                    if is_visited:
                         walls_str = f"[{wall_n},{wall_e},{wall_s},{wall_w}]"
-                        print(f"({row},{col}): {walls_str}  ", end="")
+                        print(f"({row},{col}):✓{walls_str}  ", end="")
                 print()  # New line after each row
             
             # Print ASCII art of complete maze
