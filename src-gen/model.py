@@ -303,6 +303,7 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
+		self.__local_yaw = None
 		self.__cell_index = None
 		self.__wall_bits = None
 		self.__absolute_n = None
@@ -366,6 +367,7 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
+		self.__local_yaw = 0.0
 		self.__cell_index = 0
 		self.__wall_bits = 0
 		self.__absolute_n = 0
@@ -413,8 +415,8 @@ class Model:
 		self.__walls_visible = False
 		self.__too_close_in_direction = False
 		self.__is_misaligned = False
-		self.user_var.base_speed = 0.5
-		self.user_var.base_rotation = 0.4
+		self.user_var.base_speed = 0.22
+		self.user_var.base_rotation = 2.84
 		self.user_var.startprocedure = True
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
@@ -636,6 +638,9 @@ class Model:
 		#Entry action for state 'SettingZero'.
 		self.timer_service.set_timer(self, 0, (1 * 1000), False)
 		self.start_pos.set_zero = True
+		self.start_pos.zero_x = self.odom.x
+		self.start_pos.zero_y = self.odom.y
+		self.start_pos.zero_south_degree = self.imu.yaw
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done(self):
 		"""Entry action for state 'Done'..
@@ -656,14 +661,16 @@ class Model:
 		self.__cmd_rot = 0.0
 		self.__been_at_start_once = True if (self.grid.row != self.__start_row or self.grid.column != self.__start_col) else self.__been_at_start_once
 		self.__exploring_done = True if (self.__been_at_start_once and self.grid.row == self.__start_row and self.grid.column == self.__start_col) else self.__exploring_done
-		self.grid.orientation = 0 if (self.imu.yaw >= 45.0 and self.imu.yaw < 135.0) else (1 if (self.imu.yaw >= -(45.0) and self.imu.yaw < 45.0) else (2 if (self.imu.yaw >= -(135.0) and self.imu.yaw < -(45.0)) else 3))
+		self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
+		self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
+		self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
+		self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
+		self.grid.orientation = (((self.grid.orientation + 2)) % 4) if self.__exploring_done else self.grid.orientation
 		self.__target_yaw = 90.0 if (self.grid.orientation == 0) else (0.0 if (self.grid.orientation == 1) else (-(90.0) if (self.grid.orientation == 2) else 180.0))
-		self.__yaw_error = (self.imu.yaw - self.__target_yaw)
+		self.__yaw_error = (self.__local_yaw - self.__target_yaw)
 		self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 		self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
 		self.__is_well_aligned = (self.__yaw_error == 0.0)
-		self.grid.orientation = (((self.grid.orientation + 2)) % 4) if self.__exploring_done else self.grid.orientation
-		self.__target_yaw = 90.0 if (self.grid.orientation == 0) else (0.0 if (self.grid.orientation == 1) else (-(90.0) if (self.grid.orientation == 2) else 180.0))
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory(self):
 		""".
@@ -778,6 +785,7 @@ class Model:
 		"""
 		#Exit action for state 'SettingZero'.
 		self.timer_service.unset_timer(self, 0)
+		self.start_pos.set_zero = False
 		
 	def __enter_sequence_turtle_bot_turtle_bot_default(self):
 		"""'default' enter sequence for state TurtleBot.
@@ -1417,7 +1425,10 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				self.__yaw_error = (self.imu.yaw - self.__target_yaw)
+				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
+				self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
+				self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
+				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
 				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
 				self.__is_well_aligned = (self.__yaw_error == 0.0)
@@ -1663,9 +1674,12 @@ class Model:
 				#then execute local reactions.
 				self.grid.row = (int(((((-(((self.odom.y - self.start_pos.zero_y))) / self.grid.grid_size)) + 0.5))))
 				self.grid.column = (int(((((((self.odom.x - self.start_pos.zero_x)) / self.grid.grid_size)) + 0.5))))
-				self.grid.orientation = 0 if (self.imu.yaw >= 45.0 and self.imu.yaw < 135.0) else (1 if (self.imu.yaw >= -(45.0) and self.imu.yaw < 45.0) else (2 if (self.imu.yaw >= -(135.0) and self.imu.yaw < -(45.0)) else 3))
+				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
+				self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
+				self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
+				self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
 				self.__target_yaw = 90.0 if (self.grid.orientation == 0) else (0.0 if (self.grid.orientation == 1) else (-(90.0) if (self.grid.orientation == 2) else 180.0))
-				self.__yaw_error = (self.imu.yaw - self.__target_yaw)
+				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
 				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
 				self.__is_well_aligned = (self.__yaw_error > -(15.0) and self.__yaw_error < 15.0)
