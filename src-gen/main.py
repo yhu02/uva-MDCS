@@ -722,8 +722,6 @@ class SCTConnect():
                 # Add helpful hints for specific states
                 if state_id == Model.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
                     self.log(f"           ⚠️  PRESS 's' KEY TO START CALIBRATION ⚠️\n")
-                elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_init:
-                    self.log(f"           💡 Press 'm' to switch to Manual mode\n")
                 elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
                     self.log(f"           💡 Press 'm' to switch to Autonomous mode\n")
                     self.log(f"           💡 Use w/a/s/d keys to move, x to stop\n")
