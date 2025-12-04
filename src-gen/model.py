@@ -634,6 +634,7 @@ class Model:
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.__been_at_start_once = True if (self.grid.row != self.__start_row or self.grid.column != self.__start_col) else self.__been_at_start_once
+		self.__exploring_done = True if (self.__been_at_start_once and self.grid.row == self.__start_row and self.grid.column == self.__start_col) else self.__exploring_done
 		self.grid.orientation = 0 if (self.imu.yaw >= 45.0 and self.imu.yaw < 135.0) else (1 if (self.imu.yaw >= -(45.0) and self.imu.yaw < 45.0) else (2 if (self.imu.yaw >= -(135.0) and self.imu.yaw < -(45.0)) else 3))
 		self.__target_yaw = 90.0 if (self.grid.orientation == 0) else (0.0 if (self.grid.orientation == 1) else (-(90.0) if (self.grid.orientation == 2) else 180.0))
 		self.__yaw_error = (self.imu.yaw - self.__target_yaw)
