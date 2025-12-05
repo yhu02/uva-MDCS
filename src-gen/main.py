@@ -128,31 +128,26 @@ class SCTConnect():
             # Ensure float type for ROS2 message
             self.node.vel_publish(x=float(self.sm.output.speed), rz=float(self.sm.output.rotation))
 
-            # ================== DEBUG / INFO OUTPUT ==================
+            # ================== DEBUG / INFO OUTPUT (compact horizontal) ==================
             os.system('clear')
 
-            # --- TurtleBot Stats (compact table) ---
-            self.log("========= TurtleBot Stats =========\n")
-            self.log(f"{'velocity:':<18}{self.sm.output.speed}\n")
-            self.log(f"{'rotation speed:':<18}{self.sm.output.rotation}\n")
-            self.log(f"{'yaw:':<18}{self.sm.imu.yaw:.3f}\n")
+            # One-line robot summary
+            try:
+                yaw = f"{self.sm.imu.yaw:.1f}"
+            except Exception:
+                yaw = '?'
+            self.log(f"TurtleBot | V:{self.sm.output.speed:.2f} R:{self.sm.output.rotation:.2f} Y:{yaw} \n")
 
-            # --- Active States ---
-            self.log("\n========= ACTIVE STATES =========\n")
-            self._print_active_states()
+            # Active states in one line
+            self._log_active_states()
 
-            # --- Grid Info in one small block ---
-            self.log("\n----------- Grid Info -----------\n")
-            self.log(f"{'orientation':<12}{'row':>8}{'col':>8}\n")
-            self.log(f"{self.sm.grid.orientation:<12}{self.sm.grid.row:>8}{self.sm.grid.column:>8}\n")
+            # Grid and start pos compact
+            self.log(
+                f"Grid ori:{self.sm.grid.orientation} pos:({self.sm.grid.row},{self.sm.grid.column}) "
+                f"start:({self.sm.start_pos.zero_x:.2f},{self.sm.start_pos.zero_y:.2f}) set_zero:{self.sm.start_pos.set_zero}\n"
+            )
 
-            self.log("\nstart pos:\n")
-            self.log(f"  {'zero x:':<16}{self.sm.start_pos.zero_x:.2f}\n")
-            self.log(f"  {'zero y:':<16}{self.sm.start_pos.zero_y:.2f}\n")
-            self.log(f"  {'set zero:':<16}{self.sm.start_pos.set_zero}\n")
-
-            # --- Explored cells, printed in columns ---
-            self.log("----------- Explored Cells -----------\n")
+            # Explored summary: count + sample (horizontal)
             explored_count = 0
             explored_cells = []
             for row in range(self.maze.grid_rows):
@@ -160,174 +155,42 @@ class SCTConnect():
                     if self.maze.grid[row][col].visited:
                         explored_count += 1
                         explored_cells.append(f"({row},{col})")
+            sample = ", ".join(explored_cells[:12]) + ("..." if len(explored_cells) > 12 else "")
+            self.log(f"Explored: {explored_count}/{self.maze.grid_rows*self.maze.grid_cols} {sample}\n")
 
-            self.log(f"Total explored: {explored_count}/{self.maze.grid_rows * self.maze.grid_cols}\n")
-            if explored_cells:
-                self.log("Cells:\n")
-                cols_per_line = 8
-                for i in range(0, len(explored_cells), cols_per_line):
-                    self.log("  " + ", ".join(explored_cells[i:i + cols_per_line]) + "\n")
-
-            # --- Laser stats (compact table) ---
-            self.log("----------- Laser stuff -----------\n")
-            self.log(f"{'dir':<8}{'mean distance':>15}\n")
-            self.log(f"{'front':<8}{self.sm.laser_distance.dfront_mean:>15.2f}\n")
-            self.log(f"{'left':<8}{self.sm.laser_distance.dleft_mean:>15.2f}\n")
-            self.log(f"{'back':<8}{self.sm.laser_distance.dback_mean:>15.2f}\n")
-            self.log(f"{'right':<8}{self.sm.laser_distance.dright_mean:>15.2f}\n")
-
-            # --- Odometry (small table) ---
-            self.log("------------ Odometry -------------\n")
-            self.log(f"{'x:':<6}{self.sm.odom.x:.2f}\n")
-            self.log(f"{'y:':<6}{self.sm.odom.y:.2f}\n")
-
-            # --- Logging / walls (compact) ---
-            self.log("------------ Logging -------------\n")
-            self.log(f"{'visited:':<18}{self.sm.grid.visited:.2f}\n")
-            print(
-                "Walls [F,R,B,L]: "
-                f"[{self.sm.grid.wall_front}, "
-                f"{self.sm.grid.wall_right}, "
-                f"{self.sm.grid.wall_back}, "
-                f"{self.sm.grid.wall_left}]"
+            # Laser distances in one line
+            self.log(
+                f"Laser F:{self.sm.laser_distance.dfront_mean:.2f} "
+                f"L:{self.sm.laser_distance.dleft_mean:.2f} "
+                f"B:{self.sm.laser_distance.dback_mean:.2f} "
+                f"R:{self.sm.laser_distance.dright_mean:.2f}\n"
             )
 
-            # Print internal maze storage from statechart (formatted in columns)
-            print('\n--- Internal Maze Storage (Bitwise) ---')
-            header = f"{'Field':<22}{'Bits (MSB -> LSB)':>35}"
-            print(header)
-            print('-' * len(header))
+            # Odometry and visited/walls compact
+            self.log(f"Odom x:{self.sm.odom.x:.2f} y:{self.sm.odom.y:.2f} ")
+            self.log(f"Visited:{self.sm.grid.visited:.2f} Walls[F,R,B,L]:[{self.sm.grid.wall_front},{self.sm.grid.wall_right},{self.sm.grid.wall_back},{self.sm.grid.wall_left}]\n")
 
-            print(f"{'maze1 (cells 0-7):':<22}{self.sm.grid.maze1:032b}")
-            print(f"{'maze2 (cells 8-15):':<22}{self.sm.grid.maze2:032b}")
-            print(f"{'visitedCells:':<22}{self.sm.grid.visited_cells:016b}")
+            # Internal maze storage compact (single-line per large field)
+            self.log(f"maze1:{self.sm.grid.maze1:032b} maze2:{self.sm.grid.maze2:032b} visitedBits:{self.sm.grid.visited_cells:016b}\n")
 
-
-            # Decode and display current cell from internal storage
+            # Current cell compact decode
             if self.sm.grid.row < self.maze.grid_rows and self.sm.grid.column < self.maze.grid_cols:
                 cell_idx = self.sm.grid.row * 4 + self.sm.grid.column
                 is_visited = (self.sm.grid.visited_cells >> cell_idx) & 1
-
                 if cell_idx < 8:
                     shift = cell_idx * 4
                     wall_bits = (self.sm.grid.maze1 >> shift) & 15
                 else:
                     shift = (cell_idx - 8) * 4
                     wall_bits = (self.sm.grid.maze2 >> shift) & 15
-
-                # Extract N, E, S, W from bits
-                wall_n = (wall_bits >> 3) & 1
-                wall_e = (wall_bits >> 2) & 1
-                wall_s = (wall_bits >> 1) & 1
-                wall_w = wall_bits & 1
-
+                wn = (wall_bits >> 3) & 1
+                we = (wall_bits >> 2) & 1
+                ws = (wall_bits >> 1) & 1
+                ww = wall_bits & 1
                 visited_marker = '✓' if is_visited else '✗'
-                print(
-                    f'Current cell ({self.sm.grid.row},{self.sm.grid.column}) '
-                    f'visited:{visited_marker} walls [N,E,S,W]: '
-                    f'[{wall_n},{wall_e},{wall_s},{wall_w}]'
-                )
-                wall_chars = ['█' if w == 1 else ' ' for w in [wall_n, wall_e, wall_s, wall_w]]
-                print(f'  {wall_chars[0]}  ')
-                print(f' {wall_chars[3]}@{wall_chars[1]} ')
-                print(f'  {wall_chars[2]}  ')
+                self.log(f"Cell ({self.sm.grid.row},{self.sm.grid.column}) vis:{visited_marker} walls(N,E,S,W):{wn}{we}{ws}{ww}\n")
 
-            # --- ASCII art of complete maze from statechart internal storage (unchanged) ---
-            self.log("\n--- ASCII Maze Map (from statechart memory) ---\n")
-            self.log(f"  Orientation: {['N','E','S','W'][self.sm.grid.orientation]}\n")
-
-            # Helper function to extract wall data from maze1/maze2
-            def get_walls_from_memory(row, col):
-                """Extract walls for a cell from maze1/maze2 integers"""
-                cell_idx = row * 4 + col
-                is_visited = (self.sm.grid.visited_cells >> cell_idx) & 1
-
-                if not is_visited:
-                    return None, False  # Not visited
-
-                # Extract 4-bit wall data
-                if cell_idx < 8:
-                    temp_shift = cell_idx * 4
-                    wall_bits = (self.sm.grid.maze1 >> temp_shift) & 15
-                else:
-                    temp_shift = (cell_idx - 8) * 4
-                    wall_bits = (self.sm.grid.maze2 >> temp_shift) & 15
-
-                # Decode: bit3=N, bit2=E, bit1=S, bit0=W
-                wall_n = (wall_bits >> 3) & 1
-                wall_e = (wall_bits >> 2) & 1
-                wall_s = (wall_bits >> 1) & 1
-                wall_w = wall_bits & 1
-
-                return [wall_n, wall_e, wall_s, wall_w], True
-
-            # Print top border of first row
-            for col in range(self.maze.grid_cols):
-                walls, visited = get_walls_from_memory(0, col)
-                if visited and walls[0] == 1:  # North wall
-                    self.log("+---")
-                else:
-                    self.log("+   ")
-            self.log("+\n")
-
-            # Print each row
-            for row in range(self.maze.grid_rows):
-                # Print left walls and cell content
-                for col in range(self.maze.grid_cols):
-                    walls, visited = get_walls_from_memory(row, col)
-                    has_left_wall = False
-
-                    # Check this cell's West wall
-                    if visited and walls[3] == 1:
-                        has_left_wall = True
-
-                    # Check cell to the left's East wall
-                    if col > 0:
-                        walls_left, visited_left = get_walls_from_memory(row, col - 1)
-                        if visited_left and walls_left[1] == 1:
-                            has_left_wall = True
-
-                    if has_left_wall:
-                        self.log("|")
-                    else:
-                        self.log(" ")
-
-                    # Cell content
-                    if row == self.sm.grid.row and col == self.sm.grid.column:
-                        self.log(" @ ")
-                    elif visited:
-                        self.log(" X ")
-                    else:
-                        self.log("   ")
-
-                # Print rightmost wall
-                walls, visited = get_walls_from_memory(row, self.maze.grid_cols - 1)
-                if visited and walls[1] == 1:  # East wall
-                    self.log("|\n")
-                else:
-                    self.log(" \n")
-
-                # Print bottom border (check this row's South walls OR next row's North walls)
-                for col in range(self.maze.grid_cols):
-                    walls, visited = get_walls_from_memory(row, col)
-                    has_bottom_wall = False
-
-                    # Check this cell's South wall
-                    if visited and walls[2] == 1:
-                        has_bottom_wall = True
-
-                    # Check cell below's North wall (if not last row)
-                    if row < self.maze.grid_rows - 1:
-                        walls_below, visited_below = get_walls_from_memory(row + 1, col)
-                        if visited_below and walls_below[0] == 1:
-                            has_bottom_wall = True
-
-                    if has_bottom_wall:
-                        self.log("+---")
-                    else:
-                        self.log("+   ")
-                self.log("+\n")
-
+            # Keep detailed internal variables for deeper debugging
             self._print_internal_variables()
 
         # Print the final values and finish
