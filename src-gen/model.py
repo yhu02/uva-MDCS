@@ -304,6 +304,7 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
+		self.__x = None
 		self.__delta_row = None
 		self.__delta_col = None
 		self.__cell_start_orientation = None
@@ -380,6 +381,7 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
+		self.__x = 0
 		self.__delta_row = 0
 		self.__delta_col = 0
 		self.__cell_start_orientation = 0
@@ -693,11 +695,10 @@ class Model:
 		self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
 		self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
 		self.grid.orientation = (((self.grid.orientation + 2)) % 4) if self.__exploring_done else self.grid.orientation
-		self.__target_yaw = 90.0 if (self.grid.orientation == 0) else (0.0 if (self.grid.orientation == 1) else (-(90.0) if (self.grid.orientation == 2) else 180.0))
 		self.__yaw_error = (self.__local_yaw - self.__target_yaw)
 		self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 		self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
-		self.__is_well_aligned = (self.__yaw_error == 0.0)
+		self.__is_well_aligned = (-(self.__align_yaw_tolerance) <= self.__yaw_error) and (self.__yaw_error <= self.__align_yaw_tolerance)
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory(self):
 		""".
@@ -1490,7 +1491,7 @@ class Model:
 				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
 				self.__is_well_aligned = (self.__yaw_error == 0.0)
-				self.__cmd_rot = -(0.2) if (self.__yaw_error > 0.0) else (0.2 if (self.__yaw_error < 0.0) else 0.0)
+				self.__cmd_rot = -(((self.__yaw_alignment_gain * self.__yaw_error))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
@@ -1708,7 +1709,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.__abs_yaw_error <= self.__align_yaw_tolerance:
+				if (self.__dist2 <= self.__align_entry_threshold2) and (self.__abs_yaw_error <= self.__align_yaw_tolerance):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
