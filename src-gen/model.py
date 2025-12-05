@@ -304,6 +304,16 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
+		self.__lateral_correction_gain = None
+		self.__lateral_allowed = None
+		self.__side_clearance = None
+		self.__lateral_error = None
+		self.__sign_lat = None
+		self.__abs_lat_error = None
+		self.__tmp_lat = None
+		self.__max_lat_rot = None
+		self.__lateral_correction = None
+		self.__yaw_rot = None
 		self.__delta_row = None
 		self.__delta_col = None
 		self.__cell_start_orientation = None
@@ -380,6 +390,16 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
+		self.__lateral_correction_gain = 0.6
+		self.__lateral_allowed = 0.08
+		self.__side_clearance = 0.12
+		self.__lateral_error = 0.0
+		self.__sign_lat = 0.0
+		self.__abs_lat_error = 0.0
+		self.__tmp_lat = 0.0
+		self.__max_lat_rot = 0.0
+		self.__lateral_correction = 0.0
+		self.__yaw_rot = 0.0
 		self.__delta_row = 0
 		self.__delta_col = 0
 		self.__cell_start_orientation = 0
@@ -1577,13 +1597,20 @@ class Model:
 				self.__limited_ratio = self.__tmp_ratio if (self.__tmp_ratio <= 0.9) else 0.9
 				self.__angle_factor = (1.0 - self.__limited_ratio)
 				self.__dist_scale = ((self.__dist2 / self.__align_entry_threshold2)) if (self.__dist2 < self.__align_entry_threshold2) else 1.0
-				self.__cmd_speed_expr = ((self.user_var.base_speed * self.__angle_factor) * self.__dist_scale)
+				self.__lateral_error = ((self.odom.x - self.__target_odom_x)) if ((self.__cell_start_orientation == 0) or (self.__cell_start_orientation == 2)) else ((self.odom.y - self.__target_odom_y))
+				self.__sign_lat = 1.0 if (self.__lateral_error >= 0.0) else -(1.0)
+				self.__abs_lat_error = (self.__lateral_error * self.__sign_lat)
+				self.__tmp_lat = (self.__lateral_correction_gain * self.__lateral_error)
+				self.__max_lat_rot = (self.base_values.max_rotation * 0.3)
+				self.__lateral_correction = self.__max_lat_rot if (self.__tmp_lat > self.__max_lat_rot) else ((-(self.__max_lat_rot)) if (self.__tmp_lat < -(self.__max_lat_rot)) else self.__tmp_lat)
+				self.__cmd_speed_expr = (((self.user_var.base_speed * self.__angle_factor) * self.__dist_scale) * (0.5 if (self.__abs_lat_error > self.__lateral_allowed) else 1.0))
 				self.__cmd_speed = self.base_values.max_speed if (self.__cmd_speed_expr > self.base_values.max_speed) else self.__cmd_speed_expr
 				self.__cmd_speed = 0.0 if (self.__cmd_speed < 0.0) else self.__cmd_speed
-				self.__cmd_rot_expr = -(((self.__yaw_alignment_gain * self.__yaw_error)))
+				self.__yaw_rot = (-(((self.__yaw_alignment_gain * self.__yaw_error)))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
+				self.__cmd_rot_expr = (self.__yaw_rot + self.__lateral_correction)
 				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot_expr > self.base_values.max_rotation) else self.__cmd_rot_expr
 				self.__cmd_rot = (-(self.base_values.max_rotation)) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
-				self.__cmd_speed = 0.0 if self.__abs_yaw_error > 60.0 else self.__cmd_speed
+				self.__cmd_speed = 0.0 if (self.__abs_yaw_error > 60.0) else self.__cmd_speed
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
@@ -1793,6 +1820,7 @@ class Model:
 				self.__w = self.__cmd_rot
 				self.__is_north_south = (self.grid.orientation == 0 or self.grid.orientation == 2)
 				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_mean < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
+				self.__v = (self.__v * 0.6) if ((self.laser_distance.dleft_mean < self.__side_clearance) or (self.laser_distance.dright_mean < self.__side_clearance)) else self.__v
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = 0.0 if (self.__v < 0.0) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
