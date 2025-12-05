@@ -1474,7 +1474,7 @@ class Model:
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
-				elif self.__autonomous_active and not self.__exploring_done and not self.__is_well_aligned:
+				elif self.__autonomous_active and not self.__exploring_done and self.__is_well_aligned and False == True:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
