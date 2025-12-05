@@ -797,8 +797,6 @@ class SCTConnect():
                 # Fallback: try mangled attribute lookup on Model instance
                 val = getattr(self.sm, attr, None)
             pairs.append((label, val))
-
-
         # Print three variables per line with fixed column widths
         label_w = 24
         val_w = 8
@@ -809,11 +807,80 @@ class SCTConnect():
                 parts.append(f"{lbl:<{label_w}}: {self._fmt(v):>{val_w}}")
             self.log(" | ".join(parts) + "\n")
 
-        # Keep a couple of interface-level values for context on one line
-        odx = self._fmt(getattr(self.sm.odom, 'x', None))
-        iy = self._fmt(getattr(self.sm.imu, 'yaw', None))
-        self.log(f"{'odom.x:':<{label_w}} {odx:>{val_w}} | {'imu.yaw:':<{label_w}} {iy:>{val_w}}\n")
+        # Now print full interfaces for complete debugging, using safe getattr
+        self.log("\n------ Full Interface Dump (safe) ------\n")
 
+        def dump_obj(name, obj, fields_list=None):
+            try:
+                o = obj
+                if o is None:
+                    self.log(f"{name}: None\n")
+                    return
+                if fields_list is None:
+                    # attempt to iterate public attributes
+                    attrs = [a for a in dir(o) if not a.startswith('_')]
+                else:
+                    attrs = fields_list
+                self.log(f"{name}:\n")
+                for a in attrs:
+                    try:
+                        v = getattr(o, a)
+                    except Exception:
+                        v = None
+                    # skip bound methods
+                    if callable(v):
+                        continue
+                    self.log(f"  {a:<20}: {self._fmt(v)}\n")
+            except Exception as e:
+                self.log(f"{name}: <error reading: {e}>\n")
+
+        # UserVar
+        dump_obj('user_var', getattr(self.sm, 'user_var', None), ['base_speed', 'base_rotation', 'startprocedure'])
+
+        # BaseValues
+        dump_obj('base_values', getattr(self.sm, 'base_values', None), ['max_speed', 'max_rotation', 'degrees_front', 'degrees_right', 'degrees_back', 'degrees_left'])
+
+        # Output
+        dump_obj('output', getattr(self.sm, 'output', None), ['speed', 'rotation', 'obstacles', 'gems', 'finish'])
+
+        # Grid
+        dump_obj('grid', getattr(self.sm, 'grid', None), ['update', 'receive', 'column', 'row', 'orientation', 'visited', 'wall_front', 'wall_right', 'wall_back', 'wall_left', 'grid_size', 'max_col', 'max_row', 'maze1', 'maze2', 'visited_cells'])
+
+        # StartPos
+        dump_obj('start_pos', getattr(self.sm, 'start_pos', None), ['set_zero', 'zero_x', 'zero_y', 'zero_south_degree', 'laser_deg_offset'])
+
+        # Computer events (log booleans)
+        comp = getattr(self.sm, 'computer', None)
+        if comp is None:
+            self.log('computer: None\n')
+        else:
+            self.log('computer events:\n')
+            for e in ['m_press','w_press','a_press','s_press','d_press','x_press']:
+                self.log(f"  {e:<20}: {self._fmt(getattr(comp, e, None))}\n")
+
+        # Imu and Odom
+        dump_obj('imu', getattr(self.sm, 'imu', None), ['pitch', 'roll', 'yaw'])
+        dump_obj('odom', getattr(self.sm, 'odom', None), ['x', 'y', 'z'])
+
+        # LaserDistance and LaserIntensity
+        dump_obj('laser_distance', getattr(self.sm, 'laser_distance', None), [
+            'd0','d90','d180','dm90','dmin','min_deg','dmax','max_deg','dmean',
+            'dfront_min','min_deg_f','dfront_max','max_deg_f','dfront_mean',
+            'dright_min','min_deg_r','dright_max','max_deg_r','dright_mean',
+            'dback_min','min_deg_b','dback_max','max_deg_b','dback_mean',
+            'dleft_min','min_deg_l','dleft_max','max_deg_l','dleft_mean'
+        ])
+
+        dump_obj('laser_intensity', getattr(self.sm, 'laser_intensity', None), [
+            'i0','i90','i180','im90',
+            'ifront_min','ifront_max','ifront_mean',
+            'iright_min','iright_max','iright_mean',
+            'iback_min','iback_max','iback_mean',
+            'ileft_min','ileft_max','ileft_mean'
+        ])
+
+        # Keep visited flag consistent for display
+        self.sm.grid.visited = True
         # Keep visited flag consistent for display
         self.sm.grid.visited = True
 
