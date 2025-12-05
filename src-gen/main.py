@@ -797,11 +797,11 @@ class SCTConnect():
                 # Fallback: try mangled attribute lookup on Model instance
                 val = getattr(self.sm, attr, None)
             pairs.append((label, val))
-        # Print three variables per line with fixed column widths
+        # Print five variables per line with fixed column widths
         label_w = 24
         val_w = 8
-        for i in range(0, len(pairs), 3):
-            chunk = pairs[i:i+3]
+        for i in range(0, len(pairs), 5):
+            chunk = pairs[i:i+5]
             parts = []
             for lbl, v in chunk:
                 parts.append(f"{lbl:<{label_w}}: {self._fmt(v):>{val_w}}")
@@ -821,7 +821,7 @@ class SCTConnect():
                     attrs = [a for a in dir(o) if not a.startswith('_')]
                 else:
                     attrs = fields_list
-                # collect (label, value) pairs then print 3 per line
+                # collect (label, value) pairs then print 5 per line
                 pairs_local = []
                 for a in attrs:
                     try:
@@ -833,8 +833,8 @@ class SCTConnect():
                     pairs_local.append((a, v))
 
                 self.log(f"{name}:\n")
-                for i in range(0, len(pairs_local), 3):
-                    chunk = pairs_local[i:i+3]
+                for i in range(0, len(pairs_local), 5):
+                    chunk = pairs_local[i:i+5]
                     parts = []
                     for lbl, v in chunk:
                         parts.append(f"  {lbl:<{label_w-2}}: {self._fmt(v):>{val_w}}")
