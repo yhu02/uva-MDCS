@@ -133,18 +133,18 @@ class SCTConnect():
 
             # One-line robot summary
             try:
-                yaw = f"{self.sm.imu.yaw:.1f}"
+                yaw = self._fmt(self.sm.imu.yaw)
             except Exception:
                 yaw = '?'
-            self.log(f"TurtleBot | V:{self.sm.output.speed:.2f} R:{self.sm.output.rotation:.2f} Y:{yaw} \n")
+            self.log(f"TurtleBot | V:{self._fmt(self.sm.output.speed)} R:{self._fmt(self.sm.output.rotation)} Y:{yaw} \n")
 
             # Active states in one line
             self._log_active_states()
 
             # Grid and start pos compact
             self.log(
-                f"Grid ori:{self.sm.grid.orientation} pos:({self.sm.grid.row},{self.sm.grid.column}) "
-                f"start:({self.sm.start_pos.zero_x:.2f},{self.sm.start_pos.zero_y:.2f}) set_zero:{self.sm.start_pos.set_zero}\n"
+                f"Grid ori:{self._fmt(self.sm.grid.orientation)} pos:({self._fmt(self.sm.grid.row)},{self._fmt(self.sm.grid.column)}) "
+                f"start:({self._fmt(self.sm.start_pos.zero_x)},{self._fmt(self.sm.start_pos.zero_y)}) set_zero:{self.sm.start_pos.set_zero}\n"
             )
 
             # Explored summary: count + sample (horizontal)
@@ -156,19 +156,19 @@ class SCTConnect():
                         explored_count += 1
                         explored_cells.append(f"({row},{col})")
             sample = ", ".join(explored_cells[:12]) + ("..." if len(explored_cells) > 12 else "")
-            self.log(f"Explored: {explored_count}/{self.maze.grid_rows*self.maze.grid_cols} {sample}\n")
+            self.log(f"Explored: {self._fmt(explored_count)}/{self._fmt(self.maze.grid_rows*self.maze.grid_cols)} {sample}\n")
 
             # Laser distances in one line
             self.log(
-                f"Laser F:{self.sm.laser_distance.dfront_mean:.2f} "
-                f"L:{self.sm.laser_distance.dleft_mean:.2f} "
-                f"B:{self.sm.laser_distance.dback_mean:.2f} "
-                f"R:{self.sm.laser_distance.dright_mean:.2f}\n"
+                f"Laser F:{self._fmt(self.sm.laser_distance.dfront_mean)} "
+                f"L:{self._fmt(self.sm.laser_distance.dleft_mean)} "
+                f"B:{self._fmt(self.sm.laser_distance.dback_mean)} "
+                f"R:{self._fmt(self.sm.laser_distance.dright_mean)}\n"
             )
 
             # Odometry and visited/walls compact
-            self.log(f"Odom x:{self.sm.odom.x:.2f} y:{self.sm.odom.y:.2f} ")
-            self.log(f"Visited:{self.sm.grid.visited:.2f} Walls[F,R,B,L]:[{self.sm.grid.wall_front},{self.sm.grid.wall_right},{self.sm.grid.wall_back},{self.sm.grid.wall_left}]\n")
+            self.log(f"Odom x:{self._fmt(self.sm.odom.x)} y:{self._fmt(self.sm.odom.y)} ")
+            self.log(f"Visited:{self._fmt(self.sm.grid.visited)} Walls[F,R,B,L]:[{self._fmt(self.sm.grid.wall_front)},{self._fmt(self.sm.grid.wall_right)},{self._fmt(self.sm.grid.wall_back)},{self._fmt(self.sm.grid.wall_left)}]\n")
 
             # Internal maze storage compact (single-line per large field)
             self.log(f"maze1:{self.sm.grid.maze1:032b} maze2:{self.sm.grid.maze2:032b} visitedBits:{self.sm.grid.visited_cells:016b}\n")
@@ -188,7 +188,7 @@ class SCTConnect():
                 ws = (wall_bits >> 1) & 1
                 ww = wall_bits & 1
                 visited_marker = '✓' if is_visited else '✗'
-                self.log(f"Cell ({self.sm.grid.row},{self.sm.grid.column}) vis:{visited_marker} walls(N,E,S,W):{wn}{we}{ws}{ww}\n")
+                self.log(f"Cell ({self._fmt(self.sm.grid.row)},{self._fmt(self.sm.grid.column)}) vis:{visited_marker} walls(N,E,S,W):{wn}{we}{ws}{ww}\n")
 
             # --- ASCII art of complete maze from statechart internal storage ---
             self.log("\n--- ASCII Maze Map (from statechart memory) ---\n")
@@ -672,6 +672,17 @@ class SCTConnect():
         
         if active:
             self.log(f"[DEBUG] Active states: {', '.join(active)}\n")
+
+    def _fmt(self, v):
+        """Format numbers with fixed widths for compact aligned output."""
+        try:
+            if isinstance(v, float):
+                return f"{v:6.2f}"
+            if isinstance(v, int):
+                return f"{v:4d}"
+        except Exception:
+            pass
+        return str(v)
     
     """
     Print currently active states to display
@@ -778,18 +789,25 @@ class SCTConnect():
             ("isNorthSouth", "_Model__is_north_south"),
         ]
 
+        pairs = []
         for label, attr in fields:
             try:
                 val = getattr(self.sm, attr)
             except Exception:
                 # Fallback: try mangled attribute lookup on Model instance
                 val = getattr(self.sm, attr, None)
-            # Aligned label column
-            self.log(f"{label:<24}: {val}\n")
+            pairs.append((label, val))
 
-        # Keep a couple of interface-level values for context
-        self.log(f"{'odom.x:':<24}{getattr(self.sm.odom, 'x', None)}\n")
-        self.log(f"{'imu.yaw:':<24}{getattr(self.sm.imu, 'yaw', None)}\n")
+        # Print three variables per line to keep the debug compact
+        for i in range(0, len(pairs), 3):
+            chunk = pairs[i:i+3]
+            parts = []
+            for lbl, v in chunk:
+                parts.append(f"{lbl:<18}: {self._fmt(v)}")
+            self.log(" | ".join(parts) + "\n")
+
+        # Keep a couple of interface-level values for context on one line
+        self.log(f"odom.x: {getattr(self.sm.odom, 'x', None)} | imu.yaw: {getattr(self.sm.imu, 'yaw', None)}\n")
 
         # Keep visited flag consistent for display
         self.sm.grid.visited = True
