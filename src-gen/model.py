@@ -31,13 +31,12 @@ class Model:
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_around,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore,
-			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0align_to_center,
 			turtle_bot_turtle_bot_autonomous_logic_idle,
 			turtle_bot_turtle_bot_zstopped,
 			turtle_bot_turtle_bot_zdrive,
 			turtle_bot_turtle_bot_zemergency_stop,
 			null_state
-		) = range(23)
+		) = range(22)
 	
 	
 	class UserVar:
@@ -584,7 +583,7 @@ class Model:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze:
 			return (self.__state_vector[1] >= self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze)\
-				and (self.__state_vector[1] <= self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0align_to_center)
+				and (self.__state_vector[1] <= self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore)
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0navigate_from_memory:
@@ -603,8 +602,6 @@ class Model:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0go_straight
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore
-		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0align_to_center:
-			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0align_to_center
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle
 		if s == self.__State.turtle_bot_turtle_bot_zstopped:
@@ -824,12 +821,6 @@ class Model:
 		self.grid.receive = False
 		self.__completed = True
 		
-	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center(self):
-		"""Entry action for state 'AlignToCenter'..
-		"""
-		#Entry action for state 'AlignToCenter'.
-		self.__cmd_speed = 0.0
-		
 	def __entry_action_turtle_bot_turtle_bot_z_stopped(self):
 		"""Entry action for state 'Stopped'..
 		"""
@@ -978,15 +969,6 @@ class Model:
 		#'default' enter sequence for state Explore
 		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore
-		self.__state_conf_vector_position = 1
-		self.__state_conf_vector_changed = True
-		
-	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center_default(self):
-		"""'default' enter sequence for state AlignToCenter.
-		"""
-		#'default' enter sequence for state AlignToCenter
-		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center()
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0align_to_center
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
@@ -1174,13 +1156,6 @@ class Model:
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
 		self.__state_conf_vector_position = 1
 		
-	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center(self):
-		"""Default exit sequence for state AlignToCenter.
-		"""
-		#Default exit sequence for state AlignToCenter
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
-		self.__state_conf_vector_position = 1
-		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle(self):
 		"""Default exit sequence for state Idle.
 		"""
@@ -1247,8 +1222,6 @@ class Model:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
-		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0align_to_center:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle()
 		state = self.__state_vector[2]
@@ -1294,8 +1267,6 @@ class Model:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore()
-		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0align_to_center:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center()
 		
 	def __react_turtle_bot_turtle_bot_mode_and_keyboard__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1571,11 +1542,6 @@ class Model:
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
-				elif self.__dist2 <= self.__align_entry_threshold2:
-					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
-					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center_default()
-					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
-					transitioned_after = 1
 				elif (self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > 0.25):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
@@ -1723,33 +1689,6 @@ class Model:
 		else:
 			#Always execute local reactions.
 			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
-		return transitioned_after
-	
-	
-	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center_react function.
-		"""
-		#The reactions of state AlignToCenter.
-		transitioned_after = transitioned_before
-		if not self.__do_completion:
-			if transitioned_after < 1:
-				if (self.__dist2 <= self.__align_entry_threshold2) and (self.__abs_yaw_error <= self.__align_yaw_tolerance):
-					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center()
-					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
-					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
-					transitioned_after = 1
-			#If no transition was taken
-			if transitioned_after == transitioned_before:
-				#then execute local reactions.
-				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
-				self.__local_yaw = ((self.__local_yaw - 360.0)) if (self.__local_yaw > 180.0) else (((self.__local_yaw + 360.0)) if (self.__local_yaw < -(180.0)) else self.__local_yaw)
-				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
-				self.__yaw_error = ((self.__yaw_error - 360.0)) if (self.__yaw_error > 180.0) else (((self.__yaw_error + 360.0)) if (self.__yaw_error < -(180.0)) else self.__yaw_error)
-				self.__sign_yaw = 1.0 if (self.__yaw_error >= 0.0) else -(1.0)
-				self.__abs_yaw_error = (self.__yaw_error * self.__sign_yaw)
-				self.__cmd_rot = -(((self.__yaw_alignment_gain * self.__yaw_error)))
-				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else ((-(self.base_values.max_rotation)) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot)
-				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1912,8 +1851,6 @@ class Model:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_react(transitioned)
-			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0align_to_center:
-				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_idle_react(transitioned)
 		if self.__state_conf_vector_position < 2:
