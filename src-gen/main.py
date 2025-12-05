@@ -128,27 +128,30 @@ class SCTConnect():
             # Ensure float type for ROS2 message
             self.node.vel_publish(x=float(self.sm.output.speed), rz=float(self.sm.output.rotation))
 
-            # Print info
+            # ================== DEBUG / INFO OUTPUT ==================
             os.system('clear')
+
+            # --- TurtleBot Stats (compact table) ---
             self.log("========= TurtleBot Stats =========\n")
-            self.log(f"velocity: {self.sm.output.speed}\n")
-            self.log(f"rotation speed: {self.sm.output.rotation}\n")
-            self.log(f"yaw: {self.sm.imu.yaw:.3f}\n")
-            
+            self.log(f"{'velocity:':<18}{self.sm.output.speed}\n")
+            self.log(f"{'rotation speed:':<18}{self.sm.output.rotation}\n")
+            self.log(f"{'yaw:':<18}{self.sm.imu.yaw:.3f}\n")
+
+            # --- Active States ---
             self.log("\n========= ACTIVE STATES =========\n")
             self._print_active_states()
 
+            # --- Grid Info in one small block ---
             self.log("\n----------- Grid Info -----------\n")
-            self.log(f"orientation: {self.sm.grid.orientation}\n")
-            self.log(f"row: {self.sm.grid.row}\n")
-            self.log(f"col: {self.sm.grid.column}\n")
+            self.log(f"{'orientation':<12}{'row':>8}{'col':>8}\n")
+            self.log(f"{self.sm.grid.orientation:<12}{self.sm.grid.row:>8}{self.sm.grid.column:>8}\n")
 
-            self.log(f"start pos:\n")
-            self.log(f"\tzero x: {self.sm.start_pos.zero_x:.2f}\n")
-            self.log(f"\tzero y: {self.sm.start_pos.zero_y:.2f}\n")
-            self.log(f"\tset zero: {self.sm.start_pos.set_zero}\n")
-            
-            # Print explored cells
+            self.log("\nstart pos:\n")
+            self.log(f"  {'zero x:':<16}{self.sm.start_pos.zero_x:.2f}\n")
+            self.log(f"  {'zero y:':<16}{self.sm.start_pos.zero_y:.2f}\n")
+            self.log(f"  {'set zero:':<16}{self.sm.start_pos.set_zero}\n")
+
+            # --- Explored cells, printed in columns ---
             self.log("----------- Explored Cells -----------\n")
             explored_count = 0
             explored_cells = []
@@ -157,95 +160,91 @@ class SCTConnect():
                     if self.maze.grid[row][col].visited:
                         explored_count += 1
                         explored_cells.append(f"({row},{col})")
+
             self.log(f"Total explored: {explored_count}/{self.maze.grid_rows * self.maze.grid_cols}\n")
             if explored_cells:
-                self.log(f"Cells: {', '.join(explored_cells)}\n")            
+                self.log("Cells:\n")
+                cols_per_line = 8
+                for i in range(0, len(explored_cells), cols_per_line):
+                    self.log("  " + ", ".join(explored_cells[i:i + cols_per_line]) + "\n")
 
+            # --- Laser stats (compact table) ---
             self.log("----------- Laser stuff -----------\n")
-            self.log(f"front mean:\t{self.sm.laser_distance.dfront_mean:.2f}\n")
-            self.log(f"left mean:\t{self.sm.laser_distance.dleft_mean:.2f}\n")
-            self.log(f"back mean:\t{self.sm.laser_distance.dback_mean:.2f}\n")
-            self.log(f"right mean:\t{self.sm.laser_distance.dright_mean:.2f}\n")
+            self.log(f"{'dir':<8}{'mean distance':>15}\n")
+            self.log(f"{'front':<8}{self.sm.laser_distance.dfront_mean:>15.2f}\n")
+            self.log(f"{'left':<8}{self.sm.laser_distance.dleft_mean:>15.2f}\n")
+            self.log(f"{'back':<8}{self.sm.laser_distance.dback_mean:>15.2f}\n")
+            self.log(f"{'right':<8}{self.sm.laser_distance.dright_mean:>15.2f}\n")
 
+            # --- Odometry (small table) ---
             self.log("------------ Odometry -------------\n")
-            self.log(f"x: {self.sm.odom.x:.2f}\n")
-            self.log(f"y: {self.sm.odom.y:.2f}\n")
+            self.log(f"{'x:':<6}{self.sm.odom.x:.2f}\n")
+            self.log(f"{'y:':<6}{self.sm.odom.y:.2f}\n")
 
+            # --- Logging / walls (compact) ---
             self.log("------------ Logging -------------\n")
-            self.log(f"visited: {self.sm.grid.visited:.2f}\n")
-            print(f'Wall front: {self.sm.grid.wall_front}, right: {self.sm.grid.wall_right}, '
-                    f'back: {self.sm.grid.wall_back}, left: {self.sm.grid.wall_left}')
-            
-            # Print internal maze storage from statechart
-            print(f'\n--- Internal Maze Storage (Bitwise) ---')
-            print(f'maze1 (cells 0-7):  {self.sm.grid.maze1:032b}')
-            print(f'maze2 (cells 8-15): {self.sm.grid.maze2:032b}')
-            print(f'visitedCells:       {self.sm.grid.visited_cells:016b}')
-            
+            self.log(f"{'visited:':<18}{self.sm.grid.visited:.2f}\n")
+            print(
+                "Walls [F,R,B,L]: "
+                f"[{self.sm.grid.wall_front}, "
+                f"{self.sm.grid.wall_right}, "
+                f"{self.sm.grid.wall_back}, "
+                f"{self.sm.grid.wall_left}]"
+            )
+
+            # Print internal maze storage from statechart (formatted in columns)
+            print('\n--- Internal Maze Storage (Bitwise) ---')
+            header = f"{'Field':<22}{'Bits (MSB -> LSB)':>35}"
+            print(header)
+            print('-' * len(header))
+
+            print(f"{'maze1 (cells 0-7):':<22}{self.sm.grid.maze1:032b}")
+            print(f"{'maze2 (cells 8-15):':<22}{self.sm.grid.maze2:032b}")
+            print(f"{'visitedCells:':<22}{self.sm.grid.visited_cells:016b}")
+
+
             # Decode and display current cell from internal storage
             if self.sm.grid.row < self.maze.grid_rows and self.sm.grid.column < self.maze.grid_cols:
                 cell_idx = self.sm.grid.row * 4 + self.sm.grid.column
                 is_visited = (self.sm.grid.visited_cells >> cell_idx) & 1
-                
+
                 if cell_idx < 8:
                     shift = cell_idx * 4
                     wall_bits = (self.sm.grid.maze1 >> shift) & 15
                 else:
                     shift = (cell_idx - 8) * 4
                     wall_bits = (self.sm.grid.maze2 >> shift) & 15
-                
+
                 # Extract N, E, S, W from bits
                 wall_n = (wall_bits >> 3) & 1
                 wall_e = (wall_bits >> 2) & 1
                 wall_s = (wall_bits >> 1) & 1
                 wall_w = wall_bits & 1
-                
+
                 visited_marker = '✓' if is_visited else '✗'
-                print(f'Current cell ({self.sm.grid.row},{self.sm.grid.column}) visited:{visited_marker} walls [N,E,S,W]: [{wall_n},{wall_e},{wall_s},{wall_w}]')
+                print(
+                    f'Current cell ({self.sm.grid.row},{self.sm.grid.column}) '
+                    f'visited:{visited_marker} walls [N,E,S,W]: '
+                    f'[{wall_n},{wall_e},{wall_s},{wall_w}]'
+                )
                 wall_chars = ['█' if w == 1 else ' ' for w in [wall_n, wall_e, wall_s, wall_w]]
                 print(f'  {wall_chars[0]}  ')
                 print(f' {wall_chars[3]}@{wall_chars[1]} ')
                 print(f'  {wall_chars[2]}  ')
-            
-            # Print all stored walls from internal maze storage
-            self.log("\n--- Complete Wall Map (from internal storage) ---\n")
-            for row in range(self.maze.grid_rows):
-                for col in range(self.maze.grid_cols):
-                    cell_idx = row * 4 + col
-                    is_visited = (self.sm.grid.visited_cells >> cell_idx) & 1
-                    
-                    if cell_idx < 8:
-                        shift = cell_idx * 4
-                        wall_bits = (self.sm.grid.maze1 >> shift) & 15
-                    else:
-                        shift = (cell_idx - 8) * 4
-                        wall_bits = (self.sm.grid.maze2 >> shift) & 15
-                    
-                    # Extract walls
-                    wall_n = (wall_bits >> 3) & 1
-                    wall_e = (wall_bits >> 2) & 1
-                    wall_s = (wall_bits >> 1) & 1
-                    wall_w = wall_bits & 1
-                    
-                    # Show only visited cells with checkmark
-                    if is_visited:
-                        walls_str = f"[{wall_n},{wall_e},{wall_s},{wall_w}]"
-                        print(f"({row},{col}):✓{walls_str}  ", end="")
-                print()  # New line after each row
-            
-            # Print ASCII art of complete maze from statechart internal storage
+
+            # --- ASCII art of complete maze from statechart internal storage (unchanged) ---
             self.log("\n--- ASCII Maze Map (from statechart memory) ---\n")
             self.log(f"  Orientation: {['N','E','S','W'][self.sm.grid.orientation]}\n")
-            
+
             # Helper function to extract wall data from maze1/maze2
             def get_walls_from_memory(row, col):
                 """Extract walls for a cell from maze1/maze2 integers"""
                 cell_idx = row * 4 + col
                 is_visited = (self.sm.grid.visited_cells >> cell_idx) & 1
-                
+
                 if not is_visited:
                     return None, False  # Not visited
-                
+
                 # Extract 4-bit wall data
                 if cell_idx < 8:
                     temp_shift = cell_idx * 4
@@ -253,15 +252,15 @@ class SCTConnect():
                 else:
                     temp_shift = (cell_idx - 8) * 4
                     wall_bits = (self.sm.grid.maze2 >> temp_shift) & 15
-                
+
                 # Decode: bit3=N, bit2=E, bit1=S, bit0=W
                 wall_n = (wall_bits >> 3) & 1
                 wall_e = (wall_bits >> 2) & 1
                 wall_s = (wall_bits >> 1) & 1
                 wall_w = wall_bits & 1
-                
+
                 return [wall_n, wall_e, wall_s, wall_w], True
-            
+
             # Print top border of first row
             for col in range(self.maze.grid_cols):
                 walls, visited = get_walls_from_memory(0, col)
@@ -270,29 +269,29 @@ class SCTConnect():
                 else:
                     self.log("+   ")
             self.log("+\n")
-            
+
             # Print each row
             for row in range(self.maze.grid_rows):
                 # Print left walls and cell content
                 for col in range(self.maze.grid_cols):
                     walls, visited = get_walls_from_memory(row, col)
                     has_left_wall = False
-                    
+
                     # Check this cell's West wall
                     if visited and walls[3] == 1:
                         has_left_wall = True
-                    
+
                     # Check cell to the left's East wall
                     if col > 0:
                         walls_left, visited_left = get_walls_from_memory(row, col - 1)
                         if visited_left and walls_left[1] == 1:
                             has_left_wall = True
-                    
+
                     if has_left_wall:
                         self.log("|")
                     else:
                         self.log(" ")
-                    
+
                     # Cell content
                     if row == self.sm.grid.row and col == self.sm.grid.column:
                         self.log(" @ ")
@@ -300,35 +299,35 @@ class SCTConnect():
                         self.log(" X ")
                     else:
                         self.log("   ")
-                
+
                 # Print rightmost wall
                 walls, visited = get_walls_from_memory(row, self.maze.grid_cols - 1)
                 if visited and walls[1] == 1:  # East wall
                     self.log("|\n")
                 else:
                     self.log(" \n")
-                
+
                 # Print bottom border (check this row's South walls OR next row's North walls)
                 for col in range(self.maze.grid_cols):
                     walls, visited = get_walls_from_memory(row, col)
                     has_bottom_wall = False
-                    
+
                     # Check this cell's South wall
                     if visited and walls[2] == 1:
                         has_bottom_wall = True
-                    
+
                     # Check cell below's North wall (if not last row)
                     if row < self.maze.grid_rows - 1:
                         walls_below, visited_below = get_walls_from_memory(row + 1, col)
                         if visited_below and walls_below[0] == 1:
                             has_bottom_wall = True
-                    
+
                     if has_bottom_wall:
                         self.log("+---")
                     else:
                         self.log("+   ")
                 self.log("+\n")
-            
+
             self._print_internal_variables()
 
         # Print the final values and finish
@@ -776,67 +775,83 @@ class SCTConnect():
                 
                 self.previous_states[i] = new_state
     
+
     """
     Print internal state machine variables
     """
     def _print_internal_variables(self):
-        self.log("\\n------ Internal Variables ------\n")
-        self.log(f"dist_free: {self.sm._Model__dist_free:.3f}\n")
-        self.log(f"is_manual: {self.sm._Model__is_manual}\n")
-        self.log(f"autonomous_active: {self.sm._Model__autonomous_active}\n")
-        self.log(f"left_free: {self.sm._Model__left_free}\n")
-        self.log(f"front_free: {self.sm._Model__front_free}\n")
-        self.log(f"right_free: {self.sm._Model__right_free}\n")
-        self.log(f"back_free: {self.sm._Model__back_free}\n")
-        self.log(f"exploring_done: {self.sm._Model__exploring_done}\n")
-        
-        self.log("\\n--- Navigation ---\n")
-        self.log(f"cmd_speed: {self.sm._Model__cmd_speed:.3f} m/s\n")
-        self.log(f"cmd_rot: {self.sm._Model__cmd_rot:.3f} rad/s\n")
-        self.log(f"Final output - v: {self.sm._Model__v:.3f} m/s, w: {self.sm._Model__w:.3f} rad/s\n")
-        
-        self.log("\\n--- Alignment Debug ---\n")
-        self.log(f"targetYaw: {self.sm._Model__target_yaw:.3f}°\n")
-        self.log(f"yawError: {self.sm._Model__yaw_error:.3f}°\n")
-        self.log(f"isWellAligned: {self.sm._Model__is_well_aligned}\n")
-        
-        self.log("\\n--- Timer Debug ---\n")
-        self.log(f"Timer events array: {self.sm._Model__time_events}\n")
-        self.log(f"Timer service active: {self.sm.timer_service is not None}\n")
-        
-        self.log("\\n--- Transition Conditions Debug ---\n")
-        self.log(f"autonomousActive: {self.sm._Model__autonomous_active}\n")
-        self.log(f"exploringDone: {self.sm._Model__exploring_done}\n")
-        self.log(f"Condition for Goto (timer1): autonomousActive={self.sm._Model__autonomous_active} AND exploringDone={self.sm._Model__exploring_done} AND isWellAligned={self.sm._Model__is_well_aligned}\n")
-        self.log(f"  -> Result: {self.sm._Model__autonomous_active and self.sm._Model__exploring_done and self.sm._Model__is_well_aligned}\n")
-        self.log(f"Condition for Explore (timer2): autonomousActive={self.sm._Model__autonomous_active} AND NOT exploringDone={not self.sm._Model__exploring_done} AND isWellAligned={self.sm._Model__is_well_aligned}\n")
-        self.log(f"  -> Result: {self.sm._Model__autonomous_active and not self.sm._Model__exploring_done and self.sm._Model__is_well_aligned}\n")
-        
-        self.log("\\n--- Command Variables ---\n")
-        self.log(f"cmdSpeed: {self.sm._Model__cmd_speed}\n")
-        self.log(f"cmdRot: {self.sm._Model__cmd_rot}\n")
-        self.log(f"v (computed): {self.sm._Model__v}\n")
-        self.log(f"w (computed): {self.sm._Model__w}\n")
-        
-        self.log("\\n--- Wall Centering Debug ---\n")
-        self.log(f"isNorthSouth: {self.sm._Model__is_north_south}\n")
-        self.log(f"wallError: {self.sm._Model__wall_error:.3f}\n")
-        self.log(f"wallsVisible: {self.sm._Model__walls_visible}\n")
-        self.log(f"tooCloseInDirection: {self.sm._Model__too_close_in_direction}\n")
-        
-        self.log("\\n--- State Machine Status ---\n")
-        self.log(f"State vector: {self.sm._Model__state_vector}\n")
-        self.log(f"Is active: {self.sm.is_active()}\n")
-        self.log(f"AtCellCenter active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center)}\n")
-        self.log(f"Explore active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore)}\n")
-        self.log(f"Drive active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_zdrive)}\n")
-        self.log(f"Stopped active: {self.sm.is_state_active(Model.State.turtle_bot_turtle_bot_zstopped)}\n")
-        
-        self.log("\\n--- Internal Flags ---\n")
-        self.log(f"beenAtStartOnce: {self.sm._Model__been_at_start_once}\n")
-        self.log(f"completed: {self.sm._Model__completed}\n")
-        self.log(f"do_completion: {self.sm._Model__do_completion}\n")
-        
+        # Only print the variables the user requested. Use getattr with defaults to avoid attribute errors.
+        self.log("\n------ Internal Variables (Filtered) ------\n")
+
+        # Mapping of requested fields to the internal attribute names used by the generated Model
+        fields = [
+            ("localYaw", "_Model__local_yaw"),
+            ("cellIndex", "_Model__cell_index"),
+            ("wallBits", "_Model__wall_bits"),
+            ("absoluteN", "_Model__absolute_n"),
+            ("absoluteE", "_Model__absolute_e"),
+            ("absoluteS", "_Model__absolute_s"),
+            ("absoluteW", "_Model__absolute_w"),
+            ("tempMask", "_Model__temp_mask"),
+            ("tempShift", "_Model__temp_shift"),
+            ("distFree", "_Model__dist_free"),
+
+            ("isManual", "_Model__is_manual"),
+            ("autonomousActive", "_Model__autonomous_active"),
+
+            ("cmdSpeed", "_Model__cmd_speed"),
+            ("cmdRot", "_Model__cmd_rot"),
+
+            ("cellStartX", "_Model__cell_start_x"),
+            ("cellStartY", "_Model__cell_start_y"),
+            ("cellStartRow", "_Model__cell_start_row"),
+            ("cellStartCol", "_Model__cell_start_col"),
+
+            ("startRow", "_Model__start_row"),
+            ("startCol", "_Model__start_col"),
+
+            ("exploringDone", "_Model__exploring_done"),
+
+            ("leftFree", "_Model__left_free"),
+            ("frontFree", "_Model__front_free"),
+            ("rightFree", "_Model__right_free"),
+            ("backFree", "_Model__back_free"),
+
+            ("targetRow", "_Model__target_row"),
+            ("targetCol", "_Model__target_col"),
+
+            ("beenAtStartOnce", "_Model__been_at_start_once"),
+            ("turnStartYaw", "_Model__turn_start_yaw"),
+            ("totalTurned", "_Model__total_turned"),
+            ("yawDiff", "_Model__yaw_diff"),
+            ("v", "_Model__v"),
+            ("w", "_Model__w"),
+
+            ("frontSlowThreshold", "_Model__front_slow_threshold"),
+            ("emergencyStopThreshold", "_Model__emergency_stop_threshold"),
+            ("emergencyRecoverThreshold", "_Model__emergency_recover_threshold"),
+            ("frontSlowFactor", "_Model__front_slow_factor"),
+
+            ("targetYaw", "_Model__target_yaw"),
+            ("yawError", "_Model__yaw_error"),
+            ("isWellAligned", "_Model__is_well_aligned"),
+            ("isNorthSouth", "_Model__is_north_south"),
+        ]
+
+        for label, attr in fields:
+            try:
+                val = getattr(self.sm, attr)
+            except Exception:
+                # Fallback: try mangled attribute lookup on Model instance
+                val = getattr(self.sm, attr, None)
+            # Aligned label column
+            self.log(f"{label:<24}: {val}\n")
+
+        # Keep a couple of interface-level values for context
+        self.log(f"{'odom.x:':<24}{getattr(self.sm.odom, 'x', None)}\n")
+        self.log(f"{'imu.yaw:':<24}{getattr(self.sm.imu, 'yaw', None)}\n")
+
+        # Keep visited flag consistent for display
         self.sm.grid.visited = True
 
 """
