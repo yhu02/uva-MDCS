@@ -857,15 +857,6 @@ class SCTConnect():
         # StartPos
         dump_obj('start_pos', getattr(self.sm, 'start_pos', None), ['set_zero', 'zero_x', 'zero_y', 'zero_south_degree', 'laser_deg_offset'])
 
-        # Computer events (log booleans)
-        comp = getattr(self.sm, 'computer', None)
-        if comp is None:
-            self.log('computer: None\n')
-        else:
-            self.log('computer events:\n')
-            for e in ['m_press','w_press','a_press','s_press','d_press','x_press']:
-                self.log(f"  {e:<20}: {self._fmt(getattr(comp, e, None))}\n")
-
         # Imu and Odom
         dump_obj('imu', getattr(self.sm, 'imu', None), ['pitch', 'roll', 'yaw'])
         dump_obj('odom', getattr(self.sm, 'odom', None), ['x', 'y', 'z'])
