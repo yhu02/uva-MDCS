@@ -798,16 +798,21 @@ class SCTConnect():
                 val = getattr(self.sm, attr, None)
             pairs.append((label, val))
 
-        # Print three variables per line to keep the debug compact
+
+        # Print three variables per line with fixed column widths
+        label_w = 24
+        val_w = 8
         for i in range(0, len(pairs), 3):
             chunk = pairs[i:i+3]
             parts = []
             for lbl, v in chunk:
-                parts.append(f"{lbl:<18}: {self._fmt(v)}")
+                parts.append(f"{lbl:<{label_w}}: {self._fmt(v):>{val_w}}")
             self.log(" | ".join(parts) + "\n")
 
         # Keep a couple of interface-level values for context on one line
-        self.log(f"odom.x: {getattr(self.sm.odom, 'x', None)} | imu.yaw: {getattr(self.sm.imu, 'yaw', None)}\n")
+        odx = self._fmt(getattr(self.sm.odom, 'x', None))
+        iy = self._fmt(getattr(self.sm.imu, 'yaw', None))
+        self.log(f"{'odom.x:':<{label_w}} {odx:>{val_w}} | {'imu.yaw:':<{label_w}} {iy:>{val_w}}\n")
 
         # Keep visited flag consistent for display
         self.sm.grid.visited = True
