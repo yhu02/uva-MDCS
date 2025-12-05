@@ -1547,9 +1547,19 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.__dist2 <= self.__align_entry_threshold2:
+				if self.laser_distance.dfront_min < (self.__dist_free * 0.8):
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+				elif self.__dist2 <= self.__align_entry_threshold2:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+				elif (self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > 0.25):
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
 			#If no transition was taken
@@ -1575,6 +1585,7 @@ class Model:
 				self.__cmd_rot_expr = -(((self.__yaw_alignment_gain * self.__yaw_error)))
 				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot_expr > self.base_values.max_rotation) else self.__cmd_rot_expr
 				self.__cmd_rot = (-(self.base_values.max_rotation)) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
+				self.__cmd_speed = 0.0 if self.__abs_yaw_error > 60.0 else self.__cmd_speed
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
@@ -1698,11 +1709,6 @@ class Model:
 		if not self.__do_completion:
 			if transitioned_after < 1:
 				if self.__abs_yaw_error <= self.__align_yaw_tolerance:
-					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center()
-					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
-					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
-					transitioned_after = 1
-				elif (self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > 0.25):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
