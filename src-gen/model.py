@@ -18,7 +18,7 @@ class Model:
 			turtle_bot_turtle_bot_mode_and_keyboard_manual,
 			turtle_bot_turtle_bot_mode_and_keyboard_autonomous,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate,
-			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key,
+			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze,
@@ -304,7 +304,6 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
-		self.__x = None
 		self.__delta_row = None
 		self.__delta_col = None
 		self.__cell_start_orientation = None
@@ -312,6 +311,7 @@ class Model:
 		self.__target_odom_y = None
 		self.__abs_yaw_error = None
 		self.__yaw_alignment_gain = None
+		self.__align_yaw_tolerance = None
 		self.__sign_yaw = None
 		self.__align_entry_threshold2 = None
 		self.__tmp_ratio = None
@@ -333,7 +333,6 @@ class Model:
 		self.__temp_mask = None
 		self.__temp_shift = None
 		self.__dist_free = None
-		self.__align_yaw_tolerance = None
 		self.__is_manual = None
 		self.__autonomous_active = None
 		self.__cmd_speed = None
@@ -381,14 +380,14 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
-		self.__x = 0
 		self.__delta_row = 0
 		self.__delta_col = 0
 		self.__cell_start_orientation = 0
 		self.__target_odom_x = 0.0
 		self.__target_odom_y = 0.0
 		self.__abs_yaw_error = 0.0
-		self.__yaw_alignment_gain = 1.0
+		self.__yaw_alignment_gain = 0.02
+		self.__align_yaw_tolerance = 3.0
 		self.__sign_yaw = 0.0
 		self.__align_entry_threshold2 = ((0.15 * 0.15))
 		self.__tmp_ratio = 0.0
@@ -410,7 +409,6 @@ class Model:
 		self.__temp_mask = 0
 		self.__temp_shift = 0
 		self.__dist_free = 0.35
-		self.__align_yaw_tolerance = 8.0
 		self.__is_manual = False
 		self.__autonomous_active = False
 		self.__cmd_speed = 0.0
@@ -558,8 +556,8 @@ class Model:
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate:
 			return (self.__state_vector[1] >= self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate)\
 				and (self.__state_vector[1] <= self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done)
-		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
-			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
@@ -654,12 +652,15 @@ class Model:
 		self.__is_manual = False
 		self.__autonomous_active = True
 		
-	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key(self):
-		"""Entry action for state 'WaitForKey'..
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize(self):
+		"""Entry action for state 'Initialize'..
 		"""
-		#Entry action for state 'WaitForKey'.
+		#Entry action for state 'Initialize'.
 		self.__cmd_speed = 0
 		self.__cmd_rot = 0
+		self.__yaw_alignment_gain = 0.02
+		self.__align_yaw_tolerance = 3.0
+		self.__align_entry_threshold2 = (((self.grid.grid_size * 0.15)) * ((self.grid.grid_size * 0.15)))
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Entry action for state 'SettingZero'..
@@ -858,12 +859,12 @@ class Model:
 		#'default' enter sequence for state Calibrate
 		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_default()
 		
-	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_default(self):
-		"""'default' enter sequence for state WaitForKey.
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_default(self):
+		"""'default' enter sequence for state Initialize.
 		"""
-		#'default' enter sequence for state WaitForKey
-		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key()
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key
+		#'default' enter sequence for state Initialize
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
@@ -1063,10 +1064,10 @@ class Model:
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 1
 		
-	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key(self):
-		"""Default exit sequence for state WaitForKey.
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize(self):
+		"""Default exit sequence for state Initialize.
 		"""
-		#Default exit sequence for state WaitForKey
+		#Default exit sequence for state Initialize
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate
 		self.__state_conf_vector_position = 1
 		
@@ -1203,8 +1204,8 @@ class Model:
 		state = self.__state_vector[1]
 		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate()
-		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
@@ -1246,8 +1247,8 @@ class Model:
 		"""
 		#Default exit sequence for region null
 		state = self.__state_vector[1]
-		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key()
+		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
@@ -1289,7 +1290,7 @@ class Model:
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_default()
 		
 	def __react_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1398,15 +1399,15 @@ class Model:
 		return transitioned_after
 	
 	
-	def __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_react function.
+	def __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_react function.
 		"""
-		#The reactions of state WaitForKey.
+		#The reactions of state Initialize.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
 				if self.computer.s_press:
-					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key()
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(1)
 					transitioned_after = 1
@@ -1485,13 +1486,13 @@ class Model:
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
 				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
-				self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
-				self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
+				self.__local_yaw = ((self.__local_yaw - 360.0)) if (self.__local_yaw > 180.0) else (((self.__local_yaw + 360.0)) if (self.__local_yaw < -(180.0)) else self.__local_yaw)
 				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
-				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
-				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
-				self.__is_well_aligned = (self.__yaw_error == 0.0)
-				self.__cmd_rot = -(((self.__yaw_alignment_gain * self.__yaw_error))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
+				self.__yaw_error = ((self.__yaw_error - 360.0)) if (self.__yaw_error > 180.0) else (((self.__yaw_error + 360.0)) if (self.__yaw_error < -(180.0)) else self.__yaw_error)
+				self.__sign_yaw = 1.0 if (self.__yaw_error >= 0.0) else -(1.0)
+				self.__abs_yaw_error = (self.__yaw_error * self.__sign_yaw)
+				self.__is_well_aligned = (self.__abs_yaw_error <= self.__align_yaw_tolerance)
+				self.__cmd_rot = (-(((self.__yaw_alignment_gain * self.__yaw_error)))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
@@ -1717,9 +1718,14 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
+				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
+				self.__local_yaw = ((self.__local_yaw - 360.0)) if (self.__local_yaw > 180.0) else (((self.__local_yaw + 360.0)) if (self.__local_yaw < -(180.0)) else self.__local_yaw)
+				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
+				self.__yaw_error = ((self.__yaw_error - 360.0)) if (self.__yaw_error > 180.0) else (((self.__yaw_error + 360.0)) if (self.__yaw_error < -(180.0)) else self.__yaw_error)
+				self.__sign_yaw = 1.0 if (self.__yaw_error >= 0.0) else -(1.0)
+				self.__abs_yaw_error = (self.__yaw_error * self.__sign_yaw)
 				self.__cmd_rot = -(((self.__yaw_alignment_gain * self.__yaw_error)))
-				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else self.__cmd_rot
-				self.__cmd_rot = (-(self.base_values.max_rotation)) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
+				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else ((-(self.base_values.max_rotation)) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot)
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
@@ -1783,7 +1789,6 @@ class Model:
 				self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
 				self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
 				self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
-				self.__target_yaw = 90.0 if (self.grid.orientation == 0) else (0.0 if (self.grid.orientation == 1) else (-(90.0) if (self.grid.orientation == 2) else 180.0))
 				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
 				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
@@ -1859,8 +1864,8 @@ class Model:
 			transitioned = self.__turtle_bot_turtle_bot_mode_and_keyboard_autonomous_react(transitioned)
 		if self.__state_conf_vector_position < 1:
 			state = self.__state_vector[1]
-			if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
-				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_wait_for_key_react(transitioned)
+			if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
