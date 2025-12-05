@@ -821,16 +821,24 @@ class SCTConnect():
                     attrs = [a for a in dir(o) if not a.startswith('_')]
                 else:
                     attrs = fields_list
-                self.log(f"{name}:\n")
+                # collect (label, value) pairs then print 3 per line
+                pairs_local = []
                 for a in attrs:
                     try:
                         v = getattr(o, a)
                     except Exception:
                         v = None
-                    # skip bound methods
                     if callable(v):
                         continue
-                    self.log(f"  {a:<20}: {self._fmt(v)}\n")
+                    pairs_local.append((a, v))
+
+                self.log(f"{name}:\n")
+                for i in range(0, len(pairs_local), 3):
+                    chunk = pairs_local[i:i+3]
+                    parts = []
+                    for lbl, v in chunk:
+                        parts.append(f"  {lbl:<{label_w-2}}: {self._fmt(v):>{val_w}}")
+                    self.log(" | ".join(parts) + "\n")
             except Exception as e:
                 self.log(f"{name}: <error reading: {e}>\n")
 
