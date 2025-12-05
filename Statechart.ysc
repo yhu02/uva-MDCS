@@ -41,7 +41,7 @@
             <regions xmi:id="_fa29cM4nEfCibLM5nbHmTw">
               <vertices xsi:type="sgraph:State" xmi:id="_g1S7IM4nEfCibLM5nbHmTw" specification="entry /&#xD;&#xA;    // Stop all motion&#xD;&#xA;    cmdSpeed = 0.0;&#xD;&#xA;    cmdRot = 0.0;&#xD;&#xA;&#xD;&#xA;    // Remember if we have ever left the start cell&#xD;&#xA;    beenAtStartOnce = (grid.row != startRow || grid.column != startCol) ? true : beenAtStartOnce;&#xD;&#xA;    &#xD;&#xA;    // Check if exploration is done: back at start after leaving at least once&#xD;&#xA;    // This must be set BEFORE the transition conditions are evaluated&#xD;&#xA;    exploringDone = (beenAtStartOnce &amp;&amp; grid.row == startRow &amp;&amp; grid.column == startCol) ? true : exploringDone;&#xD;&#xA;    &#xD;&#xA;    // --- Yaw relative to calibration ---&#xD;&#xA;    localYaw = imu.yaw - startPos.zeroSouthDegree;&#xD;&#xA;    localYaw = (localYaw > 180.0) ? localYaw - 360.0 : localYaw;&#xD;&#xA;    localYaw = (localYaw &lt; -180.0) ? localYaw + 360.0 : localYaw;&#xD;&#xA;    &#xD;&#xA;    // LOCK orientation - snap to nearest cardinal direction based on local yaw&#xD;&#xA;    // This prevents oscillation during alignment&#xD;&#xA;    grid.orientation = &#xD;&#xA;        (localYaw >= 45.0 &amp;&amp; localYaw &lt; 135.0) ? 0 :&#xD;&#xA;        ((localYaw >= -45.0 &amp;&amp; localYaw &lt; 45.0) ? 1 :&#xD;&#xA;        ((localYaw >= -135.0 &amp;&amp; localYaw &lt; -45.0) ? 2 : 3));&#xD;&#xA;    &#xD;&#xA;    // If exploration is done, rotate by 180° (flip orientation)&#xD;&#xA;    grid.orientation = exploringDone ? (grid.orientation + 2) % 4 : grid.orientation&#xD;&#xA;&#xD;&#xA;always /&#xD;&#xA;    // recompute local yaw and normalize to (-180,180]&#xD;&#xA;    localYaw = imu.yaw - startPos.zeroSouthDegree;&#xD;&#xA;    localYaw = (localYaw > 180.0)&#xD;&#xA;             ? (localYaw - 360.0)&#xD;&#xA;             : ((localYaw &lt; -180.0)&#xD;&#xA;                 ? (localYaw + 360.0)&#xD;&#xA;                 : localYaw);&#xD;&#xA;&#xD;&#xA;    // yaw error relative to stored authoritative targetYaw; normalize to (-180,180]&#xD;&#xA;    yawError = localYaw - targetYaw;&#xD;&#xA;    yawError = (yawError > 180.0)&#xD;&#xA;             ? (yawError - 360.0)&#xD;&#xA;             : ((yawError &lt; -180.0)&#xD;&#xA;                 ? (yawError + 360.0)&#xD;&#xA;                 : yawError);&#xD;&#xA;&#xD;&#xA;    // absolute yaw using sign (no abs() call)&#xD;&#xA;    signYaw = (yawError >= 0.0)&#xD;&#xA;            ? 1.0&#xD;&#xA;            : -1.0;&#xD;&#xA;    absYawError = yawError * signYaw;&#xD;&#xA;&#xD;&#xA;    // tolerance check (use &lt;=): we declare aligned when abs error ≤ alignYawTolerance&#xD;&#xA;    isWellAligned = (absYawError &lt;= alignYawTolerance);&#xD;&#xA;&#xD;&#xA;    // rotation command: proportional while outside tolerance, zero otherwise&#xD;&#xA;    cmdRot = (absYawError > alignYawTolerance)&#xD;&#xA;           ? (-(yawAlignmentGain * yawError))&#xD;&#xA;           : 0.0&#xD;&#xA;" name="AtCellCenter" incomingTransitions="_ORz6YM4-EfCGn-gnJkkTqQ _76KpkNA-EfCuzfYF5B9klg _0_JRANBmEfCvXJMPQ895cA _WEG1MM5CEfCGn-gnJkkTqQ _DkjQUNHJEfCg6rQfckbZaQ">
                 <outgoingTransitions xmi:id="_qdeWUM4nEfCibLM5nbHmTw" specification="[autonomousActive == true &amp;&amp; exploringDone == true &amp;&amp; isWellAligned == true]" target="_kDVkcM4nEfCibLM5nbHmTw"/>
-                <outgoingTransitions xmi:id="_WtagMM6rEfCDQcoECy4uhw" specification="[autonomousActive == true &amp;&amp; exploringDone == false &amp;&amp; isWellAligned == true]" target="_Sqk84M6rEfCDQcoECy4uhw"/>
+                <outgoingTransitions xmi:id="_WtagMM6rEfCDQcoECy4uhw" specification="[autonomousActive == true &amp;&amp; exploringDone == false &amp;&amp; isWellAligned == false]" target="_Sqk84M6rEfCDQcoECy4uhw"/>
               </vertices>
               <vertices xsi:type="sgraph:State" xmi:id="_kDVkcM4nEfCibLM5nbHmTw" specification="entry /&#xD;&#xA;    // NAVIGATE PURELY FROM MEMORY - NO LIDAR&#xD;&#xA;    // Calculate cell index&#xD;&#xA;    cellIndex = grid.row * 4 + grid.column;&#xD;&#xA;    &#xD;&#xA;    // Extract 4 bits from stored maze&#xD;&#xA;    tempShift = (cellIndex &lt; 8) ? (cellIndex * 4) : ((cellIndex - 8) * 4);&#xD;&#xA;    wallBits = (cellIndex &lt; 8) ? ((grid.maze1 >> tempShift) &amp; 15) : ((grid.maze2 >> tempShift) &amp; 15);&#xD;&#xA;    &#xD;&#xA;    // Decode to absolute walls from memory&#xD;&#xA;    absoluteN = (wallBits >> 3) &amp; 1;&#xD;&#xA;    absoluteE = (wallBits >> 2) &amp; 1;&#xD;&#xA;    absoluteS = (wallBits >> 1) &amp; 1;&#xD;&#xA;    absoluteW = wallBits &amp; 1;&#xD;&#xA;    &#xD;&#xA;    // Convert absolute → robot-relative (orientation-dependent)&#xD;&#xA;    grid.wallFront = (grid.orientation==0) ? absoluteN : &#xD;&#xA;                     ((grid.orientation==1) ? absoluteE : &#xD;&#xA;                     ((grid.orientation==2) ? absoluteS : absoluteW));&#xD;&#xA;    grid.wallRight = (grid.orientation==0) ? absoluteE : &#xD;&#xA;                     ((grid.orientation==1) ? absoluteS : &#xD;&#xA;                     ((grid.orientation==2) ? absoluteW : absoluteN));&#xD;&#xA;    grid.wallBack = (grid.orientation==0) ? absoluteS : &#xD;&#xA;                    ((grid.orientation==1) ? absoluteW : &#xD;&#xA;                    ((grid.orientation==2) ? absoluteN : absoluteE));&#xD;&#xA;    grid.wallLeft = (grid.orientation==0) ? absoluteW : &#xD;&#xA;                    ((grid.orientation==1) ? absoluteN : &#xD;&#xA;                    ((grid.orientation==2) ? absoluteE : absoluteS));&#xD;&#xA;    &#xD;&#xA;    // Set navigation flags from STORED WALLS ONLY (ignore LIDAR)&#xD;&#xA;    frontFree = (grid.wallFront == 0);&#xD;&#xA;    leftFree = (grid.wallLeft == 0);&#xD;&#xA;    rightFree = (grid.wallRight == 0);&#xD;&#xA;    backFree = (grid.wallBack == 0);&#xD;&#xA;    &#xD;&#xA;    grid.update = false;    // ← NO PYTHON STORAGE&#xD;&#xA;    grid.receive = false    // ← NO PYTHON RETRIEVAL" name="NavigateFromMemory" incomingTransitions="_qdeWUM4nEfCibLM5nbHmTw">
                 <outgoingTransitions xmi:id="_sPgIoM6rEfCDQcoECy4uhw" specification="" target="_lKxGkM4nEfCibLM5nbHmTw"/>
@@ -338,7 +338,7 @@
                           <styles xsi:type="notation:ShapeStyle" xmi:id="_nIR-ac42EfCm_etZwHSrTg" fontName="Verdana" fillColor="15720400" lineColor="12632256"/>
                           <styles xsi:type="notation:FontStyle" xmi:id="_nIR-as42EfCm_etZwHSrTg"/>
                           <styles xsi:type="notation:BooleanValueStyle" xmi:id="_nIR-a842EfCm_etZwHSrTg" name="isHorizontal" booleanValue="true"/>
-                          <layoutConstraint xsi:type="notation:Bounds" xmi:id="_nIR-bM42EfCm_etZwHSrTg" x="98" y="541" width="232" height="209"/>
+                          <layoutConstraint xsi:type="notation:Bounds" xmi:id="_nIR-bM42EfCm_etZwHSrTg" x="68" y="569" width="232" height="209"/>
                         </children>
                         <children xmi:id="_nIR-bc42EfCm_etZwHSrTg" type="State" element="_lKxGkM4nEfCibLM5nbHmTw">
                           <children xsi:type="notation:DecorationNode" xmi:id="_nIR-bs42EfCm_etZwHSrTg" type="StateName">
@@ -466,7 +466,7 @@
                           <styles xsi:type="notation:ShapeStyle" xmi:id="_Sqlj8c6rEfCDQcoECy4uhw" fontName="Verdana" fillColor="15720400" lineColor="12632256"/>
                           <styles xsi:type="notation:FontStyle" xmi:id="_Sqlj8s6rEfCDQcoECy4uhw"/>
                           <styles xsi:type="notation:BooleanValueStyle" xmi:id="_Sqlj-86rEfCDQcoECy4uhw" name="isHorizontal" booleanValue="true"/>
-                          <layoutConstraint xsi:type="notation:Bounds" xmi:id="_Sqlj886rEfCDQcoECy4uhw" x="380" y="544" width="203" height="206"/>
+                          <layoutConstraint xsi:type="notation:Bounds" xmi:id="_Sqlj886rEfCDQcoECy4uhw" x="404" y="482" width="203" height="206"/>
                         </children>
                         <children xmi:id="_xboOANHGEfCnGd6A4cKvQg" type="State" element="_xbfrINHGEfCnGd6A4cKvQg">
                           <children xsi:type="notation:DecorationNode" xmi:id="_xboOBNHGEfCnGd6A4cKvQg" type="StateName">
@@ -717,11 +717,11 @@
     <edges xmi:id="_qde9YM4nEfCibLM5nbHmTw" type="Transition" element="_qdeWUM4nEfCibLM5nbHmTw" source="_nIR-Vc42EfCm_etZwHSrTg" target="_nIR-Yc42EfCm_etZwHSrTg">
       <children xsi:type="notation:DecorationNode" xmi:id="_qdfkcc4nEfCibLM5nbHmTw" type="TransitionExpression">
         <styles xsi:type="notation:ShapeStyle" xmi:id="_qdfkcs4nEfCibLM5nbHmTw"/>
-        <layoutConstraint xsi:type="notation:Location" xmi:id="_qdfkc84nEfCibLM5nbHmTw" x="-62"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_qdfkc84nEfCibLM5nbHmTw" x="-76"/>
       </children>
       <styles xsi:type="notation:ConnectorStyle" xmi:id="_qde9Yc4nEfCibLM5nbHmTw" routing="Rectilinear" lineColor="4210752"/>
       <styles xsi:type="notation:FontStyle" xmi:id="_qdfkcM4nEfCibLM5nbHmTw" fontName="Verdana"/>
-      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_qde9Ys4nEfCibLM5nbHmTw" points="[-232, 176, -13, -233]$[-232, 335, -13, -74]"/>
+      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_qde9Ys4nEfCibLM5nbHmTw" points="[-232, 176, 17, -261]$[-232, 363, 17, -74]"/>
       <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_qdgLgM4nEfCibLM5nbHmTw" id="(0.18248175182481752,0.3584905660377358)"/>
     </edges>
     <edges xmi:id="_QnPT8M4uEfCTW5L3smoo6A" type="Transition" element="_QnOs4M4uEfCTW5L3smoo6A" source="_nIR-yc42EfCm_etZwHSrTg" target="_nIR-mc42EfCm_etZwHSrTg">
@@ -835,32 +835,32 @@
     <edges xmi:id="_WtbHQM6rEfCDQcoECy4uhw" type="Transition" element="_WtagMM6rEfCDQcoECy4uhw" source="_nIR-Vc42EfCm_etZwHSrTg" target="_Sqlj8M6rEfCDQcoECy4uhw">
       <children xsi:type="notation:DecorationNode" xmi:id="_WtbuU86rEfCDQcoECy4uhw" type="TransitionExpression">
         <styles xsi:type="notation:ShapeStyle" xmi:id="_WtbuVM6rEfCDQcoECy4uhw"/>
-        <layoutConstraint xsi:type="notation:Location" xmi:id="_WtbuVc6rEfCDQcoECy4uhw" x="-14" y="-7"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_WtbuVc6rEfCDQcoECy4uhw" x="3" y="7"/>
       </children>
       <styles xsi:type="notation:ConnectorStyle" xmi:id="_WtbuUM6rEfCDQcoECy4uhw" routing="Rectilinear" lineColor="4210752"/>
       <styles xsi:type="notation:FontStyle" xmi:id="_WtbuUs6rEfCDQcoECy4uhw" fontName="Verdana"/>
-      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_WtbuUc6rEfCDQcoECy4uhw" points="[-19, 26, 15, -173]$[-19, 96, 15, -103]$[-33, 96, 1, -103]$[-33, 188, 1, -11]"/>
+      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_WtbuUc6rEfCDQcoECy4uhw" points="[-19, 26, -9, -111]$[-19, 96, -9, -41]$[-33, 96, -23, -41]$[-33, 126, -23, -11]"/>
       <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_WtcVYM6rEfCDQcoECy4uhw" id="(0.6878980891719745,0.9261363636363636)"/>
       <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_WtcVYc6rEfCDQcoECy4uhw" id="(0.3103448275862069,0.05339805825242718)"/>
     </edges>
     <edges xmi:id="_ruPOoM6rEfCDQcoECy4uhw" type="Transition" element="_ruOnkM6rEfCDQcoECy4uhw" source="_Sqlj8M6rEfCDQcoECy4uhw" target="_nIR-bc42EfCm_etZwHSrTg">
       <children xsi:type="notation:DecorationNode" xmi:id="_ruPOpM6rEfCDQcoECy4uhw" type="TransitionExpression">
         <styles xsi:type="notation:ShapeStyle" xmi:id="_ruPOpc6rEfCDQcoECy4uhw"/>
-        <layoutConstraint xsi:type="notation:Location" xmi:id="_ruPOps6rEfCDQcoECy4uhw" x="18" y="10"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_ruPOps6rEfCDQcoECy4uhw" x="6" y="10"/>
       </children>
       <styles xsi:type="notation:ConnectorStyle" xmi:id="_ruPOoc6rEfCDQcoECy4uhw" routing="Rectilinear" lineColor="4210752"/>
       <styles xsi:type="notation:FontStyle" xmi:id="_ruPOo86rEfCDQcoECy4uhw" fontName="Verdana"/>
-      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_ruPOos6rEfCDQcoECy4uhw" points="[102, -53, -295, -71]$[345, -53, -52, -71]"/>
+      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_ruPOos6rEfCDQcoECy4uhw" points="[102, 9, -271, -71]$[321, 9, -52, -71]"/>
       <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_ruP1sM6rEfCDQcoECy4uhw" id="(0.23853211009174313,0.8928571428571429)"/>
     </edges>
     <edges xmi:id="_sPgIoc6rEfCDQcoECy4uhw" type="Transition" element="_sPgIoM6rEfCDQcoECy4uhw" source="_nIR-Yc42EfCm_etZwHSrTg" target="_nIR-bc42EfCm_etZwHSrTg">
       <children xsi:type="notation:DecorationNode" xmi:id="_sPgvsM6rEfCDQcoECy4uhw" type="TransitionExpression">
         <styles xsi:type="notation:ShapeStyle" xmi:id="_sPgvsc6rEfCDQcoECy4uhw"/>
-        <layoutConstraint xsi:type="notation:Location" xmi:id="_sPgvss6rEfCDQcoECy4uhw" x="53" y="10"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_sPgvss6rEfCDQcoECy4uhw" x="68" y="10"/>
       </children>
       <styles xsi:type="notation:ConnectorStyle" xmi:id="_sPgIos6rEfCDQcoECy4uhw" routing="Rectilinear" lineColor="4210752"/>
       <styles xsi:type="notation:FontStyle" xmi:id="_sPgIpM6rEfCDQcoECy4uhw" fontName="Verdana"/>
-      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_sPgIo86rEfCDQcoECy4uhw" points="[30, -15, -563, 51]$[551, -15, -42, 51]$[551, -58, -42, 8]"/>
+      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_sPgIo86rEfCDQcoECy4uhw" points="[30, -43, -593, 51]$[581, -43, -42, 51]$[581, -86, -42, 8]"/>
       <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_sPgvs86rEfCDQcoECy4uhw" id="(0.8706896551724138,0.9138755980861244)"/>
       <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_sPgvtM6rEfCDQcoECy4uhw" id="(0.3073394495412844,0.9047619047619048)"/>
     </edges>
