@@ -770,12 +770,11 @@ class Model:
 		self.__cmd_rot = self.user_var.base_rotation
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight(self):
-		""".
+		"""Entry action for state 'GoStraight'..
 		"""
 		#Entry action for state 'GoStraight'.
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
-		self.__completed = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore(self):
 		""".
@@ -1474,7 +1473,7 @@ class Model:
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
-				elif self.__autonomous_active and not self.__exploring_done and self.__is_well_aligned and False == True:
+				elif self.__autonomous_active and not self.__exploring_done and self.__is_well_aligned:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
@@ -1662,19 +1661,17 @@ class Model:
 		"""
 		#The reactions of state GoStraight.
 		transitioned_after = transitioned_before
-		if self.__do_completion:
-			#Default exit sequence for state GoStraight
-			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
-			self.__state_conf_vector_position = 1
-			#'default' enter sequence for state MoveToNextCell
-			self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
-			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell
-			self.__state_conf_vector_position = 1
-			self.__state_conf_vector_changed = True
-			self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
-		else:
-			#Always execute local reactions.
-			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if True == False:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_go_straight()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
