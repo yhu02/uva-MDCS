@@ -736,7 +736,30 @@ class SCTConnect():
 
         # Mapping of requested fields to the internal attribute names used by the generated Model
         fields = [
+            ("deltaRow", "_Model__delta_row"),
+            ("deltaCol", "_Model__delta_col"),
+            ("cellStartOrientation", "_Model__cell_start_orientation"),
+
+            ("targetOdomX", "_Model__target_odom_x"),
+            ("targetOdomY", "_Model__target_odom_y"),
+            ("absYawError", "_Model__abs_yaw_error"),
+            ("yawAlignmentGain", "_Model__yaw_alignment_gain"),
+            ("alignYawTolerance", "_Model__align_yaw_tolerance"),
+            ("signYaw", "_Model__sign_yaw"),
+            ("alignEntryThreshold2", "_Model__align_entry_threshold2"),
+
+            ("tmpRatio", "_Model__tmp_ratio"),
+            ("limitedRatio", "_Model__limited_ratio"),
+            ("angleFactor", "_Model__angle_factor"),
+            ("distScale", "_Model__dist_scale"),
+            ("cmdSpeedExpr", "_Model__cmd_speed_expr"),
+            ("cmdRotExpr", "_Model__cmd_rot_expr"),
+
+            ("dx", "_Model__dx"),
+            ("dy", "_Model__dy"),
+            ("dist2", "_Model__dist2"),
             ("localYaw", "_Model__local_yaw"),
+
             ("cellIndex", "_Model__cell_index"),
             ("wallBits", "_Model__wall_bits"),
             ("absoluteN", "_Model__absolute_n"),
@@ -787,6 +810,10 @@ class SCTConnect():
             ("yawError", "_Model__yaw_error"),
             ("isWellAligned", "_Model__is_well_aligned"),
             ("isNorthSouth", "_Model__is_north_south"),
+
+            # Top-level events/flags
+            ("explorationCompleteEvent", "exploration_complete"),
+            ("calibrationDoneEvent", "calibration_done"),
         ]
 
         pairs = []
