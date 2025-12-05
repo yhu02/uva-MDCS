@@ -1571,7 +1571,7 @@ class Model:
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
-				elif self.__dist2 <= self.__align_entry_threshold2 and False == True:
+				elif self.__dist2 <= self.__align_entry_threshold2:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_align_to_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
