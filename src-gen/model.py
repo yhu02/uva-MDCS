@@ -696,10 +696,6 @@ class Model:
 		self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
 		self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
 		self.grid.orientation = (((self.grid.orientation + 2)) % 4) if self.__exploring_done else self.grid.orientation
-		self.__yaw_error = (self.__local_yaw - self.__target_yaw)
-		self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
-		self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
-		self.__is_well_aligned = (-(self.__align_yaw_tolerance) <= self.__yaw_error) and (self.__yaw_error <= self.__align_yaw_tolerance)
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory(self):
 		""".
@@ -742,6 +738,7 @@ class Model:
 		self.__target_col = (self.__cell_start_col + self.__delta_col)
 		self.__target_odom_x = (self.start_pos.zero_x + ((((float(self.__target_col))) * self.grid.grid_size)))
 		self.__target_odom_y = (self.start_pos.zero_y - ((((float(self.__target_row))) * self.grid.grid_size)))
+		self.__target_yaw = 90.0 if (self.__cell_start_orientation == 0) else (0.0 if (self.__cell_start_orientation == 1) else (-(90.0) if (self.__cell_start_orientation == 2) else 180.0))
 		self.__cmd_rot = 0.0
 		self.__cmd_speed = self.user_var.base_speed
 		
@@ -1570,7 +1567,6 @@ class Model:
 				self.__dx = (self.__target_odom_x - self.odom.x)
 				self.__dy = (self.__target_odom_y - self.odom.y)
 				self.__dist2 = (((self.__dx * self.__dx)) + ((self.__dy * self.__dy)))
-				self.__target_yaw = 90.0 if (self.__cell_start_orientation == 0) else (0.0 if (self.__cell_start_orientation == 1) else (-(90.0) if (self.__cell_start_orientation == 2) else 180.0))
 				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
 				self.__local_yaw = ((self.__local_yaw - 360.0)) if (self.__local_yaw > 180.0) else (((self.__local_yaw + 360.0)) if (self.__local_yaw < -(180.0)) else self.__local_yaw)
 				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
@@ -1792,7 +1788,7 @@ class Model:
 				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
 				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
-				self.__is_well_aligned = (self.__yaw_error > -(15.0) and self.__yaw_error < 15.0)
+				self.__is_well_aligned = (self.__yaw_error >= -(self.__align_yaw_tolerance) and self.__yaw_error <= self.__align_yaw_tolerance)
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
 				self.__is_north_south = (self.grid.orientation == 0 or self.grid.orientation == 2)
