@@ -698,7 +698,7 @@ class Model:
 		self.__emergency_recover_threshold = (((0.22 / 0.5)) * self.grid.grid_size)
 		self.user_var.base_speed = self.base_values.max_speed
 		self.user_var.base_rotation = (((0.2 / 2.84)) * self.base_values.max_rotation)
-		self.__yaw_alignment_gain = (0.1 * self.base_values.max_rotation)
+		self.__yaw_alignment_gain = (0.03 * self.base_values.max_rotation)
 		self.__lateral_correction_gain = (30.0 * self.__yaw_alignment_gain)
 		self.__front_slow_factor = 0.5
 		
