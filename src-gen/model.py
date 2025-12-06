@@ -23,7 +23,6 @@ class Model:
 			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center,
-			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0navigate_from_memory,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0turn_left,
@@ -36,7 +35,7 @@ class Model:
 			turtle_bot_turtle_bot_zdrive,
 			turtle_bot_turtle_bot_zemergency_stop,
 			null_state
-		) = range(22)
+		) = range(21)
 	
 	
 	class UserVar:
@@ -586,8 +585,6 @@ class Model:
 				and (self.__state_vector[1] <= self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0recalibrate)
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center
-		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0navigate_from_memory:
-			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0navigate_from_memory
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell:
@@ -725,29 +722,6 @@ class Model:
 		self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
 		self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
 		self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
-		
-	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory(self):
-		""".
-		"""
-		#Entry action for state 'NavigateFromMemory'.
-		self.__cell_index = ((self.grid.row * 4) + self.grid.column)
-		self.__temp_shift = ((self.__cell_index * 4)) if (self.__cell_index < 8) else ((((self.__cell_index - 8)) * 4))
-		self.__wall_bits = ((((self.grid.maze1 >> self.__temp_shift)) & 15)) if (self.__cell_index < 8) else ((((self.grid.maze2 >> self.__temp_shift)) & 15))
-		self.__absolute_n = (((self.__wall_bits >> 3)) & 1)
-		self.__absolute_e = (((self.__wall_bits >> 2)) & 1)
-		self.__absolute_s = (((self.__wall_bits >> 1)) & 1)
-		self.__absolute_w = (self.__wall_bits & 1)
-		self.grid.wall_front = self.__absolute_n if (self.grid.orientation == 0) else (self.__absolute_e if (self.grid.orientation == 1) else (self.__absolute_s if (self.grid.orientation == 2) else self.__absolute_w))
-		self.grid.wall_right = self.__absolute_e if (self.grid.orientation == 0) else (self.__absolute_s if (self.grid.orientation == 1) else (self.__absolute_w if (self.grid.orientation == 2) else self.__absolute_n))
-		self.grid.wall_back = self.__absolute_s if (self.grid.orientation == 0) else (self.__absolute_w if (self.grid.orientation == 1) else (self.__absolute_n if (self.grid.orientation == 2) else self.__absolute_e))
-		self.grid.wall_left = self.__absolute_w if (self.grid.orientation == 0) else (self.__absolute_n if (self.grid.orientation == 1) else (self.__absolute_e if (self.grid.orientation == 2) else self.__absolute_s))
-		self.__front_free = (self.grid.wall_front == 0)
-		self.__left_free = (self.grid.wall_left == 0)
-		self.__right_free = (self.grid.wall_right == 0)
-		self.__back_free = (self.grid.wall_back == 0)
-		self.grid.update = False
-		self.grid.receive = False
-		self.__completed = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction(self):
 		""".
@@ -916,15 +890,6 @@ class Model:
 		#'default' enter sequence for state AtCellCenter
 		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center
-		self.__state_conf_vector_position = 1
-		self.__state_conf_vector_changed = True
-		
-	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory_default(self):
-		"""'default' enter sequence for state NavigateFromMemory.
-		"""
-		#'default' enter sequence for state NavigateFromMemory
-		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory()
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0navigate_from_memory
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
@@ -1110,13 +1075,6 @@ class Model:
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
 		self.__state_conf_vector_position = 1
 		
-	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory(self):
-		"""Default exit sequence for state NavigateFromMemory.
-		"""
-		#Default exit sequence for state NavigateFromMemory
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
-		self.__state_conf_vector_position = 1
-		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction(self):
 		"""Default exit sequence for state DecideDirection.
 		"""
@@ -1216,8 +1174,6 @@ class Model:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
-		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0navigate_from_memory:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell:
@@ -1261,8 +1217,6 @@ class Model:
 		state = self.__state_vector[1]
 		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
-		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0navigate_from_memory:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell:
@@ -1470,12 +1424,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.__autonomous_active and self.__exploring_done and self.__is_well_aligned:
-					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
-					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory_default()
-					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
-					transitioned_after = 1
-				elif self.__autonomous_active and not self.__exploring_done and self.__is_well_aligned:
+				if self.__autonomous_active and not self.__exploring_done and self.__is_well_aligned:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
@@ -1492,27 +1441,6 @@ class Model:
 				self.__is_well_aligned = (self.__abs_yaw_error <= self.__align_yaw_tolerance)
 				self.__cmd_rot = (-(((self.__yaw_alignment_gain * self.__yaw_error)))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
-		return transitioned_after
-	
-	
-	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory_react function.
-		"""
-		#The reactions of state NavigateFromMemory.
-		transitioned_after = transitioned_before
-		if self.__do_completion:
-			#Default exit sequence for state NavigateFromMemory
-			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze
-			self.__state_conf_vector_position = 1
-			#'default' enter sequence for state DecideDirection
-			self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction()
-			self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction
-			self.__state_conf_vector_position = 1
-			self.__state_conf_vector_changed = True
-			self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
-		else:
-			#Always execute local reactions.
-			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1845,8 +1773,6 @@ class Model:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0at_cell_center:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_react(transitioned)
-			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0navigate_from_memory:
-				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0decide_direction:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_decide_direction_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0move_to_next_cell:
