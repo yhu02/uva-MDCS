@@ -684,7 +684,7 @@ class Model:
 		self.start_pos.zero_south_degree = self.imu.yaw
 		self.__dist_free = self.__dist_free if (self.__dist_free > 0.0) else (((((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) / 2.0)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) / 2.0)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.__dist_free))
 		self.__dist_free = (self.__dist_free * 1.5)
-		self.grid.grid_size = ((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.grid.grid_size)
+		self.grid.grid_size = ((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else (self.grid.grid_size if (self.grid.grid_size > 0.0) else 0.5))
 		self.__lateral_allowed = (((0.08 / 0.5)) * self.grid.grid_size)
 		self.__side_clearance = (((0.12 / 0.5)) * self.grid.grid_size)
 		self.__align_entry_threshold2 = (((((0.15 / 0.5)) * self.grid.grid_size)) * ((((0.15 / 0.5)) * self.grid.grid_size)))
