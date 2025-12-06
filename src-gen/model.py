@@ -678,7 +678,7 @@ class Model:
 		self.__yaw_alignment_gain = 0.02
 		self.__align_yaw_tolerance = 3.0
 		self.__align_entry_threshold2 = (((self.grid.grid_size * 0.15)) * ((self.grid.grid_size * 0.15)))
-		self.__dist_free = ((((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) / 2.0)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) / 2.0)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.__dist_free)
+		self.__dist_free = ((((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) / 2.0)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) / 2.0)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else 0.6)
 		self.grid.grid_size = ((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.grid.grid_size)
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
