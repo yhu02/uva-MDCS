@@ -452,8 +452,8 @@ class Model:
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
 		self.base_values.degrees_front = 10
-		self.base_values.degrees_right = 10
-		self.base_values.degrees_back = 10
+		self.base_values.degrees_right = 40
+		self.base_values.degrees_back = 40
 		self.base_values.degrees_left = 10
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
