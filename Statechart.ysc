@@ -33,7 +33,7 @@
               <vertices xsi:type="sgraph:Entry" xmi:id="_beF0oM4hEfC2btRhec0lOA">
                 <outgoingTransitions xmi:id="_f4j00M4hEfC2btRhec0lOA" specification="" target="_R78wAM4hEfC2btRhec0lOA"/>
               </vertices>
-              <vertices xsi:type="sgraph:State" xmi:id="_vkuLsM4hEfC2btRhec0lOA" specification="entry / &#xD;&#xA;              grid.row = 0; grid.column = 0;&#xD;&#xA;              grid.orientation = 2; // 0=N,1=E,2=S,3=W, starting facing south&#xD;&#xA;              startRow = 0; startCol = 0;&#xD;&#xA;              raise calibrationDone" name="Done" incomingTransitions="_zd5csM4hEfC2btRhec0lOA"/>
+              <vertices xsi:type="sgraph:State" xmi:id="_vkuLsM4hEfC2btRhec0lOA" specification="entry / &#xD;&#xA;              grid.row = 0; grid.column = 0;&#xD;&#xA;              grid.orientation = 2; /// 0=N,1=E,2=S,3=W, starting facing south&#xD;&#xA;              startRow = 0; startCol = 0;&#xD;&#xA;              raise calibrationDone" name="Done" incomingTransitions="_zd5csM4hEfC2btRhec0lOA"/>
             </regions>
           </vertices>
           <vertices xsi:type="sgraph:State" xmi:id="_uu_6EM4gEfC2btRhec0lOA" specification="" name="ExploreMaze" incomingTransitions="_QsfhoNBCEfCuzfYF5B9klg">
