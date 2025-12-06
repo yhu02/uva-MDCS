@@ -708,9 +708,9 @@ class Model:
 		#Entry action for state 'Done'.
 		self.grid.row = 0
 		self.grid.column = 0
-		self.grid.orientation = 2
 		self.__start_row = 0
 		self.__start_col = 0
+		self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
 		self.raise_calibration_done()
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center(self):
@@ -725,7 +725,6 @@ class Model:
 		self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
 		self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
 		self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
-		self.grid.orientation = (((self.grid.orientation + 2)) % 4) if self.__exploring_done else self.grid.orientation
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_navigate_from_memory(self):
 		""".
