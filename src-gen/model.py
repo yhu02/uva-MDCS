@@ -341,7 +341,6 @@ class Model:
 		self.__temp_mask = None
 		self.__temp_shift = None
 		self.__dist_free = None
-		self.__is_manual = None
 		self.__autonomous_active = None
 		self.__cmd_speed = None
 		self.__cmd_rot = None
@@ -371,7 +370,6 @@ class Model:
 		self.__target_yaw = None
 		self.__yaw_error = None
 		self.__is_well_aligned = None
-		self.__is_north_south = None
 		self.exploration_complete = None
 		self.calibration_done = None
 		
@@ -427,7 +425,6 @@ class Model:
 		self.__temp_mask = 0
 		self.__temp_shift = 0
 		self.__dist_free = 0.25
-		self.__is_manual = False
 		self.__autonomous_active = False
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
@@ -457,7 +454,6 @@ class Model:
 		self.__target_yaw = 0.0
 		self.__yaw_error = 0.0
 		self.__is_well_aligned = False
-		self.__is_north_south = False
 		self.user_var.base_speed = 0.22
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
@@ -656,14 +652,12 @@ class Model:
 		"""Entry action for state 'Manual'..
 		"""
 		#Entry action for state 'Manual'.
-		self.__is_manual = True
 		self.__autonomous_active = False
 		
 	def __entry_action_turtle_bot_turtle_bot_mode_and_keyboard_autonomous(self):
 		"""Entry action for state 'Autonomous'..
 		"""
 		#Entry action for state 'Autonomous'.
-		self.__is_manual = False
 		self.__autonomous_active = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize(self):
@@ -1693,7 +1687,6 @@ class Model:
 				self.__is_well_aligned = (self.__yaw_error >= -(self.__align_yaw_tolerance) and self.__yaw_error <= self.__align_yaw_tolerance)
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
-				self.__is_north_south = (self.grid.orientation == 0 or self.grid.orientation == 2)
 				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_mean < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
 				self.__v = (self.__v * 0.6) if ((self.laser_distance.dleft_mean < self.__side_clearance) or (self.laser_distance.dright_mean < self.__side_clearance)) else self.__v
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
