@@ -427,7 +427,7 @@ class Model:
 		self.__absolute_w = 0
 		self.__temp_mask = 0
 		self.__temp_shift = 0
-		self.__dist_free = 0.0
+		self.__dist_free = 0.35
 		self.__is_manual = False
 		self.__autonomous_active = False
 		self.__cmd_speed = 0.0
