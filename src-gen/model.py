@@ -427,7 +427,7 @@ class Model:
 		self.__absolute_w = 0
 		self.__temp_mask = 0
 		self.__temp_shift = 0
-		self.__dist_free = 0.35
+		self.__dist_free = 0.0
 		self.__is_manual = False
 		self.__autonomous_active = False
 		self.__cmd_speed = 0.0
@@ -678,6 +678,8 @@ class Model:
 		self.__yaw_alignment_gain = 0.02
 		self.__align_yaw_tolerance = 3.0
 		self.__align_entry_threshold2 = (((self.grid.grid_size * 0.15)) * ((self.grid.grid_size * 0.15)))
+		self.__dist_free = ((((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) / 2.0)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) / 2.0)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.__dist_free)
+		self.grid.grid_size = ((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.grid.grid_size)
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Entry action for state 'SettingZero'..
