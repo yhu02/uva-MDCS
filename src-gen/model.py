@@ -451,8 +451,8 @@ class Model:
 		self.__v = 0.0
 		self.__w = 0.0
 		self.__front_slow_threshold = 0.3
-		self.__emergency_stop_threshold = 0.18
-		self.__emergency_recover_threshold = 0.22
+		self.__emergency_stop_threshold = 0.0
+		self.__emergency_recover_threshold = 0.0
 		self.__front_slow_factor = 0.5
 		self.__target_yaw = 0.0
 		self.__yaw_error = 0.0
@@ -682,8 +682,6 @@ class Model:
 		self.start_pos.zero_x = self.odom.x
 		self.start_pos.zero_y = self.odom.y
 		self.start_pos.zero_south_degree = self.imu.yaw
-		self.__yaw_alignment_gain = 0.04
-		self.__align_entry_threshold2 = (((self.grid.grid_size * 0.15)) * ((self.grid.grid_size * 0.15)))
 		self.__dist_free = self.__dist_free if (self.__dist_free > 0.0) else (((((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) / 2.0)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) / 2.0)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.__dist_free))
 		self.__dist_free = (self.__dist_free * 1.5)
 		self.grid.grid_size = ((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.grid.grid_size)
@@ -695,6 +693,7 @@ class Model:
 		self.__emergency_recover_threshold = (((0.22 / 0.5)) * self.grid.grid_size)
 		self.user_var.base_speed = self.base_values.max_speed
 		self.user_var.base_rotation = (((0.2 / 2.84)) * self.base_values.max_rotation)
+		self.__align_yaw_tolerance = 3.0
 		self.__yaw_alignment_gain = (0.03 * self.base_values.max_rotation)
 		self.__lateral_correction_gain = (30.0 * self.__yaw_alignment_gain)
 		self.__front_slow_factor = 0.5
