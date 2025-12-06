@@ -685,8 +685,7 @@ class Model:
 		self.start_pos.zero_x = self.odom.x
 		self.start_pos.zero_y = self.odom.y
 		self.start_pos.zero_south_degree = self.imu.yaw
-		self.__yaw_alignment_gain = 0.02
-		self.__align_yaw_tolerance = 3.0
+		self.__yaw_alignment_gain = 0.04
 		self.__align_entry_threshold2 = (((self.grid.grid_size * 0.15)) * ((self.grid.grid_size * 0.15)))
 		self.__dist_free = ((((self.laser_distance.dleft_mean + self.laser_distance.dright_mean)) / 2.0)) if (self.laser_distance.dleft_mean > 0.0 and self.laser_distance.dright_mean > 0.0) else (((((self.laser_distance.dfront_mean + self.laser_distance.dback_mean)) / 2.0)) if (self.laser_distance.dfront_mean > 0.0 and self.laser_distance.dback_mean > 0.0) else self.__dist_free)
 		self.__dist_free = (self.__dist_free * 1.5)
@@ -699,7 +698,7 @@ class Model:
 		self.__emergency_recover_threshold = (((0.22 / 0.5)) * self.grid.grid_size)
 		self.user_var.base_speed = self.base_values.max_speed
 		self.user_var.base_rotation = (((0.2 / 2.84)) * self.base_values.max_rotation)
-		self.__yaw_alignment_gain = (0.1 * self.user_var.base_rotation)
+		self.__yaw_alignment_gain = (0.1 * self.base_values.max_rotation)
 		self.__lateral_correction_gain = (30.0 * self.__yaw_alignment_gain)
 		self.__front_slow_factor = 0.5
 		
