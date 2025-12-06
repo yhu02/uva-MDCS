@@ -361,12 +361,8 @@ class Model:
 		self.__turn_start_yaw = None
 		self.__total_turned = None
 		self.__yaw_diff = None
-		self.__v = None
-		self.__w = None
-		self.__front_slow_threshold = None
 		self.__emergency_stop_threshold = None
 		self.__emergency_recover_threshold = None
-		self.__front_slow_factor = None
 		self.__target_yaw = None
 		self.__yaw_error = None
 		self.__is_well_aligned = None
@@ -445,12 +441,8 @@ class Model:
 		self.__turn_start_yaw = 0.0
 		self.__total_turned = 0.0
 		self.__yaw_diff = 0.0
-		self.__v = 0.0
-		self.__w = 0.0
-		self.__front_slow_threshold = 0.3
 		self.__emergency_stop_threshold = 0.0
 		self.__emergency_recover_threshold = 0.0
-		self.__front_slow_factor = 0.5
 		self.__target_yaw = 0.0
 		self.__yaw_error = 0.0
 		self.__is_well_aligned = False
@@ -681,7 +673,6 @@ class Model:
 		self.__lateral_allowed = (0.08 * self.grid.grid_size)
 		self.__side_clearance = (0.12 * self.grid.grid_size)
 		self.__align_entry_threshold2 = (((0.15 * self.grid.grid_size)) * ((0.15 * self.grid.grid_size)))
-		self.__front_slow_threshold = (0.3 * self.grid.grid_size)
 		self.__emergency_stop_threshold = (0.4 * self.grid.grid_size)
 		self.__emergency_recover_threshold = (0.5 * self.grid.grid_size)
 		self.user_var.base_speed = self.base_values.max_speed
@@ -689,7 +680,6 @@ class Model:
 		self.__align_yaw_tolerance = 3.0
 		self.__yaw_alignment_gain = (0.03 * self.base_values.max_rotation)
 		self.__lateral_correction_gain = (30.0 * self.__yaw_alignment_gain)
-		self.__front_slow_factor = 0.5
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done(self):
 		"""Entry action for state 'Done'..
@@ -1685,14 +1675,12 @@ class Model:
 				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
 				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
 				self.__is_well_aligned = (self.__yaw_error >= -(self.__align_yaw_tolerance) and self.__yaw_error <= self.__align_yaw_tolerance)
-				self.__v = self.__cmd_speed
-				self.__w = self.__cmd_rot
-				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
-				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
-				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
-				self.__w = -(self.base_values.max_rotation) if (self.__w < -(self.base_values.max_rotation)) else self.__w
-				self.output.speed = self.__v
-				self.output.rotation = self.__w
+				self.__cmd_speed = self.base_values.max_speed if (self.__cmd_speed > self.base_values.max_speed) else self.__cmd_speed
+				self.__cmd_speed = -(self.base_values.max_speed) if (self.__cmd_speed < -(self.base_values.max_speed)) else self.__cmd_speed
+				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else self.__cmd_rot
+				self.__cmd_rot = -(self.base_values.max_rotation) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
+				self.output.speed = self.__cmd_speed
+				self.output.rotation = self.__cmd_rot
 				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
 		return transitioned_after
 	
