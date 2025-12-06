@@ -1577,7 +1577,7 @@ class Model:
 				self.__limited_ratio = self.__tmp_ratio if (self.__tmp_ratio <= 0.9) else 0.9
 				self.__angle_factor = (1.0 - self.__limited_ratio)
 				self.__dist_scale = ((self.__dist2 / self.__align_entry_threshold2)) if (self.__dist2 < self.__align_entry_threshold2) else 1.0
-				self.__lateral_error = ((0.5 * ((self.laser_distance.dleft_mean - self.laser_distance.dright_mean)))) if ((self.laser_distance.dleft_mean > 0.0) and (self.laser_distance.dright_mean > 0.0)) else (((0.5 * ((self.laser_distance.dback_mean - self.laser_distance.dfront_mean)))) if ((self.laser_distance.dfront_mean > 0.0) and (self.laser_distance.dback_mean > 0.0)) else (((self.odom.x - self.__target_odom_x)) if ((self.__cell_start_orientation == 0) or (self.__cell_start_orientation == 2)) else ((self.odom.y - self.__target_odom_y))))
+				self.__lateral_error = ((0.5 * ((self.laser_distance.dleft_min - self.laser_distance.dright_min)))) if ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dright_min > 0.0)) else (((0.5 * ((self.laser_distance.dback_min - self.laser_distance.dfront_min)))) if ((self.laser_distance.dfront_min > 0.0) and (self.laser_distance.dback_min > 0.0)) else (((self.odom.x - self.__target_odom_x)) if ((self.__cell_start_orientation == 0) or (self.__cell_start_orientation == 2)) else ((self.odom.y - self.__target_odom_y))))
 				self.__sign_lat = 1.0 if (self.__lateral_error >= 0.0) else -(1.0)
 				self.__abs_lat_error = (self.__lateral_error * self.__sign_lat)
 				self.__tmp_lat = (self.__lateral_correction_gain * self.__lateral_error)
