@@ -1687,8 +1687,6 @@ class Model:
 				self.__is_well_aligned = (self.__yaw_error >= -(self.__align_yaw_tolerance) and self.__yaw_error <= self.__align_yaw_tolerance)
 				self.__v = self.__cmd_speed
 				self.__w = self.__cmd_rot
-				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_mean < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
-				self.__v = (self.__v * 0.6) if ((self.laser_distance.dleft_mean < self.__side_clearance) or (self.laser_distance.dright_mean < self.__side_clearance)) else self.__v
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
 				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
