@@ -670,8 +670,8 @@ class Model:
 		"""Entry action for state 'Initialize'..
 		"""
 		#Entry action for state 'Initialize'.
-		self.__cmd_speed = 0
-		self.__cmd_rot = 0
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = 0.0
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Entry action for state 'SettingZero'..
@@ -1290,28 +1290,28 @@ class Model:
 					transitioned_after = 0
 				elif self.computer.w_press:
 					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
-					self.__cmd_speed = self.user_var.base_speed
+					self.__cmd_speed = self.base_values.max_speed if (self.__cmd_speed >= self.base_values.max_speed) else (self.__cmd_speed + self.user_var.base_speed)
 					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
 					transitioned_after = 0
 				elif self.computer.a_press:
 					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
-					self.__cmd_rot = self.user_var.base_rotation
+					self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot >= self.base_values.max_rotation) else (self.__cmd_rot + self.user_var.base_speed)
 					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
 					transitioned_after = 0
 				elif self.computer.s_press:
 					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
-					self.__cmd_speed = -(self.user_var.base_speed)
+					self.__cmd_speed = 0.0
+					self.__cmd_rot = 0.0
 					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
 					transitioned_after = 0
 				elif self.computer.d_press:
 					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
-					self.__cmd_rot = -(self.user_var.base_rotation)
+					self.__cmd_rot = -(self.base_values.max_rotation) if (self.__cmd_rot <= -(self.base_values.max_rotation)) else (self.__cmd_rot - self.user_var.base_speed)
 					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
 					transitioned_after = 0
 				elif self.computer.x_press:
 					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
-					self.__cmd_speed = 0.0
-					self.__cmd_rot = 0.0
+					self.__cmd_speed = -(self.base_values.max_speed) if (self.__cmd_speed <= -(self.base_values.max_speed)) else (self.__cmd_speed - self.user_var.base_speed)
 					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
 					transitioned_after = 0
 		return transitioned_after
@@ -1356,7 +1356,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.computer.s_press:
+				if (self.computer.s_press) and (self.__autonomous_active):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(1)
@@ -1697,7 +1697,7 @@ class Model:
 				self.__v = ((self.__v * self.__front_slow_factor) if (self.laser_distance.dfront_mean < self.__front_slow_threshold) else self.__v) if (self.__v > 0.0) else self.__v
 				self.__v = (self.__v * 0.6) if ((self.laser_distance.dleft_mean < self.__side_clearance) or (self.laser_distance.dright_mean < self.__side_clearance)) else self.__v
 				self.__v = self.base_values.max_speed if (self.__v > self.base_values.max_speed) else self.__v
-				self.__v = 0.0 if (self.__v < 0.0) else self.__v
+				self.__v = -(self.base_values.max_speed) if (self.__v < -(self.base_values.max_speed)) else self.__v
 				self.__w = self.base_values.max_rotation if (self.__w > self.base_values.max_rotation) else self.__w
 				self.__w = -(self.base_values.max_rotation) if (self.__w < -(self.base_values.max_rotation)) else self.__w
 				self.output.speed = self.__v
