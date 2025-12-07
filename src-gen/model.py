@@ -349,8 +349,6 @@ class Model:
 		self.__turn_start_yaw = None
 		self.__total_turned = None
 		self.__yaw_diff = None
-		self.__emergency_stop_threshold = None
-		self.__emergency_recover_threshold = None
 		self.__target_yaw = None
 		self.__yaw_error = None
 		self.__abs_yaw_error = None
@@ -421,8 +419,6 @@ class Model:
 		self.__turn_start_yaw = 0.0
 		self.__total_turned = 0.0
 		self.__yaw_diff = 0.0
-		self.__emergency_stop_threshold = 0.0
-		self.__emergency_recover_threshold = 0.0
 		self.__target_yaw = 0.0
 		self.__yaw_error = 0.0
 		self.__abs_yaw_error = 0.0
@@ -643,11 +639,9 @@ class Model:
 		self.start_pos.zero_x = self.odom.x
 		self.start_pos.zero_y = self.odom.y
 		self.start_pos.zero_south_degree = self.imu.yaw
-		self.__dist_free = (0.75 * self.grid.grid_size)
+		self.__dist_free = (0.7 * self.grid.grid_size)
 		self.__side_clearance = (0.12 * self.grid.grid_size)
 		self.__align_entry_threshold2 = (((0.15 * self.grid.grid_size)) * ((0.15 * self.grid.grid_size)))
-		self.__emergency_stop_threshold = (0.4 * self.grid.grid_size)
-		self.__emergency_recover_threshold = (0.5 * self.grid.grid_size)
 		self.user_var.base_speed = self.base_values.max_speed
 		self.user_var.base_rotation = (((0.2 / 2.84)) * self.base_values.max_rotation)
 		self.__align_yaw_tolerance = 3.0
@@ -1324,7 +1318,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if ((self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > 0.25)) or (self.laser_distance.dfront_min < (self.grid.grid_size * 0.6)):
+				if ((self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > (self.grid.grid_size * 0.5))) or (self.laser_distance.dfront_min < self.__dist_free):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					transitioned_after = 1
@@ -1432,7 +1426,7 @@ class Model:
 			#The reactions of state null.
 			if self.__front_free and ((self.grid.orientation == 0 and self.grid.row > 0) or (self.grid.orientation == 1 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 2 and self.grid.row < self.grid.max_row) or (self.grid.orientation == 3 and self.grid.column > 0)):
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
-			elif (self.__front_free or (not self.__front_free and (self.laser_distance.dfront_min > ((self.grid.grid_size * 0.6))))):
+			elif (self.__front_free or (not self.__front_free and (self.laser_distance.dfront_min > self.__dist_free))):
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_recalibrate_default()
 			elif self.__right_free and ((self.grid.orientation == 0 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 1 and self.grid.row < self.grid.max_row) or (self.grid.orientation == 2 and self.grid.column > 0) or (self.grid.orientation == 3 and self.grid.row > 0)):
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right_default()
@@ -1453,7 +1447,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.laser_distance.dfront_min < ((self.grid.grid_size * 0.6)):
+				if self.laser_distance.dfront_min < self.__dist_free:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_recalibrate()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					transitioned_after = 1
