@@ -312,7 +312,6 @@ class Model:
 		self.__target_odom_y = None
 		self.__yaw_alignment_gain = None
 		self.__align_yaw_tolerance = None
-		self.__align_entry_threshold2 = None
 		self.__dist_free = None
 		self.__local_yaw = None
 		self.__cell_index = None
@@ -375,7 +374,6 @@ class Model:
 		self.__target_odom_y = 0.0
 		self.__yaw_alignment_gain = 0.0
 		self.__align_yaw_tolerance = 0.0
-		self.__align_entry_threshold2 = 0.0
 		self.__dist_free = 0.0
 		self.__local_yaw = 0.0
 		self.__cell_index = 0
@@ -627,7 +625,6 @@ class Model:
 		self.start_pos.zero_south_degree = self.imu.yaw
 		self.__dist_free = (0.7 * self.grid.grid_size)
 		self.__side_clearance = (0.5 * self.grid.grid_size)
-		self.__align_entry_threshold2 = (((0.15 * self.grid.grid_size)) * ((0.15 * self.grid.grid_size)))
 		self.user_var.base_speed = self.base_values.max_speed
 		self.user_var.base_rotation = (((0.2 / 2.84)) * self.base_values.max_rotation)
 		self.__align_yaw_tolerance = 3.0
