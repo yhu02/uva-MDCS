@@ -300,6 +300,7 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
+		self.__calibration_done = None
 		self.__autonomous_active = None
 		self.__been_at_start_once = None
 		self.__is_well_aligned = None
@@ -345,7 +346,6 @@ class Model:
 		self.__total_turned = None
 		self.__temp_mask = None
 		self.__temp_shift = None
-		self.calibration_done = None
 		self.exploration_complete = None
 		
 		# enumeration of all states:
@@ -361,6 +361,7 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
+		self.__calibration_done = False
 		self.__autonomous_active = False
 		self.__been_at_start_once = False
 		self.__is_well_aligned = False
@@ -576,16 +577,6 @@ class Model:
 		return None
 	
 	
-	def raise_calibration_done(self):
-		"""Raise method for event calibration_done.
-		"""
-		self.__internal_event_queue.put(self.__raise_calibration_done_call)
-	
-	def __raise_calibration_done_call(self):
-		"""Raise callback for event calibration_done.
-		"""
-		self.calibration_done = True
-	
 	def raise_exploration_complete(self):
 		"""Raise method for event exploration_complete.
 		"""
@@ -637,7 +628,7 @@ class Model:
 		"""Entry action for state 'Done'..
 		"""
 		#Entry action for state 'Done'.
-		self.raise_calibration_done()
+		self.__calibration_done = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center(self):
 		"""Entry action for state 'AtCellCenter'..
@@ -728,6 +719,7 @@ class Model:
 		#Entry action for state 'Initialize'.
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
+		self.__calibration_done = False
 		
 	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Exit action for state 'SettingZero'..
@@ -1248,7 +1240,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.calibration_done:
+				if self.__calibration_done:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_idle_default()
 					transitioned_after = 1
@@ -1544,7 +1536,6 @@ class Model:
 	def __clear_internal_events(self):
 		"""Implementation of __clear_internal_events function.
 		"""
-		self.calibration_done = False
 		self.exploration_complete = False
 	
 	
