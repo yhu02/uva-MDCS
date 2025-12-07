@@ -18,7 +18,6 @@ class Model:
 			turtle_bot_turtle_bot_mode_and_keyboard_manual,
 			turtle_bot_turtle_bot_mode_and_keyboard_autonomous,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate,
-			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze,
@@ -30,6 +29,7 @@ class Model:
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0recalibrate,
 			turtle_bot_turtle_bot_autonomous_logic_idle,
+			turtle_bot_turtle_bot_autonomous_logic_initialize,
 			turtle_bot_turtle_bot_motion_control_drive,
 			null_state
 		) = range(18)
@@ -523,8 +523,6 @@ class Model:
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate:
 			return (self.__state_vector[1] >= self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate)\
 				and (self.__state_vector[1] <= self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done)
-		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize:
-			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
@@ -548,6 +546,8 @@ class Model:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0recalibrate
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle
+		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_initialize:
+			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_initialize
 		if s == self.__State.turtle_bot_turtle_bot_motion_control_drive:
 			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_motion_control_drive
 		return False
@@ -607,38 +607,27 @@ class Model:
 		#Entry action for state 'Autonomous'.
 		self.__autonomous_active = True
 		
-	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize(self):
-		"""Entry action for state 'Initialize'..
-		"""
-		#Entry action for state 'Initialize'.
-		self.__cmd_speed = 0.0
-		self.__cmd_rot = 0.0
-		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Entry action for state 'SettingZero'..
 		"""
 		#Entry action for state 'SettingZero'.
 		self.timer_service.set_timer(self, 0, (1 * 1000), False)
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = 0.0
 		self.start_pos.set_zero = True
-		self.start_pos.zero_x = self.odom.x
-		self.start_pos.zero_y = self.odom.y
-		self.start_pos.zero_south_degree = self.imu.yaw
 		self.__dist_free = (0.7 * self.grid.grid_size)
 		self.__side_clearance = (0.5 * self.grid.grid_size)
-		self.user_var.base_speed = self.base_values.max_speed
-		self.user_var.base_rotation = (((0.2 / 2.84)) * self.base_values.max_rotation)
 		self.__align_yaw_tolerance = 3.0
 		self.__yaw_alignment_gain = (0.03 * self.base_values.max_rotation)
+		self.grid.row = 0
+		self.grid.column = 0
+		self.__start_row = 0
+		self.__start_col = 0
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done(self):
 		"""Entry action for state 'Done'..
 		"""
 		#Entry action for state 'Done'.
-		self.grid.row = 0
-		self.grid.column = 0
-		self.__start_row = 0
-		self.__start_col = 0
-		self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
 		self.raise_calibration_done()
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center(self):
@@ -766,15 +755,6 @@ class Model:
 		#'default' enter sequence for state Calibrate
 		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_default()
 		
-	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_default(self):
-		"""'default' enter sequence for state Initialize.
-		"""
-		#'default' enter sequence for state Initialize
-		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize
-		self.__state_conf_vector_position = 1
-		self.__state_conf_vector_changed = True
-		
 	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_default(self):
 		"""'default' enter sequence for state SettingZero.
 		"""
@@ -870,6 +850,14 @@ class Model:
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
+	def __enter_sequence_turtle_bot_turtle_bot_autonomous_logic_initialize_default(self):
+		"""'default' enter sequence for state Initialize.
+		"""
+		#'default' enter sequence for state Initialize
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_initialize
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
 	def __enter_sequence_turtle_bot_turtle_bot_motion_control_drive_default(self):
 		"""'default' enter sequence for state Drive.
 		"""
@@ -934,13 +922,6 @@ class Model:
 		#Default exit sequence for state Calibrate
 		self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0()
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
-		self.__state_conf_vector_position = 1
-		
-	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize(self):
-		"""Default exit sequence for state Initialize.
-		"""
-		#Default exit sequence for state Initialize
-		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate
 		self.__state_conf_vector_position = 1
 		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
@@ -1022,6 +1003,13 @@ class Model:
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 1
 		
+	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_initialize(self):
+		"""Default exit sequence for state Initialize.
+		"""
+		#Default exit sequence for state Initialize
+		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 1
+		
 	def __exit_sequence_turtle_bot_turtle_bot_motion_control_drive(self):
 		"""Default exit sequence for state Drive.
 		"""
@@ -1041,8 +1029,6 @@ class Model:
 		state = self.__state_vector[1]
 		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate()
-		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
@@ -1065,6 +1051,8 @@ class Model:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_recalibrate()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle()
+		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_initialize:
+			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_initialize()
 		state = self.__state_vector[2]
 		if state == self.State.turtle_bot_turtle_bot_motion_control_drive:
 			self.__exit_sequence_turtle_bot_turtle_bot_motion_control_drive()
@@ -1074,9 +1062,7 @@ class Model:
 		"""
 		#Default exit sequence for region null
 		state = self.__state_vector[1]
-		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize:
-			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
-		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
+		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done()
@@ -1111,7 +1097,7 @@ class Model:
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_default()
 		
 	def __react_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1123,7 +1109,7 @@ class Model:
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_initialize_default()
 		
 	def __react_turtle_bot_turtle_bot_motion_control__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1220,25 +1206,6 @@ class Model:
 		return transitioned_after
 	
 	
-	def __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_react function.
-		"""
-		#The reactions of state Initialize.
-		transitioned_after = transitioned_before
-		if not self.__do_completion:
-			if transitioned_after < 1:
-				if (self.computer.s_press) and (self.__autonomous_active):
-					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize()
-					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_default()
-					self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(1)
-					transitioned_after = 1
-			#If no transition was taken
-			if transitioned_after == transitioned_before:
-				#then execute local reactions.
-				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(transitioned_before)
-		return transitioned_after
-	
-	
 	def __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_react(self, transitioned_before):
 		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_react function.
 		"""
@@ -1248,7 +1215,6 @@ class Model:
 			if transitioned_after < 1:
 				if self.__time_events[0]:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero()
-					self.start_pos.set_zero = False
 					self.__time_events[0] = False
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(1)
@@ -1266,8 +1232,30 @@ class Model:
 		#The reactions of state Done.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
-			#Always execute local reactions.
-			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(transitioned_before)
+			if transitioned_after < 1:
+				if self.computer.s_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_explore_maze_react function.
+		"""
+		#The reactions of state ExploreMaze.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.computer.s_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default()
+					transitioned_after = 1
 		return transitioned_after
 	
 	
@@ -1282,16 +1270,18 @@ class Model:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.raise_exploration_complete()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
 				elif self.__is_well_aligned:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
 				self.__cmd_rot = (-(((self.__yaw_alignment_gain * self.__yaw_error)))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
-				transitioned_after = transitioned_before
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1305,6 +1295,7 @@ class Model:
 				if ((self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > (self.grid.grid_size * 0.5))) or (self.laser_distance.dfront_min < self.__dist_free):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
@@ -1319,7 +1310,7 @@ class Model:
 				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else self.__cmd_rot
 				self.__cmd_rot = (-(self.base_values.max_rotation)) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
 				self.__cmd_speed = 0.0 if (self.__abs_yaw_error > 60.0) else self.__cmd_speed
-				transitioned_after = transitioned_before
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1333,6 +1324,7 @@ class Model:
 				if self.__total_turned > 85.0:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
@@ -1341,7 +1333,7 @@ class Model:
 				self.__yaw_diff = (self.__yaw_diff - 360.0) if (self.__yaw_diff > 180.0) else self.__yaw_diff
 				self.__yaw_diff = (self.__yaw_diff + 360.0) if (self.__yaw_diff < -(180.0)) else self.__yaw_diff
 				self.__total_turned = self.__yaw_diff
-				transitioned_after = transitioned_before
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1355,6 +1347,7 @@ class Model:
 				if self.__total_turned < -(85.0):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
@@ -1363,7 +1356,7 @@ class Model:
 				self.__yaw_diff = (self.__yaw_diff - 360.0) if (self.__yaw_diff > 180.0) else self.__yaw_diff
 				self.__yaw_diff = (self.__yaw_diff + 360.0) if (self.__yaw_diff < -(180.0)) else self.__yaw_diff
 				self.__total_turned = self.__yaw_diff
-				transitioned_after = transitioned_before
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1377,6 +1370,7 @@ class Model:
 				if self.__total_turned > 170.0 or self.__total_turned < -(170.0):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
@@ -1385,7 +1379,7 @@ class Model:
 				self.__yaw_diff = (self.__yaw_diff - 360.0) if (self.__yaw_diff > 180.0) else self.__yaw_diff
 				self.__yaw_diff = (self.__yaw_diff + 360.0) if (self.__yaw_diff < -(180.0)) else self.__yaw_diff
 				self.__total_turned = self.__yaw_diff
-				transitioned_after = transitioned_before
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1411,7 +1405,7 @@ class Model:
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around_default()
 		else:
 			#Always execute local reactions.
-			transitioned_after = transitioned_before
+			transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1425,11 +1419,12 @@ class Model:
 				if self.laser_distance.dfront_min < self.__dist_free:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_recalibrate()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
+					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
 					transitioned_after = 1
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				transitioned_after = transitioned_before
+				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1443,6 +1438,20 @@ class Model:
 				if self.__autonomous_active:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze_default()
+					transitioned_after = 1
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_autonomous_logic_initialize_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_autonomous_logic_initialize_react function.
+		"""
+		#The reactions of state Initialize.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.computer.s_press:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_initialize()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default()
 					transitioned_after = 1
 		return transitioned_after
 	
@@ -1504,9 +1513,7 @@ class Model:
 			transitioned = self.__turtle_bot_turtle_bot_mode_and_keyboard_autonomous_react(transitioned)
 		if self.__state_conf_vector_position < 1:
 			state = self.__state_vector[1]
-			if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0initialize:
-				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_initialize_react(transitioned)
-			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
+			if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done_react(transitioned)
@@ -1526,6 +1533,8 @@ class Model:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_recalibrate_react(transitioned)
 			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_idle_react(transitioned)
+			elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_initialize:
+				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_initialize_react(transitioned)
 		if self.__state_conf_vector_position < 2:
 			state = self.__state_vector[2]
 			if state == self.State.turtle_bot_turtle_bot_motion_control_drive:
