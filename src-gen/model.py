@@ -1293,9 +1293,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.computer.s_press:
+				if not self.__autonomous_active:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze()
-					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_initialize_default()
 					transitioned_after = 1
 		return transitioned_after
 	
