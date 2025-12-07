@@ -1312,7 +1312,7 @@ class Model:
 					self.raise_exploration_complete()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					transitioned_after = 1
-				elif self.__autonomous_active and self.__is_well_aligned:
+				elif self.__is_well_aligned:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
 					transitioned_after = 1
