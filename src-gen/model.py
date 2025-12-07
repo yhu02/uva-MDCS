@@ -1510,10 +1510,8 @@ class Model:
 			#Always execute local reactions.
 			self.grid.row = (int(((((-(((self.odom.y - self.start_pos.zero_y))) / self.grid.grid_size)) + 0.5))))
 			self.grid.column = (int(((((((self.odom.x - self.start_pos.zero_x)) / self.grid.grid_size)) + 0.5))))
-			self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
-			self.__local_yaw = ((self.__local_yaw - 360.0)) if (self.__local_yaw > 180.0) else (((self.__local_yaw + 360.0)) if (self.__local_yaw < -(180.0)) else self.__local_yaw)
-			self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
-			self.__yaw_error = (self.__local_yaw - self.__target_yaw)
+			self.grid.orientation = 0 if (self.imu.yaw >= 45.0 and self.imu.yaw < 135.0) else (1 if (self.imu.yaw >= -(45.0) and self.imu.yaw < 45.0) else (2 if (self.imu.yaw >= -(135.0) and self.imu.yaw < -(45.0)) else 3))
+			self.__yaw_error = (self.imu.yaw - self.__target_yaw)
 			self.__yaw_error = ((self.__yaw_error - 360.0)) if (self.__yaw_error > 180.0) else (((self.__yaw_error + 360.0)) if (self.__yaw_error < -(180.0)) else self.__yaw_error)
 			self.__abs_yaw_error = self.__yaw_error if (self.__yaw_error >= 0.0) else -(self.__yaw_error)
 			self.__is_well_aligned = (self.__abs_yaw_error <= self.__align_yaw_tolerance)
