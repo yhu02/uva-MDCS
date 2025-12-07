@@ -627,7 +627,7 @@ class Model:
 		self.__dist_free = (0.7 * self.grid.grid_size)
 		self.__side_clearance = (0.5 * self.grid.grid_size)
 		self.__align_yaw_tolerance = 3.0
-		self.__yaw_alignment_gain = (0.03 * self.base_values.max_rotation)
+		self.__yaw_alignment_gain = (0.01 * self.base_values.max_rotation)
 		self.grid.row = 0
 		self.grid.column = 0
 		self.__start_row = 0
