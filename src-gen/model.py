@@ -714,8 +714,6 @@ class Model:
 		self.grid.wall_left = 0 if self.__left_free else 1
 		self.grid.wall_right = 0 if self.__right_free else 1
 		self.grid.wall_back = 0 if self.__back_free else 1
-		self.grid.update = False
-		self.grid.receive = False
 		self.__completed = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_recalibrate(self):
