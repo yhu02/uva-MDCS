@@ -314,7 +314,6 @@ class Model:
 		self.__yaw_alignment_gain = None
 		self.__align_yaw_tolerance = None
 		self.__dist_free = None
-		self.__local_yaw = None
 		self.__cell_index = None
 		self.__wall_bits = None
 		self.__absolute_n = None
@@ -376,7 +375,6 @@ class Model:
 		self.__yaw_alignment_gain = 0.0
 		self.__align_yaw_tolerance = 0.0
 		self.__dist_free = 0.0
-		self.__local_yaw = 0.0
 		self.__cell_index = 0
 		self.__wall_bits = 0
 		self.__absolute_n = 0
