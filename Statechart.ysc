@@ -81,7 +81,7 @@
           <vertices xsi:type="sgraph:State" xmi:id="_uHoYEM4gEfC2btRhec0lOA" name="Idle" incomingTransitions="_GM7kIM4hEfC2btRhec0lOA">
             <outgoingTransitions xmi:id="_QsfhoNBCEfCuzfYF5B9klg" specification="[autonomousActive]" target="_uu_6EM4gEfC2btRhec0lOA"/>
           </vertices>
-          <vertices xsi:type="sgraph:State" xmi:id="_o8dx8NOKEfCGdfi6aL7wNg" specification="          " name="Initialize" incomingTransitions="_DjTPcM4hEfC2btRhec0lOA _yuEc0NO0EfCkD_1x9CcDog">
+          <vertices xsi:type="sgraph:State" xmi:id="_o8dx8NOKEfCGdfi6aL7wNg" specification="          &#x9;entry / cmdSpeed = 0.0; cmdRot = 0.0&#xD;&#xA;          " name="Initialize" incomingTransitions="_DjTPcM4hEfC2btRhec0lOA _yuEc0NO0EfCkD_1x9CcDog">
             <outgoingTransitions xmi:id="_yRH0MNOKEfCGdfi6aL7wNg" specification="computer.s_press" target="_tWOwUM4gEfC2btRhec0lOA"/>
           </vertices>
         </regions>

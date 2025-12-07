@@ -722,6 +722,13 @@ class Model:
 		#Entry action for state 'Recalibrate'.
 		self.__cmd_speed = self.user_var.base_speed
 		
+	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_initialize(self):
+		"""Entry action for state 'Initialize'..
+		"""
+		#Entry action for state 'Initialize'.
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = 0.0
+		
 	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Exit action for state 'SettingZero'..
 		"""
@@ -869,6 +876,7 @@ class Model:
 		"""'default' enter sequence for state Initialize.
 		"""
 		#'default' enter sequence for state Initialize
+		self.__entry_action_turtle_bot_turtle_bot_autonomous_logic_initialize()
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot_autonomous_logic_initialize
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
