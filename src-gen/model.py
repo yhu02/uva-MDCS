@@ -615,10 +615,10 @@ class Model:
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.start_pos.set_zero = True
-		self.__dist_free = (0.7 * self.grid.grid_size)
+		self.__dist_free = (0.8 * self.grid.grid_size)
 		self.__side_clearance = (0.5 * self.grid.grid_size)
 		self.__align_yaw_tolerance = 3.0
-		self.__yaw_alignment_gain = (0.01 * self.base_values.max_rotation)
+		self.__yaw_alignment_gain = (0.02 * self.base_values.max_rotation)
 		self.grid.row = 0
 		self.grid.column = 0
 		self.__start_row = 0
@@ -1438,10 +1438,10 @@ class Model:
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
 			elif (self.__front_free or (not self.__front_free and (self.laser_distance.dfront_min > self.__dist_free))):
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_recalibrate_default()
-			elif self.__right_free and ((self.grid.orientation == 0 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 1 and self.grid.row < self.grid.max_row) or (self.grid.orientation == 2 and self.grid.column > 0) or (self.grid.orientation == 3 and self.grid.row > 0)):
-				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right_default()
 			elif self.__left_free and ((self.grid.orientation == 0 and self.grid.column > 0) or (self.grid.orientation == 1 and self.grid.row > 0) or (self.grid.orientation == 2 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 3 and self.grid.row < self.grid.max_row)):
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left_default()
+			elif self.__right_free and ((self.grid.orientation == 0 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 1 and self.grid.row < self.grid.max_row) or (self.grid.orientation == 2 and self.grid.column > 0) or (self.grid.orientation == 3 and self.grid.row > 0)):
+				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_right_default()
 			else:
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_around_default()
 		else:
@@ -1490,7 +1490,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.computer.s_press:
+				if (self.computer.s_press) and (self.__autonomous_active):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_initialize()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default()
 					transitioned_after = 1
