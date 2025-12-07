@@ -1359,14 +1359,14 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if self.__autonomous_active and self.__is_well_aligned:
-					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
-					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
-					transitioned_after = 1
-				elif self.__been_at_start_once and self.grid.row == self.__start_row and self.grid.column == self.__start_col:
+				if self.__been_at_start_once and self.grid.row == self.__start_row and self.grid.column == self.__start_col:
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
 					self.raise_exploration_complete()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
+					transitioned_after = 1
+				elif self.__autonomous_active and self.__is_well_aligned:
+					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center()
+					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_explore_default()
 					transitioned_after = 1
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
