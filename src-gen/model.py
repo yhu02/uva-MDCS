@@ -17,6 +17,7 @@ class Model:
 			turtle_bot_turtle_bot,
 			turtle_bot_turtle_bot_mode_and_keyboard_manual,
 			turtle_bot_turtle_bot_mode_and_keyboard_autonomous,
+			turtle_bot_turtle_bot_mode_and_keyboard_reset,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero,
 			turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done,
@@ -32,7 +33,7 @@ class Model:
 			turtle_bot_turtle_bot_autonomous_logic_initialize,
 			turtle_bot_turtle_bot_motion_control_drive,
 			null_state
-		) = range(18)
+		) = range(19)
 	
 	
 	class UserVar:
@@ -520,6 +521,8 @@ class Model:
 			return self.__state_vector[0] == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_manual
 		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
 			return self.__state_vector[0] == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous
+		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_reset:
+			return self.__state_vector[0] == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_reset
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate:
 			return (self.__state_vector[1] >= self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate)\
 				and (self.__state_vector[1] <= self.__State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0done)
@@ -606,6 +609,14 @@ class Model:
 		"""
 		#Entry action for state 'Autonomous'.
 		self.__autonomous_active = True
+		
+	def __entry_action_turtle_bot_turtle_bot_mode_and_keyboard_reset(self):
+		""".
+		"""
+		#Entry action for state 'Reset'.
+		self.__cmd_speed = 0.0
+		self.__cmd_rot = 0.0
+		self.__completed = True
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Entry action for state 'SettingZero'..
@@ -746,6 +757,15 @@ class Model:
 		#'default' enter sequence for state Autonomous
 		self.__entry_action_turtle_bot_turtle_bot_mode_and_keyboard_autonomous()
 		self.__state_vector[0] = self.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous
+		self.__state_conf_vector_position = 0
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_reset_default(self):
+		"""'default' enter sequence for state Reset.
+		"""
+		#'default' enter sequence for state Reset
+		self.__entry_action_turtle_bot_turtle_bot_mode_and_keyboard_reset()
+		self.__state_vector[0] = self.State.turtle_bot_turtle_bot_mode_and_keyboard_reset
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
@@ -916,6 +936,13 @@ class Model:
 		self.__state_vector[0] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 0
 		
+	def __exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_reset(self):
+		"""Default exit sequence for state Reset.
+		"""
+		#Default exit sequence for state Reset
+		self.__state_vector[0] = self.State.turtle_bot_turtle_bot
+		self.__state_conf_vector_position = 0
+		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate(self):
 		"""Default exit sequence for state Calibrate.
 		"""
@@ -1026,6 +1053,8 @@ class Model:
 			self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual()
 		elif state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
 			self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous()
+		elif state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_reset:
+			self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_reset()
 		state = self.__state_vector[1]
 		if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate()
@@ -1183,12 +1212,29 @@ class Model:
 			if transitioned_after < 0:
 				if self.computer.m_press:
 					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous()
-					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_reset_default()
 					transitioned_after = 0
 				elif self.exploration_complete:
 					self.__exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_autonomous()
-					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default()
+					self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_reset_default()
 					transitioned_after = 0
+		return transitioned_after
+	
+	
+	def __turtle_bot_turtle_bot_mode_and_keyboard_reset_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_mode_and_keyboard_reset_react function.
+		"""
+		#The reactions of state Reset.
+		transitioned_after = transitioned_before
+		if self.__do_completion:
+			#Default exit sequence for state Reset
+			self.__state_vector[0] = self.State.turtle_bot_turtle_bot
+			self.__state_conf_vector_position = 0
+			#'default' enter sequence for state Manual
+			self.__entry_action_turtle_bot_turtle_bot_mode_and_keyboard_manual()
+			self.__state_vector[0] = self.State.turtle_bot_turtle_bot_mode_and_keyboard_manual
+			self.__state_conf_vector_position = 0
+			self.__state_conf_vector_changed = True
 		return transitioned_after
 	
 	
@@ -1511,6 +1557,8 @@ class Model:
 			transitioned = self.__turtle_bot_turtle_bot_mode_and_keyboard_manual_react(transitioned)
 		elif state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
 			transitioned = self.__turtle_bot_turtle_bot_mode_and_keyboard_autonomous_react(transitioned)
+		elif state == self.State.turtle_bot_turtle_bot_mode_and_keyboard_reset:
+			transitioned = self.__turtle_bot_turtle_bot_mode_and_keyboard_reset_react(transitioned)
 		if self.__state_conf_vector_position < 1:
 			state = self.__state_vector[1]
 			if state == self.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0setting_zero:
