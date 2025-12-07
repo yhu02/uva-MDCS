@@ -406,7 +406,7 @@ class Model:
 		self.__total_turned = 0.0
 		self.__temp_mask = 0
 		self.__temp_shift = 0
-		self.user_var.base_speed = 0.22
+		self.user_var.base_speed = 0.11
 		self.user_var.base_rotation = 0.6
 		self.user_var.startprocedure = True
 		self.base_values.max_speed = 0.22
