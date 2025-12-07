@@ -663,6 +663,7 @@ class Model:
 		self.__target_odom_x = (self.start_pos.zero_x + ((((float(self.__target_col))) * self.grid.grid_size)))
 		self.__target_odom_y = (self.start_pos.zero_y - ((((float(self.__target_row))) * self.grid.grid_size)))
 		self.__target_yaw = 90.0 if (self.__cell_start_orientation == 0) else (0.0 if (self.__cell_start_orientation == 1) else (-(90.0) if (self.__cell_start_orientation == 2) else 180.0))
+		self.__target_yaw = (self.__target_yaw - self.start_pos.zero_south_degree)
 		self.__cmd_rot = 0.0
 		self.__cmd_speed = self.user_var.base_speed
 		
