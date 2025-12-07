@@ -326,8 +326,6 @@ class Model:
 		self.__limited_ratio = None
 		self.__angle_factor = None
 		self.__dist_scale = None
-		self.__cmd_speed_expr = None
-		self.__cmd_rot_expr = None
 		self.__dx = None
 		self.__dy = None
 		self.__dist2 = None
@@ -406,8 +404,6 @@ class Model:
 		self.__limited_ratio = 0.0
 		self.__angle_factor = 0.0
 		self.__dist_scale = 0.0
-		self.__cmd_speed_expr = 0.0
-		self.__cmd_rot_expr = 0.0
 		self.__dx = 0.0
 		self.__dy = 0.0
 		self.__dist2 = 0.0
@@ -1491,12 +1487,12 @@ class Model:
 				self.__tmp_lat = (self.__lateral_correction_gain * self.__lateral_error)
 				self.__max_lat_rot = (self.base_values.max_rotation * 0.3)
 				self.__lateral_correction = self.__max_lat_rot if (self.__tmp_lat > self.__max_lat_rot) else ((-(self.__max_lat_rot)) if (self.__tmp_lat < -(self.__max_lat_rot)) else self.__tmp_lat)
-				self.__cmd_speed_expr = (((self.user_var.base_speed * self.__angle_factor) * self.__dist_scale) * (0.5 if (self.__abs_lat_error > self.__lateral_allowed) else 1.0))
-				self.__cmd_speed = self.base_values.max_speed if (self.__cmd_speed_expr > self.base_values.max_speed) else self.__cmd_speed_expr
+				self.__cmd_speed = (((self.user_var.base_speed * self.__angle_factor) * self.__dist_scale) * (0.5 if (self.__abs_lat_error > self.__lateral_allowed) else 1.0))
+				self.__cmd_speed = self.base_values.max_speed if (self.__cmd_speed > self.base_values.max_speed) else self.__cmd_speed
 				self.__cmd_speed = 0.0 if (self.__cmd_speed < 0.0) else self.__cmd_speed
 				self.__yaw_rot = (-(((self.__yaw_alignment_gain * self.__yaw_error)))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
-				self.__cmd_rot_expr = (self.__yaw_rot + self.__lateral_correction)
-				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot_expr > self.base_values.max_rotation) else self.__cmd_rot_expr
+				self.__cmd_rot = (self.__yaw_rot + self.__lateral_correction)
+				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else self.__cmd_rot
 				self.__cmd_rot = (-(self.base_values.max_rotation)) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
 				self.__cmd_speed = 0.0 if (self.__abs_yaw_error > 60.0) else self.__cmd_speed
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
