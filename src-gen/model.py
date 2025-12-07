@@ -649,8 +649,7 @@ class Model:
 		self.start_pos.zero_x = self.odom.x
 		self.start_pos.zero_y = self.odom.y
 		self.start_pos.zero_south_degree = self.imu.yaw
-		self.__dist_free = self.__dist_free if (self.__dist_free > 0.0) else ((0.5 * self.grid.grid_size))
-		self.__dist_free = (self.__dist_free * 1.5)
+		self.__dist_free = (0.8 * self.grid.grid_size)
 		self.__side_clearance = (0.12 * self.grid.grid_size)
 		self.__align_entry_threshold2 = (((0.15 * self.grid.grid_size)) * ((0.15 * self.grid.grid_size)))
 		self.__emergency_stop_threshold = (0.4 * self.grid.grid_size)
