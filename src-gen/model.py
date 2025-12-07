@@ -30,11 +30,9 @@ class Model:
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0explore,
 			turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0recalibrate,
 			turtle_bot_turtle_bot_autonomous_logic_idle,
-			turtle_bot_turtle_bot_zstopped,
-			turtle_bot_turtle_bot_zdrive,
-			turtle_bot_turtle_bot_zemergency_stop,
+			turtle_bot_turtle_bot_motion_control_drive,
 			null_state
-		) = range(20)
+		) = range(18)
 	
 	
 	class UserVar:
@@ -543,7 +541,7 @@ class Model:
 		s = state
 		if s == self.__State.turtle_bot_turtle_bot:
 			return (self.__state_vector[0] >= self.__State.turtle_bot_turtle_bot)\
-				and (self.__state_vector[0] <= self.__State.turtle_bot_turtle_bot_zemergency_stop)
+				and (self.__state_vector[0] <= self.__State.turtle_bot_turtle_bot_motion_control_drive)
 		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
 			return self.__state_vector[0] == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_manual
 		if s == self.__State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
@@ -576,12 +574,8 @@ class Model:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_explore_maze_region0recalibrate
 		if s == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			return self.__state_vector[1] == self.__State.turtle_bot_turtle_bot_autonomous_logic_idle
-		if s == self.__State.turtle_bot_turtle_bot_zstopped:
-			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_zstopped
-		if s == self.__State.turtle_bot_turtle_bot_zdrive:
-			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_zdrive
-		if s == self.__State.turtle_bot_turtle_bot_zemergency_stop:
-			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_zemergency_stop
+		if s == self.__State.turtle_bot_turtle_bot_motion_control_drive:
+			return self.__state_vector[2] == self.__State.turtle_bot_turtle_bot_motion_control_drive
 		return False
 		
 	def time_elapsed(self, event_id):
@@ -684,10 +678,6 @@ class Model:
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.__been_at_start_once = True if (self.grid.row != self.__start_row or self.grid.column != self.__start_col) else self.__been_at_start_once
-		self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
-		self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
-		self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
-		self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell(self):
 		"""Entry action for state 'MoveToNextCell'..
@@ -766,13 +756,6 @@ class Model:
 		#Entry action for state 'Recalibrate'.
 		self.__cmd_speed = self.user_var.base_speed
 		
-	def __entry_action_turtle_bot_turtle_bot_z_stopped(self):
-		"""Entry action for state 'Stopped'..
-		"""
-		#Entry action for state 'Stopped'.
-		self.output.speed = 0.0
-		self.output.rotation = 0.0
-		
 	def __exit_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_setting_zero(self):
 		"""Exit action for state 'SettingZero'..
 		"""
@@ -786,7 +769,7 @@ class Model:
 		#'default' enter sequence for state TurtleBot
 		self.__enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_default()
 		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_default()
-		self.__enter_sequence_turtle_bot_turtle_bot_z_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_motion_control_default()
 		
 	def __enter_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual_default(self):
 		"""'default' enter sequence for state Manual.
@@ -916,28 +899,11 @@ class Model:
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_turtle_bot_turtle_bot_z_stopped_default(self):
-		"""'default' enter sequence for state Stopped.
-		"""
-		#'default' enter sequence for state Stopped
-		self.__entry_action_turtle_bot_turtle_bot_z_stopped()
-		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_zstopped
-		self.__state_conf_vector_position = 2
-		self.__state_conf_vector_changed = True
-		
-	def __enter_sequence_turtle_bot_turtle_bot_z_drive_default(self):
+	def __enter_sequence_turtle_bot_turtle_bot_motion_control_drive_default(self):
 		"""'default' enter sequence for state Drive.
 		"""
 		#'default' enter sequence for state Drive
-		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_zdrive
-		self.__state_conf_vector_position = 2
-		self.__state_conf_vector_changed = True
-		
-	def __enter_sequence_turtle_bot_turtle_bot_z_emergency_stop_default(self):
-		"""'default' enter sequence for state EmergencyStop.
-		"""
-		#'default' enter sequence for state EmergencyStop
-		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_zemergency_stop
+		self.__state_vector[2] = self.State.turtle_bot_turtle_bot_motion_control_drive
 		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
@@ -971,11 +937,11 @@ class Model:
 		#'default' enter sequence for region null
 		self.__react_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0__entry_default()
 		
-	def __enter_sequence_turtle_bot_turtle_bot_z_default(self):
-		"""'default' enter sequence for region z.
+	def __enter_sequence_turtle_bot_turtle_bot_motion_control_default(self):
+		"""'default' enter sequence for region MotionControl.
 		"""
-		#'default' enter sequence for region z
-		self.__react_turtle_bot_turtle_bot_z__entry_default()
+		#'default' enter sequence for region MotionControl
+		self.__react_turtle_bot_turtle_bot_motion_control__entry_default()
 		
 	def __exit_sequence_turtle_bot_turtle_bot_mode_and_keyboard_manual(self):
 		"""Default exit sequence for state Manual.
@@ -1085,24 +1051,10 @@ class Model:
 		self.__state_vector[1] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 1
 		
-	def __exit_sequence_turtle_bot_turtle_bot_z_stopped(self):
-		"""Default exit sequence for state Stopped.
-		"""
-		#Default exit sequence for state Stopped
-		self.__state_vector[2] = self.State.turtle_bot_turtle_bot
-		self.__state_conf_vector_position = 2
-		
-	def __exit_sequence_turtle_bot_turtle_bot_z_drive(self):
+	def __exit_sequence_turtle_bot_turtle_bot_motion_control_drive(self):
 		"""Default exit sequence for state Drive.
 		"""
 		#Default exit sequence for state Drive
-		self.__state_vector[2] = self.State.turtle_bot_turtle_bot
-		self.__state_conf_vector_position = 2
-		
-	def __exit_sequence_turtle_bot_turtle_bot_z_emergency_stop(self):
-		"""Default exit sequence for state EmergencyStop.
-		"""
-		#Default exit sequence for state EmergencyStop
 		self.__state_vector[2] = self.State.turtle_bot_turtle_bot
 		self.__state_conf_vector_position = 2
 		
@@ -1143,12 +1095,8 @@ class Model:
 		elif state == self.State.turtle_bot_turtle_bot_autonomous_logic_idle:
 			self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_idle()
 		state = self.__state_vector[2]
-		if state == self.State.turtle_bot_turtle_bot_zstopped:
-			self.__exit_sequence_turtle_bot_turtle_bot_z_stopped()
-		elif state == self.State.turtle_bot_turtle_bot_zdrive:
-			self.__exit_sequence_turtle_bot_turtle_bot_z_drive()
-		elif state == self.State.turtle_bot_turtle_bot_zemergency_stop:
-			self.__exit_sequence_turtle_bot_turtle_bot_z_emergency_stop()
+		if state == self.State.turtle_bot_turtle_bot_motion_control_drive:
+			self.__exit_sequence_turtle_bot_turtle_bot_motion_control_drive()
 		
 	def __exit_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0(self):
 		"""Default exit sequence for region null.
@@ -1206,11 +1154,11 @@ class Model:
 		#Default react sequence for initial entry 
 		self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_calibrate_default()
 		
-	def __react_turtle_bot_turtle_bot_z__entry_default(self):
+	def __react_turtle_bot_turtle_bot_motion_control__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_turtle_bot_turtle_bot_z_stopped_default()
+		self.__enter_sequence_turtle_bot_turtle_bot_motion_control_drive_default()
 		
 	def __react_turtle_bot__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1371,13 +1319,6 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
-				self.__local_yaw = ((self.__local_yaw - 360.0)) if (self.__local_yaw > 180.0) else (((self.__local_yaw + 360.0)) if (self.__local_yaw < -(180.0)) else self.__local_yaw)
-				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
-				self.__yaw_error = ((self.__yaw_error - 360.0)) if (self.__yaw_error > 180.0) else (((self.__yaw_error + 360.0)) if (self.__yaw_error < -(180.0)) else self.__yaw_error)
-				self.__sign_yaw = 1.0 if (self.__yaw_error >= 0.0) else -(1.0)
-				self.__abs_yaw_error = (self.__yaw_error * self.__sign_yaw)
-				self.__is_well_aligned = (self.__abs_yaw_error <= self.__align_yaw_tolerance)
 				self.__cmd_rot = (-(((self.__yaw_alignment_gain * self.__yaw_error)))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
 				transitioned_after = transitioned_before
 		return transitioned_after
@@ -1404,12 +1345,6 @@ class Model:
 				self.__dx = (self.__target_odom_x - self.odom.x)
 				self.__dy = (self.__target_odom_y - self.odom.y)
 				self.__dist2 = (((self.__dx * self.__dx)) + ((self.__dy * self.__dy)))
-				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
-				self.__local_yaw = ((self.__local_yaw - 360.0)) if (self.__local_yaw > 180.0) else (((self.__local_yaw + 360.0)) if (self.__local_yaw < -(180.0)) else self.__local_yaw)
-				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
-				self.__yaw_error = ((self.__yaw_error - 360.0)) if (self.__yaw_error > 180.0) else (((self.__yaw_error + 360.0)) if (self.__yaw_error < -(180.0)) else self.__yaw_error)
-				self.__sign_yaw = 1.0 if (self.__yaw_error >= 0.0) else -(1.0)
-				self.__abs_yaw_error = (self.__yaw_error * self.__sign_yaw)
 				self.__tmp_ratio = (self.__abs_yaw_error / 45.0)
 				self.__limited_ratio = self.__tmp_ratio if (self.__tmp_ratio <= 0.9) else 0.9
 				self.__angle_factor = (1.0 - self.__limited_ratio)
@@ -1556,88 +1491,30 @@ class Model:
 		return transitioned_after
 	
 	
-	def __turtle_bot_turtle_bot_z_stopped_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_z_stopped_react function.
-		"""
-		#The reactions of state Stopped.
-		transitioned_after = transitioned_before
-		if not self.__do_completion:
-			if transitioned_after < 2:
-				if self.__cmd_speed != 0.0 or self.__cmd_rot != 0.0:
-					self.__exit_sequence_turtle_bot_turtle_bot_z_stopped()
-					self.__enter_sequence_turtle_bot_turtle_bot_z_drive_default()
-					self.__turtle_bot_turtle_bot_react(0)
-					transitioned_after = 2
-			#If no transition was taken
-			if transitioned_after == transitioned_before:
-				#then execute local reactions.
-				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
-		return transitioned_after
-	
-	
-	def __turtle_bot_turtle_bot_z_drive_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_z_drive_react function.
+	def __turtle_bot_turtle_bot_motion_control_drive_react(self, transitioned_before):
+		"""Implementation of __turtle_bot_turtle_bot_motion_control_drive_react function.
 		"""
 		#The reactions of state Drive.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
-			if transitioned_after < 2:
-				if self.laser_distance.dfront_min < self.__emergency_stop_threshold:
-					self.__exit_sequence_turtle_bot_turtle_bot_z_drive()
-					self.__enter_sequence_turtle_bot_turtle_bot_z_emergency_stop_default()
-					self.__turtle_bot_turtle_bot_react(0)
-					transitioned_after = 2
-				elif self.__cmd_speed == 0.0 and self.__cmd_rot == 0.0:
-					self.__exit_sequence_turtle_bot_turtle_bot_z_drive()
-					self.__enter_sequence_turtle_bot_turtle_bot_z_stopped_default()
-					self.__turtle_bot_turtle_bot_react(0)
-					transitioned_after = 2
-			#If no transition was taken
-			if transitioned_after == transitioned_before:
-				#then execute local reactions.
-				self.grid.row = (int(((((-(((self.odom.y - self.start_pos.zero_y))) / self.grid.grid_size)) + 0.5))))
-				self.grid.column = (int(((((((self.odom.x - self.start_pos.zero_x)) / self.grid.grid_size)) + 0.5))))
-				self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
-				self.__local_yaw = (self.__local_yaw - 360.0) if (self.__local_yaw > 180.0) else self.__local_yaw
-				self.__local_yaw = (self.__local_yaw + 360.0) if (self.__local_yaw < -(180.0)) else self.__local_yaw
-				self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
-				self.__yaw_error = (self.__local_yaw - self.__target_yaw)
-				self.__yaw_error = (self.__yaw_error - 360.0) if (self.__yaw_error > 180.0) else self.__yaw_error
-				self.__yaw_error = (self.__yaw_error + 360.0) if (self.__yaw_error < -(180.0)) else self.__yaw_error
-				self.__is_well_aligned = (self.__yaw_error >= -(self.__align_yaw_tolerance) and self.__yaw_error <= self.__align_yaw_tolerance)
-				self.__cmd_speed = self.base_values.max_speed if (self.__cmd_speed > self.base_values.max_speed) else self.__cmd_speed
-				self.__cmd_speed = -(self.base_values.max_speed) if (self.__cmd_speed < -(self.base_values.max_speed)) else self.__cmd_speed
-				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else self.__cmd_rot
-				self.__cmd_rot = -(self.base_values.max_rotation) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
-				self.output.speed = self.__cmd_speed
-				self.output.rotation = self.__cmd_rot
-				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
-		return transitioned_after
-	
-	
-	def __turtle_bot_turtle_bot_z_emergency_stop_react(self, transitioned_before):
-		"""Implementation of __turtle_bot_turtle_bot_z_emergency_stop_react function.
-		"""
-		#The reactions of state EmergencyStop.
-		transitioned_after = transitioned_before
-		if not self.__do_completion:
-			if transitioned_after < 2:
-				if self.laser_distance.dfront_min > self.__emergency_recover_threshold and (self.__cmd_speed != 0.0 or self.__cmd_rot != 0.0):
-					self.__exit_sequence_turtle_bot_turtle_bot_z_emergency_stop()
-					self.__enter_sequence_turtle_bot_turtle_bot_z_drive_default()
-					self.__turtle_bot_turtle_bot_react(0)
-					transitioned_after = 2
-				elif self.laser_distance.dfront_min > 0.22 and self.__cmd_speed == 0.0 and self.__cmd_rot == 0.0:
-					self.__exit_sequence_turtle_bot_turtle_bot_z_emergency_stop()
-					self.__enter_sequence_turtle_bot_turtle_bot_z_stopped_default()
-					self.__turtle_bot_turtle_bot_react(0)
-					transitioned_after = 2
-			#If no transition was taken
-			if transitioned_after == transitioned_before:
-				#then execute local reactions.
-				self.output.speed = 0.0
-				self.output.rotation = self.__cmd_rot
-				transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
+			#Always execute local reactions.
+			self.grid.row = (int(((((-(((self.odom.y - self.start_pos.zero_y))) / self.grid.grid_size)) + 0.5))))
+			self.grid.column = (int(((((((self.odom.x - self.start_pos.zero_x)) / self.grid.grid_size)) + 0.5))))
+			self.__local_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
+			self.__local_yaw = ((self.__local_yaw - 360.0)) if (self.__local_yaw > 180.0) else (((self.__local_yaw + 360.0)) if (self.__local_yaw < -(180.0)) else self.__local_yaw)
+			self.grid.orientation = 0 if (self.__local_yaw >= 45.0 and self.__local_yaw < 135.0) else (1 if (self.__local_yaw >= -(45.0) and self.__local_yaw < 45.0) else (2 if (self.__local_yaw >= -(135.0) and self.__local_yaw < -(45.0)) else 3))
+			self.__yaw_error = (self.__local_yaw - self.__target_yaw)
+			self.__yaw_error = ((self.__yaw_error - 360.0)) if (self.__yaw_error > 180.0) else (((self.__yaw_error + 360.0)) if (self.__yaw_error < -(180.0)) else self.__yaw_error)
+			self.__sign_yaw = 1.0 if (self.__yaw_error >= 0.0) else -(1.0)
+			self.__abs_yaw_error = (self.__yaw_error * self.__sign_yaw)
+			self.__is_well_aligned = (self.__abs_yaw_error <= self.__align_yaw_tolerance)
+			self.__cmd_speed = self.base_values.max_speed if (self.__cmd_speed > self.base_values.max_speed) else self.__cmd_speed
+			self.__cmd_speed = -(self.base_values.max_speed) if (self.__cmd_speed < -(self.base_values.max_speed)) else self.__cmd_speed
+			self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else self.__cmd_rot
+			self.__cmd_rot = -(self.base_values.max_rotation) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
+			self.output.speed = self.__cmd_speed
+			self.output.rotation = self.__cmd_rot
+			transitioned_after = self.__turtle_bot_turtle_bot_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -1696,12 +1573,8 @@ class Model:
 				transitioned = self.__turtle_bot_turtle_bot_autonomous_logic_idle_react(transitioned)
 		if self.__state_conf_vector_position < 2:
 			state = self.__state_vector[2]
-			if state == self.State.turtle_bot_turtle_bot_zstopped:
-				self.__turtle_bot_turtle_bot_z_stopped_react(transitioned)
-			elif state == self.State.turtle_bot_turtle_bot_zdrive:
-				self.__turtle_bot_turtle_bot_z_drive_react(transitioned)
-			elif state == self.State.turtle_bot_turtle_bot_zemergency_stop:
-				self.__turtle_bot_turtle_bot_z_emergency_stop_react(transitioned)
+			if state == self.State.turtle_bot_turtle_bot_motion_control_drive:
+				self.__turtle_bot_turtle_bot_motion_control_drive_react(transitioned)
 	
 	
 	def run_cycle(self):
