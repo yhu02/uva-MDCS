@@ -329,6 +329,7 @@ class Model:
 		self.__absolute_e = None
 		self.__absolute_s = None
 		self.__absolute_w = None
+		self.__front_stop_dist = None
 		self.__cmd_speed = None
 		self.__cmd_rot = None
 		self.__lateral_error = None
@@ -390,6 +391,7 @@ class Model:
 		self.__absolute_e = 0
 		self.__absolute_s = 0
 		self.__absolute_w = 0
+		self.__front_stop_dist = 0.25
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.__lateral_error = 0.0
@@ -1333,7 +1335,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if ((self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > (self.grid.grid_size * 0.5))) or (self.laser_distance.dfront_min < self.__dist_free):
+				if ((self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > (self.grid.grid_size * 0.5))) or (self.laser_distance.dfront_min < self.__front_stop_dist):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
