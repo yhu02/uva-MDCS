@@ -374,7 +374,7 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
-		self.__side_clearance = 0.12
+		self.__side_clearance = 0.0
 		self.__lateral_error = 0.0
 		self.__sign_lat = 0.0
 		self.__abs_lat_error = 0.0
@@ -388,10 +388,10 @@ class Model:
 		self.__target_odom_x = 0.0
 		self.__target_odom_y = 0.0
 		self.__abs_yaw_error = 0.0
-		self.__yaw_alignment_gain = 0.02
-		self.__align_yaw_tolerance = 3.0
+		self.__yaw_alignment_gain = 0.0
+		self.__align_yaw_tolerance = 0.0
 		self.__sign_yaw = 0.0
-		self.__align_entry_threshold2 = ((0.15 * 0.15))
+		self.__align_entry_threshold2 = 0.0
 		self.__tmp_ratio = 0.0
 		self.__limited_ratio = 0.0
 		self.__angle_factor = 0.0
@@ -408,7 +408,7 @@ class Model:
 		self.__absolute_w = 0
 		self.__temp_mask = 0
 		self.__temp_shift = 0
-		self.__dist_free = 0.25
+		self.__dist_free = 0.0
 		self.__autonomous_active = False
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
