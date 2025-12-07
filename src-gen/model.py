@@ -434,7 +434,7 @@ class Model:
 		self.__yaw_error = 0.0
 		self.__is_well_aligned = False
 		self.user_var.base_speed = 0.22
-		self.user_var.base_rotation = 0.2
+		self.user_var.base_rotation = 1
 		self.user_var.startprocedure = True
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
