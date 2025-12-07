@@ -300,53 +300,53 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
-		self.__side_clearance = None
-		self.__lateral_error = None
-		self.__tmp_lat = None
-		self.__max_lat_rot = None
-		self.__lateral_correction = None
-		self.__yaw_rot = None
+		self.__autonomous_active = None
+		self.__been_at_start_once = None
+		self.__is_well_aligned = None
+		self.__start_row = None
+		self.__start_col = None
+		self.__cell_index = None
+		self.__cell_start_row = None
+		self.__cell_start_col = None
+		self.__cell_start_orientation = None
 		self.__delta_row = None
 		self.__delta_col = None
-		self.__cell_start_orientation = None
+		self.__target_row = None
+		self.__target_col = None
+		self.__cell_start_x = None
+		self.__cell_start_y = None
 		self.__target_odom_x = None
 		self.__target_odom_y = None
-		self.__yaw_alignment_gain = None
-		self.__align_yaw_tolerance = None
+		self.__left_free = None
+		self.__front_free = None
+		self.__right_free = None
+		self.__back_free = None
 		self.__dist_free = None
-		self.__cell_index = None
+		self.__side_clearance = None
 		self.__wall_bits = None
 		self.__absolute_n = None
 		self.__absolute_e = None
 		self.__absolute_s = None
 		self.__absolute_w = None
-		self.__temp_mask = None
-		self.__temp_shift = None
-		self.__autonomous_active = None
 		self.__cmd_speed = None
 		self.__cmd_rot = None
-		self.__cell_start_x = None
-		self.__cell_start_y = None
-		self.__cell_start_row = None
-		self.__cell_start_col = None
-		self.__start_row = None
-		self.__start_col = None
-		self.__left_free = None
-		self.__front_free = None
-		self.__right_free = None
-		self.__back_free = None
-		self.__target_row = None
-		self.__target_col = None
-		self.__been_at_start_once = None
-		self.__turn_start_yaw = None
-		self.__total_turned = None
-		self.__yaw_diff = None
+		self.__lateral_error = None
+		self.__lateral_correction = None
+		self.__tmp_lat = None
+		self.__max_lat_rot = None
 		self.__target_yaw = None
 		self.__yaw_error = None
 		self.__abs_yaw_error = None
-		self.__is_well_aligned = None
-		self.exploration_complete = None
+		self.__yaw_diff = None
+		self.__yaw_rot = None
+		self.__yaw_alignment_gain = None
+		self.__align_yaw_tolerance = None
+		self.__turn_start_yaw = None
+		self.__total_turned = None
+		self.__temp_mask = None
+		self.__temp_shift = None
 		self.calibration_done = None
+		self.exploration_complete = None
 		
 		# enumeration of all states:
 		self.__State = Model.State
@@ -361,51 +361,51 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
-		self.__side_clearance = 0.0
-		self.__lateral_error = 0.0
-		self.__tmp_lat = 0.0
-		self.__max_lat_rot = 0.0
-		self.__lateral_correction = 0.0
-		self.__yaw_rot = 0.0
+		self.__autonomous_active = False
+		self.__been_at_start_once = False
+		self.__is_well_aligned = False
+		self.__start_row = 0
+		self.__start_col = 0
+		self.__cell_index = 0
+		self.__cell_start_row = 0
+		self.__cell_start_col = 0
+		self.__cell_start_orientation = 0
 		self.__delta_row = 0
 		self.__delta_col = 0
-		self.__cell_start_orientation = 0
+		self.__target_row = 0
+		self.__target_col = 0
+		self.__cell_start_x = 0.0
+		self.__cell_start_y = 0.0
 		self.__target_odom_x = 0.0
 		self.__target_odom_y = 0.0
-		self.__yaw_alignment_gain = 0.0
-		self.__align_yaw_tolerance = 0.0
+		self.__left_free = False
+		self.__front_free = False
+		self.__right_free = False
+		self.__back_free = False
 		self.__dist_free = 0.0
-		self.__cell_index = 0
+		self.__side_clearance = 0.0
 		self.__wall_bits = 0
 		self.__absolute_n = 0
 		self.__absolute_e = 0
 		self.__absolute_s = 0
 		self.__absolute_w = 0
-		self.__temp_mask = 0
-		self.__temp_shift = 0
-		self.__autonomous_active = False
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
-		self.__cell_start_x = 0.0
-		self.__cell_start_y = 0.0
-		self.__cell_start_row = 0
-		self.__cell_start_col = 0
-		self.__start_row = 0
-		self.__start_col = 0
-		self.__left_free = False
-		self.__front_free = False
-		self.__right_free = False
-		self.__back_free = False
-		self.__target_row = 0
-		self.__target_col = 0
-		self.__been_at_start_once = False
-		self.__turn_start_yaw = 0.0
-		self.__total_turned = 0.0
-		self.__yaw_diff = 0.0
+		self.__lateral_error = 0.0
+		self.__lateral_correction = 0.0
+		self.__tmp_lat = 0.0
+		self.__max_lat_rot = 0.0
 		self.__target_yaw = 0.0
 		self.__yaw_error = 0.0
 		self.__abs_yaw_error = 0.0
-		self.__is_well_aligned = False
+		self.__yaw_diff = 0.0
+		self.__yaw_rot = 0.0
+		self.__yaw_alignment_gain = 0.0
+		self.__align_yaw_tolerance = 0.0
+		self.__turn_start_yaw = 0.0
+		self.__total_turned = 0.0
+		self.__temp_mask = 0
+		self.__temp_shift = 0
 		self.user_var.base_speed = 0.22
 		self.user_var.base_rotation = 0.6
 		self.user_var.startprocedure = True
@@ -576,16 +576,6 @@ class Model:
 		return None
 	
 	
-	def raise_exploration_complete(self):
-		"""Raise method for event exploration_complete.
-		"""
-		self.__internal_event_queue.put(self.__raise_exploration_complete_call)
-	
-	def __raise_exploration_complete_call(self):
-		"""Raise callback for event exploration_complete.
-		"""
-		self.exploration_complete = True
-	
 	def raise_calibration_done(self):
 		"""Raise method for event calibration_done.
 		"""
@@ -595,6 +585,16 @@ class Model:
 		"""Raise callback for event calibration_done.
 		"""
 		self.calibration_done = True
+	
+	def raise_exploration_complete(self):
+		"""Raise method for event exploration_complete.
+		"""
+		self.__internal_event_queue.put(self.__raise_exploration_complete_call)
+	
+	def __raise_exploration_complete_call(self):
+		"""Raise callback for event exploration_complete.
+		"""
+		self.exploration_complete = True
 	
 	def __entry_action_turtle_bot_turtle_bot_mode_and_keyboard_manual(self):
 		"""Entry action for state 'Manual'..
@@ -1538,8 +1538,8 @@ class Model:
 	def __clear_internal_events(self):
 		"""Implementation of __clear_internal_events function.
 		"""
-		self.exploration_complete = False
 		self.calibration_done = False
+		self.exploration_complete = False
 	
 	
 	def __micro_step(self):
