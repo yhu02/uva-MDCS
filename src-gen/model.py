@@ -301,8 +301,6 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
-		self.__lateral_correction_gain = None
-		self.__lateral_allowed = None
 		self.__side_clearance = None
 		self.__lateral_error = None
 		self.__sign_lat = None
@@ -379,8 +377,6 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
-		self.__lateral_correction_gain = 0.6
-		self.__lateral_allowed = 0.08
 		self.__side_clearance = 0.12
 		self.__lateral_error = 0.0
 		self.__sign_lat = 0.0
@@ -663,7 +659,6 @@ class Model:
 		self.start_pos.zero_south_degree = self.imu.yaw
 		self.__dist_free = self.__dist_free if (self.__dist_free > 0.0) else ((0.5 * self.grid.grid_size))
 		self.__dist_free = (self.__dist_free * 1.5)
-		self.__lateral_allowed = (0.08 * self.grid.grid_size)
 		self.__side_clearance = (0.12 * self.grid.grid_size)
 		self.__align_entry_threshold2 = (((0.15 * self.grid.grid_size)) * ((0.15 * self.grid.grid_size)))
 		self.__emergency_stop_threshold = (0.4 * self.grid.grid_size)
@@ -672,7 +667,6 @@ class Model:
 		self.user_var.base_rotation = (((0.2 / 2.84)) * self.base_values.max_rotation)
 		self.__align_yaw_tolerance = 3.0
 		self.__yaw_alignment_gain = (0.03 * self.base_values.max_rotation)
-		self.__lateral_correction_gain = (30.0 * self.__yaw_alignment_gain)
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done(self):
 		"""Entry action for state 'Done'..
@@ -1439,10 +1433,10 @@ class Model:
 				self.__lateral_error = ((0.5 * ((self.laser_distance.dleft_min - self.laser_distance.dright_min)))) if ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))) and (self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0)))) else (((self.__side_clearance - self.laser_distance.dright_min)) if ((self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0))) and not ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))))) else (((self.laser_distance.dleft_min - self.__side_clearance)) if ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))) and not ((self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0))))) else (((0.5 * ((self.laser_distance.dback_min - self.laser_distance.dfront_min)))) if ((self.laser_distance.dfront_min > 0.0) and (self.laser_distance.dfront_min < ((self.grid.grid_size * 2.0))) and (self.laser_distance.dback_min > 0.0) and (self.laser_distance.dback_min < ((self.grid.grid_size * 2.0)))) else (((self.odom.x - self.__target_odom_x)) if ((self.__cell_start_orientation == 0) or (self.__cell_start_orientation == 2)) else ((self.odom.y - self.__target_odom_y))))))
 				self.__sign_lat = 1.0 if (self.__lateral_error >= 0.0) else -(1.0)
 				self.__abs_lat_error = (self.__lateral_error * self.__sign_lat)
-				self.__tmp_lat = (self.__lateral_correction_gain * self.__lateral_error)
+				self.__tmp_lat = ((30.0 * self.__yaw_alignment_gain) * self.__lateral_error)
 				self.__max_lat_rot = (self.base_values.max_rotation * 0.3)
 				self.__lateral_correction = self.__max_lat_rot if (self.__tmp_lat > self.__max_lat_rot) else ((-(self.__max_lat_rot)) if (self.__tmp_lat < -(self.__max_lat_rot)) else self.__tmp_lat)
-				self.__cmd_speed = (((self.user_var.base_speed * self.__angle_factor) * self.__dist_scale) * (0.5 if (self.__abs_lat_error > self.__lateral_allowed) else 1.0))
+				self.__cmd_speed = (((self.user_var.base_speed * self.__angle_factor) * self.__dist_scale) * (0.5 if (self.__abs_lat_error > (0.08 * self.grid.grid_size)) else 1.0))
 				self.__cmd_speed = self.base_values.max_speed if (self.__cmd_speed > self.base_values.max_speed) else self.__cmd_speed
 				self.__cmd_speed = 0.0 if (self.__cmd_speed < 0.0) else self.__cmd_speed
 				self.__yaw_rot = (-(((self.__yaw_alignment_gain * self.__yaw_error)))) if (self.__abs_yaw_error > self.__align_yaw_tolerance) else 0.0
