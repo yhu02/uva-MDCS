@@ -640,7 +640,7 @@ class Model:
 		self.start_pos.zero_y = self.odom.y
 		self.start_pos.zero_south_degree = self.imu.yaw
 		self.__dist_free = (0.7 * self.grid.grid_size)
-		self.__side_clearance = (0.12 * self.grid.grid_size)
+		self.__side_clearance = (0.5 * self.grid.grid_size)
 		self.__align_entry_threshold2 = (((0.15 * self.grid.grid_size)) * ((0.15 * self.grid.grid_size)))
 		self.user_var.base_speed = self.base_values.max_speed
 		self.user_var.base_rotation = (((0.2 / 2.84)) * self.base_values.max_rotation)
