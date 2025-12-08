@@ -621,7 +621,7 @@ class Model:
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.start_pos.set_zero = True
-		self.__front_stop_dist = (self.grid.grid_size * 0.5)
+		self.__front_stop_dist = (self.grid.grid_size * 0.7)
 		self.__dist_free = (0.9 * self.grid.grid_size)
 		self.__align_yaw_tolerance = 3.0
 		self.__yaw_alignment_gain = (0.02 * self.base_values.max_rotation)
