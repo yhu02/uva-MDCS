@@ -344,6 +344,11 @@ class Model:
 		self.__align_yaw_tolerance = None
 		self.__turn_start_yaw = None
 		self.__total_turned = None
+		self.__abs_movement_error_x = None
+		self.__abs_movement_error_y = None
+		self.__movement_thresh = None
+		self.__moving_in_xdir = None
+		self.__moving_in_ydir = None
 		self.__temp_mask = None
 		self.__temp_shift = None
 		self.exploration_complete = None
@@ -405,6 +410,11 @@ class Model:
 		self.__align_yaw_tolerance = 0.0
 		self.__turn_start_yaw = 0.0
 		self.__total_turned = 0.0
+		self.__abs_movement_error_x = 0.0
+		self.__abs_movement_error_y = 0.0
+		self.__movement_thresh = 0.0
+		self.__moving_in_xdir = False
+		self.__moving_in_ydir = False
 		self.__temp_mask = 0
 		self.__temp_shift = 0
 		self.user_var.base_speed = 0.11
@@ -623,6 +633,7 @@ class Model:
 		self.grid.column = 0
 		self.__start_row = 0
 		self.__start_col = 0
+		self.__movement_thresh = (self.grid.grid_size * 0.04)
 		
 	def __entry_action_turtle_bot_turtle_bot_autonomous_logic_calibrate__region0_done(self):
 		"""Entry action for state 'Done'..
@@ -651,6 +662,10 @@ class Model:
 		self.__target_col = (self.__cell_start_col + self.__delta_col)
 		self.__target_odom_x = (self.start_pos.zero_x + ((((float(self.__target_col))) * self.grid.grid_size)))
 		self.__target_odom_y = (self.start_pos.zero_y - ((((float(self.__target_row))) * self.grid.grid_size)))
+		self.__abs_movement_error_x = self.grid.grid_size
+		self.__abs_movement_error_y = self.grid.grid_size
+		self.__moving_in_xdir = (self.__target_row == self.__cell_start_row)
+		self.__moving_in_ydir = (self.__target_col == self.__cell_start_col)
 		self.__target_yaw = 90.0 if (self.__cell_start_orientation == 0) else (0.0 if (self.__cell_start_orientation == 1) else (-(90.0) if (self.__cell_start_orientation == 2) else 180.0))
 		self.__cmd_rot = 0.0
 		self.__cmd_speed = self.user_var.base_speed
@@ -686,10 +701,10 @@ class Model:
 		""".
 		"""
 		#Entry action for state 'Explore'.
-		self.__front_free = self.laser_distance.dfront_min > (self.grid.grid_size * 0.9)
-		self.__left_free = self.laser_distance.dleft_min > (self.grid.grid_size * 0.9)
-		self.__right_free = self.laser_distance.dright_min > (self.grid.grid_size * 0.9)
-		self.__back_free = self.laser_distance.dback_min > (self.grid.grid_size * 0.9)
+		self.__front_free = self.laser_distance.dfront_min > self.__dist_free
+		self.__left_free = self.laser_distance.dleft_min > self.__dist_free
+		self.__right_free = self.laser_distance.dright_min > self.__dist_free
+		self.__back_free = self.laser_distance.dback_min > self.__dist_free
 		self.__absolute_n = (0 if self.__front_free else 1) if (self.grid.orientation == 0) else ((0 if self.__left_free else 1) if (self.grid.orientation == 1) else ((0 if self.__back_free else 1) if (self.grid.orientation == 2) else (0 if self.__right_free else 1)))
 		self.__absolute_e = (0 if self.__right_free else 1) if (self.grid.orientation == 0) else ((0 if self.__front_free else 1) if (self.grid.orientation == 1) else ((0 if self.__left_free else 1) if (self.grid.orientation == 2) else (0 if self.__back_free else 1)))
 		self.__absolute_s = (0 if self.__back_free else 1) if (self.grid.orientation == 0) else ((0 if self.__right_free else 1) if (self.grid.orientation == 1) else ((0 if self.__front_free else 1) if (self.grid.orientation == 2) else (0 if self.__left_free else 1)))
@@ -1333,7 +1348,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if ((self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and (((((self.odom.x - self.__cell_start_x)) * ((self.odom.x - self.__cell_start_x))) + (((self.odom.y - self.__cell_start_y)) * ((self.odom.y - self.__cell_start_y)))) > (self.grid.grid_size * 0.5))) or (self.laser_distance.dfront_min < self.__front_stop_dist):
+				if ((self.grid.row != self.__cell_start_row or self.grid.column != self.__cell_start_col) and ((self.__abs_movement_error_x < self.__movement_thresh and self.__moving_in_xdir) or (self.__abs_movement_error_y < self.__movement_thresh and self.__moving_in_ydir))) or (self.laser_distance.dfront_min < self.__front_stop_dist):
 					self.__exit_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell()
 					self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_at_cell_center_default()
 					self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(1)
@@ -1350,6 +1365,8 @@ class Model:
 				self.__cmd_rot = (self.__yaw_rot + self.__lateral_correction)
 				self.__cmd_rot = self.base_values.max_rotation if (self.__cmd_rot > self.base_values.max_rotation) else self.__cmd_rot
 				self.__cmd_rot = (-(self.base_values.max_rotation)) if (self.__cmd_rot < -(self.base_values.max_rotation)) else self.__cmd_rot
+				self.__abs_movement_error_x = (((self.__target_odom_x - self.odom.x)) * -(1)) if (self.__target_odom_x - self.odom.x) < 0 else (self.__target_odom_x - self.odom.x)
+				self.__abs_movement_error_y = (((self.__target_odom_y - self.odom.y)) * -(1)) if (self.__target_odom_y - self.odom.y) < 0 else (self.__target_odom_y - self.odom.y)
 				self.__cmd_speed = 0.0 if (self.__abs_yaw_error > 60.0) else self.__cmd_speed
 				transitioned_after = self.__turtle_bot_turtle_bot_autonomous_logic_explore_maze_react(transitioned_before)
 		return transitioned_after
@@ -1436,7 +1453,7 @@ class Model:
 			#The reactions of state null.
 			if self.__front_free and ((self.grid.orientation == 0 and self.grid.row > 0) or (self.grid.orientation == 1 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 2 and self.grid.row < self.grid.max_row) or (self.grid.orientation == 3 and self.grid.column > 0)):
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_move_to_next_cell_default()
-			elif (self.__front_free or (not self.__front_free and (self.laser_distance.dfront_min > self.__front_stop_dist))):
+			elif ((not self.__front_free and (self.laser_distance.dfront_min > self.__front_stop_dist))):
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_recalibrate_default()
 			elif self.__left_free and ((self.grid.orientation == 0 and self.grid.column > 0) or (self.grid.orientation == 1 and self.grid.row > 0) or (self.grid.orientation == 2 and self.grid.column < self.grid.max_col) or (self.grid.orientation == 3 and self.grid.row < self.grid.max_row)):
 				self.__enter_sequence_turtle_bot_turtle_bot_autonomous_logic_explore_maze__region0_turn_left_default()
