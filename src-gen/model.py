@@ -322,7 +322,6 @@ class Model:
 		self.__front_free = None
 		self.__right_free = None
 		self.__back_free = None
-		self.__side_clearance = None
 		self.__wall_bits = None
 		self.__absolute_n = None
 		self.__absolute_e = None
@@ -384,7 +383,6 @@ class Model:
 		self.__front_free = False
 		self.__right_free = False
 		self.__back_free = False
-		self.__side_clearance = 0.0
 		self.__wall_bits = 0
 		self.__absolute_n = 0
 		self.__absolute_e = 0
@@ -415,9 +413,9 @@ class Model:
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
 		self.base_values.degrees_front = 10
-		self.base_values.degrees_right = 20
+		self.base_values.degrees_right = 10
 		self.base_values.degrees_back = 10
-		self.base_values.degrees_left = 20
+		self.base_values.degrees_left = 10
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		self.output.obstacles = 0
@@ -619,7 +617,6 @@ class Model:
 		self.start_pos.set_zero = True
 		self.__front_stop_dist = (self.grid.grid_size * 0.5)
 		self.__dist_free = (0.9 * self.grid.grid_size)
-		self.__side_clearance = (0.5 * self.grid.grid_size)
 		self.__align_yaw_tolerance = 3.0
 		self.__yaw_alignment_gain = (0.02 * self.base_values.max_rotation)
 		self.grid.row = 0
@@ -1344,7 +1341,7 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				self.__lateral_error = ((0.5 * ((self.laser_distance.dleft_min - self.laser_distance.dright_min)))) if ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))) and (self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0)))) else (((self.__side_clearance - self.laser_distance.dright_min)) if ((self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0))) and not ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))))) else (((self.laser_distance.dleft_min - self.__side_clearance)) if ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))) and not ((self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0))))) else (((0.5 * ((self.laser_distance.dback_min - self.laser_distance.dfront_min)))) if ((self.laser_distance.dfront_min > 0.0) and (self.laser_distance.dfront_min < ((self.grid.grid_size * 2.0))) and (self.laser_distance.dback_min > 0.0) and (self.laser_distance.dback_min < ((self.grid.grid_size * 2.0)))) else (((self.odom.x - self.__target_odom_x)) if (self.__cell_start_orientation == 0) else (((self.__target_odom_y - self.odom.y)) if (self.__cell_start_orientation == 1) else (((self.__target_odom_x - self.odom.x)) if (self.__cell_start_orientation == 2) else ((self.odom.y - self.__target_odom_y))))))))
+				self.__lateral_error = ((0.5 * ((self.laser_distance.dleft_min - self.laser_distance.dright_min)))) if ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))) and (self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0)))) else (((self.__front_stop_dist - self.laser_distance.dright_min)) if ((self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0))) and not ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))))) else (((self.laser_distance.dleft_min - self.__front_stop_dist)) if ((self.laser_distance.dleft_min > 0.0) and (self.laser_distance.dleft_min < ((self.grid.grid_size * 2.0))) and not ((self.laser_distance.dright_min > 0.0) and (self.laser_distance.dright_min < ((self.grid.grid_size * 2.0))))) else (((0.5 * ((self.laser_distance.dback_min - self.laser_distance.dfront_min)))) if ((self.laser_distance.dfront_min > 0.0) and (self.laser_distance.dfront_min < ((self.grid.grid_size * 2.0))) and (self.laser_distance.dback_min > 0.0) and (self.laser_distance.dback_min < ((self.grid.grid_size * 2.0)))) else (((self.odom.x - self.__target_odom_x)) if (self.__cell_start_orientation == 0) else (((self.__target_odom_y - self.odom.y)) if (self.__cell_start_orientation == 1) else (((self.__target_odom_x - self.odom.x)) if (self.__cell_start_orientation == 2) else ((self.odom.y - self.__target_odom_y))))))))
 				self.__tmp_lat = ((30.0 * self.__yaw_alignment_gain) * self.__lateral_error)
 				self.__max_lat_rot = (self.base_values.max_rotation * 0.3)
 				self.__lateral_correction = self.__max_lat_rot if (self.__tmp_lat > self.__max_lat_rot) else ((-(self.__max_lat_rot)) if (self.__tmp_lat < -(self.__max_lat_rot)) else self.__tmp_lat)
