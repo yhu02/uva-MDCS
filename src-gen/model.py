@@ -314,8 +314,6 @@ class Model:
 		self.__delta_col = None
 		self.__target_row = None
 		self.__target_col = None
-		self.__cell_start_x = None
-		self.__cell_start_y = None
 		self.__target_odom_x = None
 		self.__target_odom_y = None
 		self.__left_free = None
@@ -380,8 +378,6 @@ class Model:
 		self.__delta_col = 0
 		self.__target_row = 0
 		self.__target_col = 0
-		self.__cell_start_x = 0.0
-		self.__cell_start_y = 0.0
 		self.__target_odom_x = 0.0
 		self.__target_odom_y = 0.0
 		self.__left_free = False
