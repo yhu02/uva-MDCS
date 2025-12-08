@@ -328,8 +328,8 @@ class Model:
 		self.__absolute_e = None
 		self.__absolute_s = None
 		self.__absolute_w = None
-		self.__dist_free = None
 		self.__front_stop_dist = None
+		self.__dist_free = None
 		self.__cmd_speed = None
 		self.__cmd_rot = None
 		self.__lateral_error = None
@@ -390,8 +390,8 @@ class Model:
 		self.__absolute_e = 0
 		self.__absolute_s = 0
 		self.__absolute_w = 0
-		self.__dist_free = 0.0
 		self.__front_stop_dist = 0.0
+		self.__dist_free = 0.0
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.__lateral_error = 0.0
@@ -617,8 +617,8 @@ class Model:
 		self.__cmd_speed = 0.0
 		self.__cmd_rot = 0.0
 		self.start_pos.set_zero = True
-		self.__dist_free = (0.75 * self.grid.grid_size)
 		self.__front_stop_dist = (self.grid.grid_size * 0.5)
+		self.__dist_free = (0.9 * self.grid.grid_size)
 		self.__side_clearance = (0.5 * self.grid.grid_size)
 		self.__align_yaw_tolerance = 3.0
 		self.__yaw_alignment_gain = (0.02 * self.base_values.max_rotation)
@@ -689,10 +689,10 @@ class Model:
 		""".
 		"""
 		#Entry action for state 'Explore'.
-		self.__front_free = self.laser_distance.dfront_min > self.__dist_free
-		self.__left_free = self.laser_distance.dleft_min > self.__dist_free
-		self.__right_free = self.laser_distance.dright_min > self.__dist_free
-		self.__back_free = self.laser_distance.dback_min > self.__dist_free
+		self.__front_free = self.laser_distance.dfront_min > (self.grid.grid_size * 0.9)
+		self.__left_free = self.laser_distance.dleft_min > (self.grid.grid_size * 0.9)
+		self.__right_free = self.laser_distance.dright_min > (self.grid.grid_size * 0.9)
+		self.__back_free = self.laser_distance.dback_min > (self.grid.grid_size * 0.9)
 		self.__absolute_n = (0 if self.__front_free else 1) if (self.grid.orientation == 0) else ((0 if self.__left_free else 1) if (self.grid.orientation == 1) else ((0 if self.__back_free else 1) if (self.grid.orientation == 2) else (0 if self.__right_free else 1)))
 		self.__absolute_e = (0 if self.__right_free else 1) if (self.grid.orientation == 0) else ((0 if self.__front_free else 1) if (self.grid.orientation == 1) else ((0 if self.__left_free else 1) if (self.grid.orientation == 2) else (0 if self.__back_free else 1)))
 		self.__absolute_s = (0 if self.__back_free else 1) if (self.grid.orientation == 0) else ((0 if self.__right_free else 1) if (self.grid.orientation == 1) else ((0 if self.__front_free else 1) if (self.grid.orientation == 2) else (0 if self.__left_free else 1)))
