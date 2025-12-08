@@ -736,84 +736,53 @@ class SCTConnect():
 
         # Mapping of requested fields to the internal attribute names used by the generated Model
         fields = [
+            ("calibrationDone", "_Model__calibration_done"),
+            ("explorationCompleteEvent", "exploration_complete"),
+            ("autonomousActive", "_Model__autonomous_active"),
+            ("beenAtStartOnce", "_Model__been_at_start_once"),
+            ("isWellAligned", "_Model__is_well_aligned"),
+            ("startRow", "_Model__start_row"),
+            ("startCol", "_Model__start_col"),
+            ("cellIndex", "_Model__cell_index"),
+            ("cellStartRow", "_Model__cell_start_row"),
+            ("cellStartCol", "_Model__cell_start_col"),
+            ("cellStartOrientation", "_Model__cell_start_orientation"),
             ("deltaRow", "_Model__delta_row"),
             ("deltaCol", "_Model__delta_col"),
-            ("cellStartOrientation", "_Model__cell_start_orientation"),
-
+            ("targetRow", "_Model__target_row"),
+            ("targetCol", "_Model__target_col"),
+            ("cellStartX", "_Model__cell_start_x"),
+            ("cellStartY", "_Model__cell_start_y"),
             ("targetOdomX", "_Model__target_odom_x"),
             ("targetOdomY", "_Model__target_odom_y"),
-            ("absYawError", "_Model__abs_yaw_error"),
-            ("yawAlignmentGain", "_Model__yaw_alignment_gain"),
-            ("alignYawTolerance", "_Model__align_yaw_tolerance"),
-            ("signYaw", "_Model__sign_yaw"),
-            ("alignEntryThreshold2", "_Model__align_entry_threshold2"),
-
-            ("tmpRatio", "_Model__tmp_ratio"),
-            ("limitedRatio", "_Model__limited_ratio"),
-            ("angleFactor", "_Model__angle_factor"),
-            ("distScale", "_Model__dist_scale"),
-            ("cmdSpeedExpr", "_Model__cmd_speed_expr"),
-            ("cmdRotExpr", "_Model__cmd_rot_expr"),
-
-            ("dx", "_Model__dx"),
-            ("dy", "_Model__dy"),
-            ("dist2", "_Model__dist2"),
-            ("localYaw", "_Model__local_yaw"),
-
-            ("cellIndex", "_Model__cell_index"),
+            ("leftFree", "_Model__left_free"),
+            ("frontFree", "_Model__front_free"),
+            ("rightFree", "_Model__right_free"),
+            ("backFree", "_Model__back_free"),
             ("wallBits", "_Model__wall_bits"),
             ("absoluteN", "_Model__absolute_n"),
             ("absoluteE", "_Model__absolute_e"),
             ("absoluteS", "_Model__absolute_s"),
             ("absoluteW", "_Model__absolute_w"),
-            ("tempMask", "_Model__temp_mask"),
-            ("tempShift", "_Model__temp_shift"),
+            ("frontStopDist", "_Model__front_stop_dist"),
             ("distFree", "_Model__dist_free"),
-
-            ("isManual", "_Model__is_manual"),
-            ("autonomousActive", "_Model__autonomous_active"),
-
             ("cmdSpeed", "_Model__cmd_speed"),
             ("cmdRot", "_Model__cmd_rot"),
-
-            ("cellStartX", "_Model__cell_start_x"),
-            ("cellStartY", "_Model__cell_start_y"),
-            ("cellStartRow", "_Model__cell_start_row"),
-            ("cellStartCol", "_Model__cell_start_col"),
-
-            ("startRow", "_Model__start_row"),
-            ("startCol", "_Model__start_col"),
-
-            ("exploringDone", "_Model__exploring_done"),
-
-            ("leftFree", "_Model__left_free"),
-            ("frontFree", "_Model__front_free"),
-            ("rightFree", "_Model__right_free"),
-            ("backFree", "_Model__back_free"),
-
-            ("targetRow", "_Model__target_row"),
-            ("targetCol", "_Model__target_col"),
-
-            ("beenAtStartOnce", "_Model__been_at_start_once"),
-            ("turnStartYaw", "_Model__turn_start_yaw"),
-            ("totalTurned", "_Model__total_turned"),
-            ("yawDiff", "_Model__yaw_diff"),
-            ("v", "_Model__v"),
-            ("w", "_Model__w"),
-
-            ("frontSlowThreshold", "_Model__front_slow_threshold"),
-            ("emergencyStopThreshold", "_Model__emergency_stop_threshold"),
-            ("emergencyRecoverThreshold", "_Model__emergency_recover_threshold"),
-            ("frontSlowFactor", "_Model__front_slow_factor"),
-
+            ("lateralError", "_Model__lateral_error"),
+            ("lateralCorrection", "_Model__lateral_correction"),
+            ("tmpLat", "_Model__tmp_lat"),
+            ("maxLatRot", "_Model__max_lat_rot"),
             ("targetYaw", "_Model__target_yaw"),
             ("yawError", "_Model__yaw_error"),
-            ("isWellAligned", "_Model__is_well_aligned"),
-            ("isNorthSouth", "_Model__is_north_south"),
-
-            # Top-level events/flags
-            ("explorationCompleteEvent", "exploration_complete"),
-            ("calibrationDoneEvent", "calibration_done"),
+            ("absYawError", "_Model__abs_yaw_error"),
+            ("yawDiff", "_Model__yaw_diff"),
+            ("yawRot", "_Model__yaw_rot"),
+            ("yawAlignmentGain", "_Model__yaw_alignment_gain"),
+            ("alignYawTolerance", "_Model__align_yaw_tolerance"),
+            ("turnStartYaw", "_Model__turn_start_yaw"),
+            ("totalTurned", "_Model__total_turned"),
+            ("tempMask", "_Model__temp_mask"),
+            ("tempShift", "_Model__temp_shift"),
         ]
 
         pairs = []
