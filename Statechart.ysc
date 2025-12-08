@@ -61,9 +61,9 @@
                 <outgoingTransitions xmi:id="_J9ywANB5EfCuzpZHd8EwyA" specification="[totalTurned > 170.0 || totalTurned &lt; -170.0]" target="_nYW_gM4nEfCibLM5nbHmTw"/>
               </vertices>
               <vertices xsi:type="sgraph:Choice" xmi:id="_fgzhgM40EfCTW5L3smoo6A" incomingTransitions="_ruOnkM6rEfCDQcoECy4uhw">
-                <outgoingTransitions xmi:id="_VAHYsM4uEfCTW5L3smoo6A" specification="[&#xD;&#xA;    frontFree &amp;&amp;&#xD;&#xA;    (&#xD;&#xA;      (grid.orientation == 0 &amp;&amp; grid.row > 0)&#xD;&#xA;      || (grid.orientation == 1 &amp;&amp; grid.column &lt; grid.maxCol)&#xD;&#xA;      || (grid.orientation == 2 &amp;&amp; grid.row &lt; grid.maxRow)&#xD;&#xA;      || (grid.orientation == 3 &amp;&amp; grid.column > 0)&#xD;&#xA;    )&#xD;&#xA;]&#xD;&#xA;" target="_nYW_gM4nEfCibLM5nbHmTw"/>
-                <outgoingTransitions xmi:id="_ZL8CUNIzEfCg6rQfckbZaQ" specification="[&#xD;&#xA;    (&#xD;&#xA;      frontFree&#xD;&#xA;      ||&#xD;&#xA;      (&#xD;&#xA;        !frontFree&#xD;&#xA;        &amp;&amp; (laserDistance.dFrontMin >frontStopDist)&#xD;&#xA;      )&#xD;&#xA;    )&#xD;&#xA; &#xD;&#xA;]&#xD;&#xA;" target="_YL794NIzEfCg6rQfckbZaQ"/>
                 <outgoingTransitions xmi:id="_QnOs4M4uEfCTW5L3smoo6A" specification="[&#xD;&#xA;    leftFree &amp;&amp;&#xD;&#xA;    (&#xD;&#xA;      (grid.orientation == 0 &amp;&amp; grid.column > 0)&#xD;&#xA;      || (grid.orientation == 1 &amp;&amp; grid.row > 0)&#xD;&#xA;      || (grid.orientation == 2 &amp;&amp; grid.column &lt; grid.maxCol)&#xD;&#xA;      || (grid.orientation == 3 &amp;&amp; grid.row &lt; grid.maxRow)&#xD;&#xA;    )&#xD;&#xA;]" target="_FCQN0M4uEfCTW5L3smoo6A"/>
+                <outgoingTransitions xmi:id="_ZL8CUNIzEfCg6rQfckbZaQ" specification="[&#xD;&#xA;    (&#xD;&#xA;      frontFree&#xD;&#xA;      ||&#xD;&#xA;      (&#xD;&#xA;        !frontFree&#xD;&#xA;        &amp;&amp; (laserDistance.dFrontMin >frontStopDist)&#xD;&#xA;      )&#xD;&#xA;    )&#xD;&#xA; &#xD;&#xA;]&#xD;&#xA;" target="_YL794NIzEfCg6rQfckbZaQ"/>
+                <outgoingTransitions xmi:id="_VAHYsM4uEfCTW5L3smoo6A" specification="[&#xD;&#xA;    frontFree &amp;&amp;&#xD;&#xA;    (&#xD;&#xA;      (grid.orientation == 0 &amp;&amp; grid.row > 0)&#xD;&#xA;      || (grid.orientation == 1 &amp;&amp; grid.column &lt; grid.maxCol)&#xD;&#xA;      || (grid.orientation == 2 &amp;&amp; grid.row &lt; grid.maxRow)&#xD;&#xA;      || (grid.orientation == 3 &amp;&amp; grid.column > 0)&#xD;&#xA;    )&#xD;&#xA;]&#xD;&#xA;" target="_nYW_gM4nEfCibLM5nbHmTw"/>
                 <outgoingTransitions xmi:id="_YnK-8M4uEfCTW5L3smoo6A" specification="[&#xD;&#xA;    rightFree &amp;&amp;&#xD;&#xA;    (&#xD;&#xA;      (grid.orientation == 0 &amp;&amp; grid.column &lt; grid.maxCol)&#xD;&#xA;      || (grid.orientation == 1 &amp;&amp; grid.row &lt; grid.maxRow)&#xD;&#xA;      || (grid.orientation == 2 &amp;&amp; grid.column > 0)&#xD;&#xA;      || (grid.orientation == 3 &amp;&amp; grid.row > 0)&#xD;&#xA;    )&#xD;&#xA;]&#xD;&#xA;" target="_GjKm_M4uEfCTW5L3smoo6A"/>
                 <outgoingTransitions xmi:id="_t5eQMM40EfCTW5L3smoo6A" specification="else" target="_G_5mTc4uEfCTW5L3smoo6A"/>
               </vertices>
@@ -584,11 +584,11 @@
     <edges xmi:id="_GM8yQM4hEfC2btRhec0lOA" type="Transition" element="_GM7kIM4hEfC2btRhec0lOA" source="_OauE9c4hEfC2btRhec0lOA" target="_OauFAc4hEfC2btRhec0lOA">
       <children xsi:type="notation:DecorationNode" xmi:id="_GM8yRM4hEfC2btRhec0lOA" type="TransitionExpression">
         <styles xsi:type="notation:ShapeStyle" xmi:id="_GM8yRc4hEfC2btRhec0lOA"/>
-        <layoutConstraint xsi:type="notation:Location" xmi:id="_GM8yRs4hEfC2btRhec0lOA" x="-27" y="-46"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_GM8yRs4hEfC2btRhec0lOA" x="-21" y="-46"/>
       </children>
       <styles xsi:type="notation:ConnectorStyle" xmi:id="_GM8yQc4hEfC2btRhec0lOA" routing="Rectilinear" lineColor="4210752"/>
       <styles xsi:type="notation:FontStyle" xmi:id="_GM8yQ84hEfC2btRhec0lOA" fontName="Verdana"/>
-      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_GM8yQs4hEfC2btRhec0lOA" points="[-119, -361, 96, -436]$[-216, -361, -1, -436]$[-216, 69, -1, -6]"/>
+      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_GM8yQs4hEfC2btRhec0lOA" points="[-119, -361, 96, -436]$[-229, -361, -14, -436]$[-229, 69, -14, -6]"/>
       <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_GM-AYM4hEfC2btRhec0lOA" id="(0.2112676056338028,0.7924528301886793)"/>
       <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_GM-AYc4hEfC2btRhec0lOA" id="(0.55,0.11320754716981132)"/>
     </edges>

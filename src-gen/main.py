@@ -39,8 +39,6 @@ class SCTConnect():
     """
     def log(self, message):
         print(message, end='')
-        self.log_file.write(message)
-        self.log_file.flush()
 
     """
     initialise class and main variables
@@ -52,15 +50,6 @@ class SCTConnect():
 
         # Initialize the statecharts
         self.sm = Model()
-        
-        # Debug tracking
-        self.previous_states = [None, None, None]
-        self.state_names = self._get_state_names()
-        
-        # Open log file
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.log_file = open(f"turtlebot_log_{timestamp}.txt", "w")
-        self.log("=== TurtleBot Maze Exploration Log Started ===\n")
 
     """
     Setup the statemachine and the ROS 2 node
@@ -70,9 +59,7 @@ class SCTConnect():
         self.maze = Maze(self.sm.grid.max_col+1, self.sm.grid.max_row+1)
 
         self.sm.timer_service = Timer()
-        self.log("\n[DEBUG] Entering state machine...\n")
         self.sm.enter()
-        self._log_active_states()
 
         # Setup variables to be used that will not be changed by the statecharts
         self.degrees_list = [i for i in range(0,180)]
@@ -109,7 +96,6 @@ class SCTConnect():
             # Run a cycle of the statechart
             if(not self.parse_input()):
                 self.sm.run_cycle()
-                self._check_state_changes()
 
             # Reset input
             self.input = ''
@@ -126,69 +112,42 @@ class SCTConnect():
             # Publish the current speed and rotation from SCT
             # print("Velocity: ", self.sm.output.speed, self.sm.output.rotation)
             # Ensure float type for ROS2 message
-            self.node.vel_publish(x=float(self.sm.output.speed), rz=float(self.sm.output.rotation))
+            self.node.vel_publish(x=self.sm.output.speed, rz = self.sm.output.rotation)
 
             # ================== DEBUG / INFO OUTPUT (compact horizontal) ==================
             os.system('clear')
 
-            # One-line robot summary
-            try:
-                yaw = self._fmt(self.sm.imu.yaw)
-            except Exception:
-                yaw = '?'
-            self.log(f"TurtleBot | V:{self._fmt(self.sm.output.speed)} R:{self._fmt(self.sm.output.rotation)} Y:{yaw} \n")
+            # Print info
+            os.system('clear')
+            print("========= TurtleBot Stats =========")
+            print(f"velocity: {self.sm.output.speed}")
+            print(f"rotation speed: {self.sm.output.rotation}")
+            print(f"yaw: {self.sm.imu.yaw:.3f}")
 
-            # Active states in one line
-            self._log_active_states()
+            print("----------- Grid Info -----------")
+            print(f"orientation: {self.sm.grid.orientation}")
+            print(f"row: {self.sm.grid.row}")
+            print(f"col: {self.sm.grid.column}")
 
-            # Grid and start pos compact
-            self.log(
-                f"Grid ori:{self._fmt(self.sm.grid.orientation)} pos:({self._fmt(self.sm.grid.row)},{self._fmt(self.sm.grid.column)}) "
-                f"start:({self._fmt(self.sm.start_pos.zero_x)},{self._fmt(self.sm.start_pos.zero_y)}) set_zero:{self.sm.start_pos.set_zero}\n"
-            )
+            print(f"start pos:")
+            print(f"\tzero x: {self.sm.start_pos.zero_x:.2f}")
+            print(f"\tzero y: {self.sm.start_pos.zero_y:.2f}")
+            print(f"\tset zero: {self.sm.start_pos.set_zero}")
 
-            # Explored summary: count + sample (horizontal)
-            explored_count = 0
-            explored_cells = []
-            for row in range(self.maze.grid_rows):
-                for col in range(self.maze.grid_cols):
-                    if self.maze.grid[row][col].visited:
-                        explored_count += 1
-                        explored_cells.append(f"({row},{col})")
-            sample = ", ".join(explored_cells[:12]) + ("..." if len(explored_cells) > 12 else "")
-            self.log(f"Explored: {self._fmt(explored_count)}/{self._fmt(self.maze.grid_rows*self.maze.grid_cols)} {sample}\n")
+            print("----------- Laser stuff -----------")
+            print(f"front mean:\t{self.sm.laser_distance.dfront_mean:.2f}")
+            print(f"left mean:\t{self.sm.laser_distance.dleft_mean:.2f}")
+            print(f"back mean:\t{self.sm.laser_distance.dback_mean:.2f}")
+            print(f"right mean:\t{self.sm.laser_distance.dright_mean:.2f}")
 
-            # Laser distances in one line
-            self.log(
-                f"Laser F:{self._fmt(self.sm.laser_distance.dfront_mean)} "
-                f"L:{self._fmt(self.sm.laser_distance.dleft_mean)} "
-                f"B:{self._fmt(self.sm.laser_distance.dback_mean)} "
-                f"R:{self._fmt(self.sm.laser_distance.dright_mean)}\n"
-            )
+            print("------------ Odometry -------------")
+            print(f"x: {self.sm.odom.x:.2f}")
+            print(f"y: {self.sm.odom.y:.2f}")
 
-            # Odometry and visited/walls compact
-            self.log(f"Odom x:{self._fmt(self.sm.odom.x)} y:{self._fmt(self.sm.odom.y)} ")
-            self.log(f"Visited:{self._fmt(self.sm.grid.visited)} Walls[F,R,B,L]:[{self._fmt(self.sm.grid.wall_front)},{self._fmt(self.sm.grid.wall_right)},{self._fmt(self.sm.grid.wall_back)},{self._fmt(self.sm.grid.wall_left)}]\n")
-
-            # Internal maze storage compact (single-line per large field)
-            self.log(f"maze1:{self.sm.grid.maze1:032b} maze2:{self.sm.grid.maze2:032b} visitedBits:{self.sm.grid.visited_cells:016b}\n")
-
-            # Current cell compact decode
-            if self.sm.grid.row < self.maze.grid_rows and self.sm.grid.column < self.maze.grid_cols:
-                cell_idx = self.sm.grid.row * 4 + self.sm.grid.column
-                is_visited = (self.sm.grid.visited_cells >> cell_idx) & 1
-                if cell_idx < 8:
-                    shift = cell_idx * 4
-                    wall_bits = (self.sm.grid.maze1 >> shift) & 15
-                else:
-                    shift = (cell_idx - 8) * 4
-                    wall_bits = (self.sm.grid.maze2 >> shift) & 15
-                wn = (wall_bits >> 3) & 1
-                we = (wall_bits >> 2) & 1
-                ws = (wall_bits >> 1) & 1
-                ww = wall_bits & 1
-                visited_marker = '✓' if is_visited else '✗'
-                self.log(f"Cell ({self._fmt(self.sm.grid.row)},{self._fmt(self.sm.grid.column)}) vis:{visited_marker} walls(N,E,S,W):{wn}{we}{ws}{ww}\n")
+            print("------------ Logging -------------")
+            print(f"visited: {self.sm.grid.visited:.2f}")
+            print(f'Wall front: {self.sm.grid.wall_front}, right: {self.sm.grid.wall_right}, '
+                    f'back: {self.sm.grid.wall_back}, left: {self.sm.grid.wall_left}')
 
             # --- ASCII art of complete maze from statechart internal storage ---
             self.log("\n--- ASCII Maze Map (from statechart memory) ---\n")
@@ -267,11 +226,7 @@ class SCTConnect():
                         self.log("+   ")
                 self.log("+\n")
 
-            # Keep detailed internal variables for deeper debugging
-            self._print_internal_variables()
-
         # Print the final values and finish
-        self.log("\n[DEBUG] State machine finished!\n")
         print("gems: ", self.sm.output.gems)
         print("obstacles: ", self.sm.output.obstacles)
         self.shutdown()
@@ -537,27 +492,21 @@ class SCTConnect():
     """
     def parse_input(self):
         if self.input == 'm':
-           self.log("[DEBUG-INPUT] Key 'm' pressed - Mode switch\n")
            self.sm.computer.raise_m_press()
            return True
         elif self.input == 'w':
-            self.log("[DEBUG-INPUT] Key 'w' pressed - Forward\n")
             self.sm.computer.raise_w_press()
             return True
         elif self.input == 'a':
-            self.log("[DEBUG-INPUT] Key 'a' pressed - Left\n")
             self.sm.computer.raise_a_press()
             return True
         elif self.input == 's':
-            self.log("[DEBUG-INPUT] Key 's' pressed - Backward\n")
             self.sm.computer.raise_s_press()
             return True
         elif self.input == 'd':
-            self.log("[DEBUG-INPUT] Key 'd' pressed - Right\n")
             self.sm.computer.raise_d_press()
             return True
         elif self.input == 'x':
-            self.log("[DEBUG-INPUT] Key 'x' pressed - Stop\n")
             self.sm.computer.raise_x_press()
             return True
         else:
@@ -630,284 +579,12 @@ class SCTConnect():
     """
     def update_grid(self):
         self.sm.grid.update = False
-        self.current_node = self.maze.grid[self.sm.grid.row][self.sm.grid.column]
-        
-        # Debug: Print what wall values are being stored
-        self.log(f"[DEBUG] update_grid() called at ({self.sm.grid.row},{self.sm.grid.column})\n")
-        self.log(f"[DEBUG] Orientation: {self.sm.grid.orientation}, Wall values: F={self.sm.grid.wall_front}, R={self.sm.grid.wall_right}, B={self.sm.grid.wall_back}, L={self.sm.grid.wall_left}\n")
-        
+        self.current_node = self.maze.grid[self.sm.grid.row][self.sm.grid.column]        
         self.current_node.walls[self.sm.grid.orientation] = self.sm.grid.wall_front
         self.current_node.walls[(self.sm.grid.orientation + 1) % 4] = self.sm.grid.wall_right
         self.current_node.walls[(self.sm.grid.orientation - 1) % 4] = self.sm.grid.wall_left
         self.current_node.walls[(self.sm.grid.orientation - 2) % 4] = self.sm.grid.wall_back
         self.current_node.visited = True
-        
-        self.log(f"[DEBUG] Stored walls array: {self.current_node.walls}\n")
-
-
-    """
-    Get state name mapping from Model.State enum
-    """
-    def _get_state_names(self):
-        state_map = {}
-        for attr_name in dir(Model.State):
-            if not attr_name.startswith('_'):
-                attr_value = getattr(Model.State, attr_name)
-                if isinstance(attr_value, int):
-                    # Clean up state name for readability
-                    clean_name = attr_name.replace('turtle_bot_turtle_bot_', '').replace('_region0', '').replace('_', ' ').title()
-                    state_map[attr_value] = clean_name
-        return state_map
-
-    """
-    Log currently active states
-    """
-    def _log_active_states(self):
-        active = []
-        state_vector = self.sm._Model__state_vector
-        for i, state_id in enumerate(state_vector):
-            if state_id != Model.State.null_state:
-                state_name = self.state_names.get(state_id, f"State_{state_id}")
-                active.append(f"[{i}] {state_name}")
-        
-        if active:
-            self.log(f"[DEBUG] Active states: {', '.join(active)}\n")
-
-    def _fmt(self, v):
-        """Format numbers with fixed widths for compact aligned output."""
-        try:
-            if isinstance(v, float):
-                return f"{v:6.2f}"
-            if isinstance(v, int):
-                return f"{v:4d}"
-        except Exception:
-            pass
-        return str(v)
-    
-    """
-    Print currently active states to display
-    """
-    def _print_active_states(self):
-        state_vector = self.sm._Model__state_vector
-        for i, state_id in enumerate(state_vector):
-            if state_id != Model.State.null_state:
-                state_name = self.state_names.get(state_id, f"State_{state_id}")
-                self.log(f"Region {i}: {state_name}\n")
-                
-                # Add helpful hints for specific states
-                if state_id == Model.State.turtle_bot_turtle_bot_autonomous_logic_calibrate_region0wait_for_key:
-                    self.log(f"           ⚠️  PRESS 's' KEY TO START CALIBRATION ⚠️\n")
-                elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_manual:
-                    self.log(f"           💡 Press 'm' to switch to Autonomous mode\n")
-                    self.log(f"           💡 Use w/a/s/d keys to move, x to stop\n")
-                elif state_id == Model.State.turtle_bot_turtle_bot_mode_and_keyboard_autonomous:
-                    self.log(f"           💡 Press 'm' to switch to Manual mode\n")
-            else:
-                self.log(f"Region {i}: <inactive>\n")
-    
-    """
-    Check for state changes and log them
-    """
-    def _check_state_changes(self):
-        state_vector = self.sm._Model__state_vector
-        for i in range(len(state_vector)):
-            if state_vector[i] != self.previous_states[i]:
-                # State changed in region i
-                old_state = self.previous_states[i]
-                new_state = state_vector[i]
-                
-                if old_state != Model.State.null_state and old_state is not None:
-                    old_name = self.state_names.get(old_state, f"State_{old_state}")
-                    self.log(f"[DEBUG] Region {i} EXIT: {old_name}\n")
-                
-                if new_state != Model.State.null_state:
-                    new_name = self.state_names.get(new_state, f"State_{new_state}")
-                    self.log(f"[DEBUG] Region {i} ENTER: {new_name}\n")
-                
-                self.previous_states[i] = new_state
-    
-
-    """
-    Print internal state machine variables
-    """
-    def _print_internal_variables(self):
-        # Only print the variables the user requested. Use getattr with defaults to avoid attribute errors.
-        self.log("\n------ Internal Variables (Filtered) ------\n")
-
-        # Mapping of requested fields to the internal attribute names used by the generated Model
-        fields = [
-            ("deltaRow", "_Model__delta_row"),
-            ("deltaCol", "_Model__delta_col"),
-            ("cellStartOrientation", "_Model__cell_start_orientation"),
-
-            ("targetOdomX", "_Model__target_odom_x"),
-            ("targetOdomY", "_Model__target_odom_y"),
-            ("absYawError", "_Model__abs_yaw_error"),
-            ("yawAlignmentGain", "_Model__yaw_alignment_gain"),
-            ("alignYawTolerance", "_Model__align_yaw_tolerance"),
-            ("signYaw", "_Model__sign_yaw"),
-            ("alignEntryThreshold2", "_Model__align_entry_threshold2"),
-
-            ("tmpRatio", "_Model__tmp_ratio"),
-            ("limitedRatio", "_Model__limited_ratio"),
-            ("angleFactor", "_Model__angle_factor"),
-            ("distScale", "_Model__dist_scale"),
-            ("cmdSpeedExpr", "_Model__cmd_speed_expr"),
-            ("cmdRotExpr", "_Model__cmd_rot_expr"),
-
-            ("dx", "_Model__dx"),
-            ("dy", "_Model__dy"),
-            ("dist2", "_Model__dist2"),
-            ("localYaw", "_Model__local_yaw"),
-
-            ("cellIndex", "_Model__cell_index"),
-            ("wallBits", "_Model__wall_bits"),
-            ("absoluteN", "_Model__absolute_n"),
-            ("absoluteE", "_Model__absolute_e"),
-            ("absoluteS", "_Model__absolute_s"),
-            ("absoluteW", "_Model__absolute_w"),
-            ("tempMask", "_Model__temp_mask"),
-            ("tempShift", "_Model__temp_shift"),
-            ("distFree", "_Model__dist_free"),
-
-            ("isManual", "_Model__is_manual"),
-            ("autonomousActive", "_Model__autonomous_active"),
-
-            ("cmdSpeed", "_Model__cmd_speed"),
-            ("cmdRot", "_Model__cmd_rot"),
-
-            ("cellStartX", "_Model__cell_start_x"),
-            ("cellStartY", "_Model__cell_start_y"),
-            ("cellStartRow", "_Model__cell_start_row"),
-            ("cellStartCol", "_Model__cell_start_col"),
-
-            ("startRow", "_Model__start_row"),
-            ("startCol", "_Model__start_col"),
-
-            ("exploringDone", "_Model__exploring_done"),
-
-            ("leftFree", "_Model__left_free"),
-            ("frontFree", "_Model__front_free"),
-            ("rightFree", "_Model__right_free"),
-            ("backFree", "_Model__back_free"),
-
-            ("targetRow", "_Model__target_row"),
-            ("targetCol", "_Model__target_col"),
-
-            ("beenAtStartOnce", "_Model__been_at_start_once"),
-            ("turnStartYaw", "_Model__turn_start_yaw"),
-            ("totalTurned", "_Model__total_turned"),
-            ("yawDiff", "_Model__yaw_diff"),
-            ("v", "_Model__v"),
-            ("w", "_Model__w"),
-
-            ("frontSlowThreshold", "_Model__front_slow_threshold"),
-            ("emergencyStopThreshold", "_Model__emergency_stop_threshold"),
-            ("emergencyRecoverThreshold", "_Model__emergency_recover_threshold"),
-            ("frontSlowFactor", "_Model__front_slow_factor"),
-
-            ("targetYaw", "_Model__target_yaw"),
-            ("yawError", "_Model__yaw_error"),
-            ("isWellAligned", "_Model__is_well_aligned"),
-            ("isNorthSouth", "_Model__is_north_south"),
-
-            # Top-level events/flags
-            ("explorationCompleteEvent", "exploration_complete"),
-            ("calibrationDoneEvent", "calibration_done"),
-        ]
-
-        pairs = []
-        for label, attr in fields:
-            try:
-                val = getattr(self.sm, attr)
-            except Exception:
-                # Fallback: try mangled attribute lookup on Model instance
-                val = getattr(self.sm, attr, None)
-            pairs.append((label, val))
-        # Print five variables per line with fixed column widths
-        label_w = 24
-        val_w = 8
-        for i in range(0, len(pairs), 5):
-            chunk = pairs[i:i+5]
-            parts = []
-            for lbl, v in chunk:
-                parts.append(f"{lbl:<{label_w}}: {self._fmt(v):>{val_w}}")
-            self.log(" | ".join(parts) + "\n")
-
-        # Now print full interfaces for complete debugging, using safe getattr
-        self.log("\n------ Full Interface Dump (safe) ------\n")
-
-        def dump_obj(name, obj, fields_list=None):
-            try:
-                o = obj
-                if o is None:
-                    self.log(f"{name}: None\n")
-                    return
-                if fields_list is None:
-                    # attempt to iterate public attributes
-                    attrs = [a for a in dir(o) if not a.startswith('_')]
-                else:
-                    attrs = fields_list
-                # collect (label, value) pairs then print 5 per line
-                pairs_local = []
-                for a in attrs:
-                    try:
-                        v = getattr(o, a)
-                    except Exception:
-                        v = None
-                    if callable(v):
-                        continue
-                    pairs_local.append((a, v))
-
-                self.log(f"{name}:\n")
-                for i in range(0, len(pairs_local), 5):
-                    chunk = pairs_local[i:i+5]
-                    parts = []
-                    for lbl, v in chunk:
-                        parts.append(f"  {lbl:<{label_w-2}}: {self._fmt(v):>{val_w}}")
-                    self.log(" | ".join(parts) + "\n")
-            except Exception as e:
-                self.log(f"{name}: <error reading: {e}>\n")
-
-        # UserVar
-        dump_obj('user_var', getattr(self.sm, 'user_var', None), ['base_speed', 'base_rotation', 'startprocedure'])
-
-        # BaseValues
-        dump_obj('base_values', getattr(self.sm, 'base_values', None), ['max_speed', 'max_rotation', 'degrees_front', 'degrees_right', 'degrees_back', 'degrees_left'])
-
-        # Output
-        dump_obj('output', getattr(self.sm, 'output', None), ['speed', 'rotation', 'obstacles', 'gems', 'finish'])
-
-        # Grid
-        dump_obj('grid', getattr(self.sm, 'grid', None), ['update', 'receive', 'column', 'row', 'orientation', 'visited', 'wall_front', 'wall_right', 'wall_back', 'wall_left', 'grid_size', 'max_col', 'max_row', 'maze1', 'maze2', 'visited_cells'])
-
-        # StartPos
-        dump_obj('start_pos', getattr(self.sm, 'start_pos', None), ['set_zero', 'zero_x', 'zero_y', 'zero_south_degree', 'laser_deg_offset'])
-
-        # Imu and Odom
-        dump_obj('imu', getattr(self.sm, 'imu', None), ['pitch', 'roll', 'yaw'])
-        dump_obj('odom', getattr(self.sm, 'odom', None), ['x', 'y', 'z'])
-
-        # LaserDistance and LaserIntensity
-        dump_obj('laser_distance', getattr(self.sm, 'laser_distance', None), [
-            'd0','d90','d180','dm90','dmin','min_deg','dmax','max_deg','dmean',
-            'dfront_min','min_deg_f','dfront_max','max_deg_f','dfront_mean',
-            'dright_min','min_deg_r','dright_max','max_deg_r','dright_mean',
-            'dback_min','min_deg_b','dback_max','max_deg_b','dback_mean',
-            'dleft_min','min_deg_l','dleft_max','max_deg_l','dleft_mean'
-        ])
-
-        dump_obj('laser_intensity', getattr(self.sm, 'laser_intensity', None), [
-            'i0','i90','i180','im90',
-            'ifront_min','ifront_max','ifront_mean',
-            'iright_min','iright_max','iright_mean',
-            'iback_min','iback_max','iback_mean',
-            'ileft_min','ileft_max','ileft_mean'
-        ])
-
-        # Keep visited flag consistent for display
-        self.sm.grid.visited = True
-        # Keep visited flag consistent for display
         self.sm.grid.visited = True
 
 """
@@ -920,6 +597,3 @@ if __name__ == "__main__":
         states.run()
     except KeyboardInterrupt:
         states.shutdown()
-    finally:
-        states.log("\n=== Log file closed ===\n")
-        states.log_file.close()
